@@ -1,0 +1,36 @@
+{
+  "name": "campaign_message_gui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start":"node dist/main.js",
+    "build": "rm -rf dist && mkdir -p dist/public && pnpm build-backend && pnpm copy-build-backend && pnpm build-frontend && pnpm copy-build-frontend",
+    "build-backend": "cd backend && nest build && cd ..",
+    "build-frontend": "cd frontend && run-p type-check \"build-only {@}\" --  && cd ..",
+    "copy-build-backend": "cp -r backend/dist/* ./dist",
+    "copy-build-frontend": "cp -r frontend/dist/* ./dist/public",
+    "format": "prettier --write \"backend/src/**/*.ts\" \"backend/test/**/*.ts\" && prettier --write frontend/src/"
+  },
+  
+  "dependencies": {
+    "@nestjs/common": "^10.3.3",
+    "@nestjs/core": "^10.3.3",
+    "@nestjs/mapped-types": "^2.0.5",
+    "@nestjs/platform-express": "^10.3.3",
+    "@nestjs/serve-static": "^4.0.1",
+    "csv-parser": "^3.0.0",
+    "nestjs-paginate": "^8.6.2",
+    "reflect-metadata": "^0.2.1",
+    "rxjs": "^7.8.1",
+    "sqlite3": "^5.1.7",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "npm-run-all2": "^6.1.1",
+    "prettier": "^3.0.3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
