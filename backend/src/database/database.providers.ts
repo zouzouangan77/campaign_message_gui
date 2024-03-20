@@ -8,7 +8,7 @@ import { DataSource } from 'typeorm';
 //         dialect: 'sqlite',
 //         storage: '.db/data.sqlite3',
 //       });
-//       sequelize.addModels([User]);
+//       sequelize.addModels([Contact]);
 //       await sequelize.sync();
 //       return sequelize;
 //     },

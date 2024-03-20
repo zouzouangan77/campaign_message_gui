@@ -1,14 +1,22 @@
 import { Module } from '@nestjs/common';
-import { UserModule } from './user/user.module';
+import { ContactModule } from './contact/contact.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { GroupModule } from './group/group.module';
+import { MessageModule } from './message/message.module';
+import { CampaignModule } from './campaign/campaign.module';
+import { AttachmentModule } from './attachment/attachment.module';
 
 @Module({
   imports: [
-    UserModule,
+    ContactModule,
+    GroupModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, 'public'),
     }),
+    MessageModule,
+    CampaignModule,
+    AttachmentModule,
   ],
   controllers: [],
   providers: [],

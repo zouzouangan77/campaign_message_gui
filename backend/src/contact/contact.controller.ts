@@ -14,47 +14,49 @@ import {
   FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { ContactService } from './contact.service';
+import { CreateContactDto } from './dto/create-contact.dto';
+import { UpdateContactDto } from './dto/update-contact.dto';
 import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate';
-import { User } from './entities/user.entity';
+import { Contact } from './entities/contact.entity';
 
-@Controller('api/user')
-export class UserController {
-  constructor(private readonly userService: UserService) {}
+@Controller('api/contact')
+export class ContactController {
+  constructor(private readonly contactService: ContactService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  create(@Body() createContactDto: CreateContactDto) {
+    return this.contactService.create(createContactDto);
   }
 
   @Get()
   findAll() {
-    return this.userService.findAll();
+    return this.contactService.findAll();
   }
 
   @Get('page')
-  public findAllPage(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
-    return this.userService.findAllPage(query)
+  public findAllPage(
+    @Paginate() query: PaginateQuery,
+  ): Promise<Paginated<Contact>> {
+    return this.contactService.findAllPage(query);
   }
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.findOne(+id);
+    return this.contactService.findOne(+id);
   }
 
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updateContactDto: UpdateContactDto,
   ) {
-    return this.userService.update(+id, updateUserDto);
+    return this.contactService.update(+id, updateContactDto);
   }
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.remove(+id);
+    return this.contactService.remove(+id);
   }
 
   /**
@@ -78,6 +80,6 @@ export class UserController {
   ) {
     // Traiter le fichier téléchargé ici
     //console.log(file.buffer.toString());
-    return await this.userService.bulkCsvCreateUsers(file.buffer.toString());
+    return await this.contactService.bulkCsvCreateContacts(file.buffer.toString());
   }
 }

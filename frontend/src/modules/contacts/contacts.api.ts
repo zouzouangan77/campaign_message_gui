@@ -15,7 +15,7 @@ export const findAllPage = async (pageable: Pageable<IContact>): Promise<Page<Co
     })
   }
 
-  const response = await fetch(`api/user/page?${searchParam.toString()}`)
+  const response = await fetch(`api/contact/page?${searchParam.toString()}`)
   const page = (await response.json()) as Page<Contact>
   return page
 }
