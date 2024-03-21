@@ -29,6 +29,7 @@ import  Tag  from 'primevue/tag';
 import  Dropdown  from 'primevue/dropdown';
 import  IconField  from 'primevue/iconField';
 import  InputIcon  from 'primevue/inputIcon';
+import  PickList  from 'primevue/pickList';
 
 import App from './App.vue';
 import router from './router';
@@ -55,6 +56,7 @@ app.component('Column', Column);
 app.component('FileUpload', FileUpload);
 app.component('MultiSelect', MultiSelect);
 app.component('Dropdown', Dropdown);
+app.component('PickList', PickList);
 
 app.directive('tooltip', Tooltip);
 app.use(createPinia())

@@ -10,7 +10,7 @@ const routes = [
                 component: () => import('@/views/Dashbaord.vue')
             },
             {
-                path: '/pages/group',
+                path: '/group',
                 name: 'group',
                 component: () => import('@/views/pages/group/GroupView.vue')
             },

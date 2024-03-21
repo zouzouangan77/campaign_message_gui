@@ -20,3 +20,9 @@ export const findAllPage = async (pageable: Pageable<IContact>): Promise<Page<Co
   return page
 }
 
+export const findAll = async (): Promise<Array<Contact>> => {
+
+  const response = await fetch('/api/contact')
+  const contacts = (await response.json()) as Array<Contact>
+  return contacts
+}
