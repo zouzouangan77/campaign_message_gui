@@ -19,3 +19,4 @@ export const findAllPage = async (pageable: Pageable<IContact>): Promise<Page<Co
   const page = (await response.json()) as Page<Contact>
   return page
 }
+
