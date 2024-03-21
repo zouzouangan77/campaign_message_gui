@@ -71,7 +71,28 @@
             </DataTable>
 	    </div>
         <Dialog v-model:visible="contactDialog" :style="{width: '450px'}" header="Contact  Details" :modal="true" class="p-fluid">
-           
+            <div class="field">
+                <label for="firstName">FirstName</label>
+                <InputText id="firstName" v-model.trim="contact.firstName" required="true" autofocus :class="{'p-invalid': submitted && !contact.firstName}" />
+                <small class="p-error" v-if="submitted && !contact.firstName">FirstName is required.</small>
+            </div>
+            <div class="field">
+                <label for="lastName">LastName</label>
+                <InputText id="lastName" v-model="contact.lastName" required="true" rows="3" cols="20" />
+            </div>
+            <div class="field">
+                <label for="phoneNumber">Phone Number</label>
+                <InputText id="phoneNumber" v-model="contact.phoneNumber" required="true" rows="3" cols="20" />
+            </div>
+            <div class="field">
+                <label for="idInsta">idInsta</label>
+                <InputText id="idInsta" v-model="contact.idInsta" required="true" rows="3" cols="20" />
+            </div>
+
+            <template #footer>
+                <Button label="Cancel" icon="pi pi-times" text @click="hideDialog"/>
+                <Button label="Save" icon="pi pi-check" text @click="saveContact" />
+            </template>
         </Dialog>
 
         <Dialog v-model:visible="deleteContactDialog" :style="{width: '450px'}" header="Confirm" :modal="true">
@@ -170,10 +191,9 @@ async function updateDataTable() {
   
 }
 
-
 const openNew = () => {
     contact.value = {};
-    submitted.value = false;
+   // submitted.value = false;
     contactDialog.value = true;
 };
 const hideDialog = () => {
@@ -247,5 +267,28 @@ const onRowSelect = () => {
 const onRowUnselect = () => {
     selectAll.value = false;
 };
+/*
+const saveProduct = () => {
+    submitted.value = true;
 
+    if (product.value.name.trim()) {
+        if (product.value.id) {
+            product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus;
+            products.value[findIndexById(product.value.id)] = product.value;
+            toast.add({severity:'success', summary: 'Successful', detail: 'Product Updated', life: 3000});
+        }
+        else {
+            product.value.id = createId();
+            product.value.code = createId();
+            product.value.image = 'product-placeholder.svg';
+            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK';
+            products.value.push(product.value);
+            toast.add({severity:'success', summary: 'Successful', detail: 'Product Created', life: 3000});
+        }
+
+        productDialog.value = false;
+        product.value = {};
+    }
+};
+*/
 </script>
