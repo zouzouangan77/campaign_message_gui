@@ -1,5 +1,5 @@
 import { Campaign } from 'src/campaign/entities/campaign.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity({ name: 'attachment' })
 export class Attachment {
@@ -9,9 +9,18 @@ export class Attachment {
   @Column({ unique: true, nullable: false })
   name: string;
 
+  @Column({ nullable: false })
+  filename: string;
+
   @Column({ type: 'text' })
   location: string;
 
-  @ManyToMany((type) => Campaign, (campaign) => campaign.attachments)
-  campaigns: Campaign[];
+  @Column({ nullable: false })
+  type: string;
+
+  @CreateDateColumn()
+  createDate: Date;
+
+  @UpdateDateColumn()
+  updateDate: Date;
 }

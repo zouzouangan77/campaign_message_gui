@@ -15,7 +15,4 @@ export class Group {
 
   @ManyToMany((type) => Contact, (contact) => contact.groups)
   contacts: Contact[];
-
-  @ManyToMany((type) => Campaign)
-  campigns: Campaign[];
 }
