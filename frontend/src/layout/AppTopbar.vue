@@ -46,18 +46,23 @@ const bindOutsideClickListener = () => {
 };
 const unbindOutsideClickListener = () => {
     if (outsideClickListener.value) {
-        document.removeEventListener('click', outsideClickListener);
+        document.removeEventListener('click', outsideClickListener.value);
         outsideClickListener.value = null;
     }
 };
-const isOutsideClicked =  (event: MouseEvent) => {
+const isOutsideClicked = (event: MouseEvent) => {
     if (!topbarMenuActive.value) return;
 
-    const sidebarEl = document.querySelector('.layout-topbar-menu');
-    const topbarEl = document.querySelector('.layout-topbar-menu-button');
+    const sidebarEl = document.querySelector('.layout-topbar-menu') as Node;
+    const topbarEl = document.querySelector('.layout-topbar-menu-button') as Node;
 
-    return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
+    if (!sidebarEl || !topbarEl) return false; // Vérification de nullité
+    const targetNode = event.target as Node; 
+
+    return !(sidebarEl.isSameNode(targetNode) || sidebarEl.contains(targetNode) || topbarEl.isSameNode(targetNode) || topbarEl.contains(targetNode));
 };
+
+
 </script>
 
 <template>

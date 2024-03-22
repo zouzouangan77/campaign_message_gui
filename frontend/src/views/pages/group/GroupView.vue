@@ -1,6 +1,10 @@
 <script setup  lang="ts">
 import { ref, onMounted } from 'vue';
 
+const sortOrder = ref(1);
+const sortField = ref('');
+const sortKey = ref('');
+
 const picklistValue = ref([
     [
         { name: 'San Francisco', code: 'SF' },
@@ -25,9 +29,9 @@ const orderlistValue = ref([
 ]);
 
 
-const onSortChange = (event) => {
-    const value = event.value.value;
-    const sortValue = event.value;
+const onSortChange = (event: MouseEvent) => {
+    const value = (event.target as HTMLInputElement).value;
+    const sortValue = value;
 
     if (value.indexOf('!') === 0) {
         sortOrder.value = -1;

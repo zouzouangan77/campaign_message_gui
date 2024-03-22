@@ -16,7 +16,8 @@ const layoutState = reactive({
     profileSidebarVisible: false,
     configSidebarVisible: false,
     staticMenuMobileActive: false,
-    menuHoverActive: false
+    menuHoverActive: false,
+   // activeMenuItem: true,
 });
 
 export function useLayout() {
@@ -24,8 +25,8 @@ export function useLayout() {
         layoutConfig.scale = scale;
     };
 
-    const setActiveMenuItem = (item: { value: any; }) => {
-        layoutConfig.activeMenuItem = item.value || item;
+    const setActiveMenuItem = (item: { value: any })=> {
+        layoutConfig.activeMenuItem = item.value || true;
     };
 
     const onMenuToggle = () => {
