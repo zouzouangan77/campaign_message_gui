@@ -1,66 +1,66 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import PrimeVue from 'primevue/config';
+import PrimeVue from 'primevue/config'
 
-import "primeflex/primeflex.scss";
-import "primeicons/primeicons.css";
-import "primevue/resources/themes/tailwind-light/theme.css";
-import "primevue/resources/primevue.min.css";
+import 'primeflex/primeflex.scss'
+import 'primeicons/primeicons.css'
+import 'primevue/resources/themes/tailwind-light/theme.css'
+import 'primevue/resources/primevue.min.css'
 
-import './assets/flags.css';
-import './assets/styles.scss';
-import InputText  from "primevue/inputtext";
-import Avatar  from "primevue/avatar";
-import MegaMenu from "primevue/megamenu";
-import Menu from "primevue/menu";
-import Menubar from "primevue/menubar";
-import Badge from 'primevue/badge';
-import Button from 'primevue/button';
-import Tooltip from 'primevue/tooltip';
-import Dialog from 'primevue/dialog';
-import Toast from 'primevue/toast';
-import Toolbar from 'primevue/toolbar';
-import FileUpload from 'primevue/fileUpload';
-import DataTable from 'primevue/dataTable';
-import Column from 'primevue/column';
-import { useToast } from 'primevue/usetoast';
-import  MultiSelect  from 'primevue/multiSelect';
-import  Tag  from 'primevue/tag';
-import  Dropdown  from 'primevue/dropdown';
-import  IconField  from 'primevue/iconField';
-import  InputIcon  from 'primevue/inputIcon';
-import  PickList  from 'primevue/pickList';
+import './assets/flags.css'
+import './assets/styles.scss'
+import InputText from 'primevue/inputtext'
+import Avatar from 'primevue/avatar'
+import MegaMenu from 'primevue/megamenu'
+import Menu from 'primevue/menu'
+import Menubar from 'primevue/menubar'
+import Badge from 'primevue/badge'
+import Button from 'primevue/button'
+import Tooltip from 'primevue/tooltip'
+import Dialog from 'primevue/dialog'
+import Toast from 'primevue/toast'
+import Toolbar from 'primevue/toolbar'
+import FileUpload from 'primevue/fileupload'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import { useToast } from 'primevue/usetoast'
+import MultiSelect from 'primevue/multiselect'
+import Tag from 'primevue/tag'
+import Dropdown from 'primevue/dropdown'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import PickList from 'primevue/picklist'
 
-import App from './App.vue';
-import router from './router';
+import App from './App.vue'
+import router from './router'
 
-const app = createApp(App);
+const app = createApp(App)
 
-app.component('InputText',InputText);
-app.component('IconField',IconField);
-app.component('InputIcon',InputIcon);
-app.component('Tag',Tag);
-app.component('useToast',useToast);
-app.component('Avatar',Avatar);
-app.component('MegaMenu', MegaMenu);
-app.component('Menu', Menu);
-app.component('Menubar', Menubar);
-app.component('Badge', Badge);
-app.component('Button', Button);
+app.component('InputText', InputText)
+app.component('IconField', IconField)
+app.component('InputIcon', InputIcon)
+app.component('Tag', Tag)
+app.component('useToast', useToast)
+app.component('Avatar', Avatar)
+app.component('MegaMenu', MegaMenu)
+app.component('Menu', Menu)
+app.component('Menubar', Menubar)
+app.component('Badge', Badge)
+app.component('Button', Button)
 //app.component('Tooltip', Tooltip);
-app.component('Dialog', Dialog);
-app.component('Toast', Toast);
-app.component('Toolbar', Toolbar);
-app.component('DataTable', DataTable);
-app.component('Column', Column);
-app.component('FileUpload', FileUpload);
-app.component('MultiSelect', MultiSelect);
-app.component('Dropdown', Dropdown);
-app.component('PickList', PickList);
+app.component('Dialog', Dialog)
+app.component('Toast', Toast)
+app.component('Toolbar', Toolbar)
+app.component('DataTable', DataTable)
+app.component('Column', Column)
+app.component('FileUpload', FileUpload)
+app.component('MultiSelect', MultiSelect)
+app.component('Dropdown', Dropdown)
+app.component('PickList', PickList)
 
-app.directive('tooltip', Tooltip);
+app.directive('tooltip', Tooltip)
 app.use(createPinia())
 app.use(router)
-app.use(PrimeVue, { ripple: true });
+app.use(PrimeVue, { ripple: true })
 
 app.mount('#app')
