@@ -30,6 +30,9 @@ import Dropdown from 'primevue/dropdown'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import PickList from 'primevue/picklist'
+import Listbox from 'primevue/listbox'
+import Textarea from 'primevue/textarea';
+import Editor from 'primevue/editor';
 
 import App from './App.vue'
 import router from './router'
@@ -37,6 +40,9 @@ import router from './router'
 const app = createApp(App)
 
 app.component('InputText', InputText)
+app.component('Textarea', Textarea)
+app.component('Listbox', Listbox)
+app.component('Editor', Editor)
 app.component('IconField', IconField)
 app.component('InputIcon', InputIcon)
 app.component('Tag', Tag)
