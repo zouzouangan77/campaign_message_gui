@@ -30,6 +30,8 @@ import Dropdown from 'primevue/dropdown'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import PickList from 'primevue/picklist'
+import ToastService from 'primevue/toastservice';
+
 
 import App from './App.vue'
 import router from './router'
@@ -40,7 +42,6 @@ app.component('InputText', InputText)
 app.component('IconField', IconField)
 app.component('InputIcon', InputIcon)
 app.component('Tag', Tag)
-app.component('useToast', useToast)
 app.component('Avatar', Avatar)
 app.component('MegaMenu', MegaMenu)
 app.component('Menu', Menu)
@@ -61,6 +62,7 @@ app.component('PickList', PickList)
 app.directive('tooltip', Tooltip)
 app.use(createPinia())
 app.use(router)
+app.use(ToastService);
 app.use(PrimeVue, { ripple: true })
 
 app.mount('#app')

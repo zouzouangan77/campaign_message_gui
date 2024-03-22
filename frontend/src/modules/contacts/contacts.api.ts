@@ -21,8 +21,44 @@ export const findAllPage = async (pageable: Pageable<IContact>): Promise<Page<Co
 }
 
 export const findAll = async (): Promise<Array<Contact>> => {
-
   const response = await fetch('/api/contact')
   const contacts = (await response.json()) as Array<Contact>
   return contacts
+}
+
+export const createNewContactApi = async (newContact: Contact): Promise<void> => {
+  await fetch('/api/contact', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(newContact)
+  })
+}
+
+export const updateContactApi = async (id: number, updateContact: Contact): Promise<void> => {
+  await fetch(`/api/contact/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(updateContact)
+  })
+}
+
+export const deleteContactApi = async (id: number): Promise<void> => {
+  await fetch(`/api/contact/${id}`, {
+    method: 'DELETE'
+  })
+}
+
+export const importFileContactApi = async (formData: FormData): Promise<void> => {
+  const response = await fetch('/api/contact/upload/csv', {
+    method: 'POST',
+    body: formData
+  })
+
+  if(!response.ok){
+    throw new Error('Erreur lors de l\'import du fichier csv');
+  }
 }

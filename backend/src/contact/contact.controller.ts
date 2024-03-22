@@ -85,6 +85,8 @@ export class ContactController {
   ) {
     // Traiter le fichier téléchargé ici
     //console.log(file.buffer.toString());
-    return await this.contactService.bulkCsvCreateContacts(file.buffer.toString());
+    return await this.contactService.bulkCsvCreateContacts(
+      file.buffer.toString(),
+    );
   }
 }

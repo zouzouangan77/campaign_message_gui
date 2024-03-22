@@ -1,4 +1,6 @@
 import { Group } from 'src/group/entities/group.entity';
+import { IsNotEmpty } from 'class-validator';
+
 import {
   Entity,
   Column,
@@ -12,7 +14,8 @@ export class Contact {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
+  @Column()
+  @IsNotEmpty()
   firstName: string;
 
   @Column({ nullable: true })
