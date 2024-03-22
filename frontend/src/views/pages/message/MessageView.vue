@@ -1,25 +1,44 @@
-
 <template>
     <div>
         <div class="card">
-
+  
             <Toolbar class="mb-4">
                 <template #start>
-                    <Button label="New" icon="pi pi-plus" severity="success" class="mr-2" @click="openNew" />
-                    <Button label="Delete" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" :disabled="!selectedMessages || !selectedContacts.length" />
-                </template>
+                    <Button
+                        label="New"
+                        icon="pi pi-plus"
+                        severity="success"
+                        class="mr-2"
+                        @click="openNewMessage"
+                    />
+                    <Button
+                        label="Delete"
+                        icon="pi pi-trash"
+                        severity="danger"
+                        @click="confirmDeleteSelected"
+                        :disabled="!selectedMessages || !selectedMessages.length"
+                    />
+                    </template>
             </Toolbar>
-
+  
             <DataTable 
-                :value="messages" 
-                lazy paginator :first="first" :rows="10"  v-model:filters="filters" ref="dt" dataKey="id"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" :rowsPerPageOptions="[5,10,25]"
-                :totalRecords="totalRecords" :loading="loading" @page="onPage($event)"
-                @sort="onSort($event)" @filter="onFilter($event)"
-                :globalFilterFields="['firstName', 'lastName', 'phoneNumber','idInsta']"
-                v-model:selection="selectedContacts" :selectAll="selectAll"
+                :value="Messages"
+                lazy
+                paginator
+                :rows="10"
+                ref="dt"
+                dataKey="id"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                :rowsPerPageOptions="[5, 10, 25]"
+                :totalRecords="totalRecords"
+                :loading="loading"
+                @page="onPage($event)"
+                @sort="onSort($event)"
+                v-model:selection="selectedMessages"
+                :selectAll="selectAll"
                 @select-all-change="onSelectAllChange"
-                @row-select="onRowSelect" @row-unselect="onRowUnselect" tableStyle="min-width: 75rem">
+                tableStyle="min-width: 75rem"
+            >
                 
                 <template #header>
                     <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
@@ -28,248 +47,215 @@
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Search..." />
+                            <InputText
+                                v-model="searchField"
+                                placeholder="Search..."
+                                @keydown.enter="globalSearch"
+                            />
                         </IconField>
                     </div>
                 </template>
-
+  
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
                 <Column field="name" header="Titre du message" sortable style="min-width:8rem"></Column>
                 <Column field="createDate" header="Date de création" sortable style="min-width:8rem"></Column>
                 <Column field="updateDate" header="Date de Modification" sortable style="min-width:8rem"></Column>
                 <Column :exportable="false" style="min-width:3rem">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" outlined rounded class="mr-0" @click="editcontact(slotProps.data)" />
-                            <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeletecontact(slotProps.data)" />
+                            <Button icon="pi pi-pencil" outlined rounded class="mr-0" @click="editMessage(slotProps.data)" />
+                            <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteMessage(slotProps.data)" />
                         </template>
                 </Column>
                 
             </DataTable>
-	    </div>
-        <Dialog v-model:visible="contactDialog" :style="{width: '450px'}" header="Contact  Details" :modal="true" class="p-fluid">
-            <div class="field">
-                <label for="name">Titre du message</label>
-                <InputText id="name" v-model.trim="contact.firstName" required="true" autofocus :class="{'p-invalid': submitted && !contact.firstName}" />
-                <small class="p-error" v-if="submitted && !contact.firstName">FirstName is required.</small>
-            </div>
-      
+      </div>
+        <DialogMessage
+        :message="message"
+        v-model:visible="messageDialog"
+        @valider="updateCreateMessage"
+        />
   
-            <div class="field">
-                <label for="content">Contenue du message</label>
-                <Editor v-model="value" editorStyle="height: 320px">
-                    <template v-slot:toolbar>
-                        <span class="ql-formats">
-                            <button v-tooltip.bottom="'Bold'" class="ql-bold"></button>
-                            <button v-tooltip.bottom="'Italic'" class="ql-italic"></button>
-                            <button v-tooltip.bottom="'Underline'" class="ql-underline"></button>
-                            
-                        </span>
-                        <span class="ql-formats">
-                            <button v-tooltip.bottom="'ordered'" class="ql-list" value="ordered"></button>
-                            <button v-tooltip.bottom="'list'" class="ql-list ql-active "  value="bullet"></button> 
-                        </span>
-                    </template>
-                </Editor>
-            </div>
-     
-            <template #footer>
-                <Button label="Cancel" icon="pi pi-times" text @click="hideDialog"/>
-                <Button label="Save" icon="pi pi-check" text @click="saveContact" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteContactDialog" :style="{width: '450px'}" header="Confirm" :modal="true">
-            <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="contact">Are you sure you want to delete <b>{{contact.lastName}}</b>?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteContactDialog = false"/>
-                <Button label="Yes" icon="pi pi-check" text @click="deleteContact" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteContactsDialog" :style="{width: '450px'}" header="Confirm" :modal="true">
-            <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="product">Are you sure you want to delete the selected products?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteContactsDialog = false"/>
-                <Button label="Yes" icon="pi pi-check" text />
-            </template>
-        </Dialog>
-
+        <DialogConfirmation
+        v-model:visible="deleteMessageDialog"
+        message="Voulez vous vraiment supprimer ce message ?"
+        @confirmation="deleteMessage"
+        />
+        <DialogConfirmation
+        v-model:visible="deleteMessagesDialog"
+        message="Voulez vous vraiment supprimer tous vos messages ?"
+        @confirmation="deleteSelectedMessages"
+        />
         
-
     </div>
-	
-</template>
-
-<script setup lang="ts">
-import { findAllPage } from '@/modules/contacts/contacts.api'
-import { Contact } from '@/modules/contacts/types'
-import type { IContact } from '@/modules/contacts/types'
-import { FilterMatchMode } from 'primevue/api';
-import { onMounted, ref } from 'vue'
-import { Pageable } from '@/modules/shared/types'
-import { useToast } from 'primevue/usetoast';
-
-const contacts = ref(new Array<Contact>())
-const totalRecords = ref(0)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const rowsPerPageOptions = [10, 20, 30]
-const pageable = ref(new Pageable<IContact>())
-const dt = ref();
-const loading = ref(false);
-const selectedContacts = ref();
-const selectAll = ref(false);
-const first = ref(0);
-const contactDialog = ref(false);
-const deleteContactDialog = ref(false);
-const deleteContactsDialog = ref(false);
-const contact = ref({});
-const editorValue = ref('');
-
-const filters = ref({
-    'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
-    'firstName': {value: '', matchMode: 'contains'},
-    'lastName': {value: '', matchMode: 'contains'},
-    'phoneNumber': {value: '', matchMode: 'contains'},
-    'idInsta': {value: '', matchMode: 'contains'},
-});
-const lazyParams = ref({});
-const columns = ref([
-    {field: 'firstName', header: 'FirstName'},
-    {field: 'lastName', header: 'LastName'},
-    {field: 'phoneNumber', header: 'PhoneNumber'},
-    {field: 'idInsta', header: 'IdInsta'}
-]);
-
-onMounted(() => {
-    loading.value = true;
-
-    lazyParams.value = {
-        first: 0,
-        rows: 10,
-        sortField: null,
-        sortOrder: null,
-        filters: filters.value
-    };
-
-    loadLazyData();
-});
-
-
-
-
-
-async function updateDataTable() {
-  const query = await findAllPage(pageable.value)
-  contacts.value = query.data
-  totalRecords.value = query.meta.totalItems
-  loading.value = false;
   
-}
-
-const openNew = () => {
-    contact.value = {};
-   // submitted.value = false;
-    contactDialog.value = true;
-};
-const hideDialog = () => {
-    contactDialog.value = false;
-    submitted.value = false;
-};
-
-const editContact = (conctact) => {
-    contact.value = {...conctact};
-    contactDialog.value = true;
-};
-const confirmDeleteContact = (conctact) => {
-    contact.value = conctact;
-    deleteContactDialog.value = true;
-};
-const deleteContact = () => {
-    contacts.value = contacts.value.filter(val => val.id !== contact.value.id);
-    deleteContactDialog.value = false;
-    contact.value = {};
-    toast.add({severity:'success', summary: 'Successful', detail: 'Conctact Deleted', life: 3000});
-};
-
-const exportCSV = () => {
-    dt.value.exportCSV();
-};
-const confirmDeleteSelected = () => {
-    deleteContactsDialog.value = true;
-};
-
-const deleteselectedContacts = () => {
-    contacts.value = contacts.value.filter(val => !selectedContacts.value.includes(val));
-    deleteContactsDialog.value = false;
-    selectedContacts.value = null;
-    toast.add({severity:'success', summary: 'Successful', detail: 'contacts Deleted', life: 3000});
-};
-
-const loadLazyData = async (event) => {
-    loading.value = true;
-    lazyParams.value = { ...lazyParams.value, first: event?.first || first.value };
-
-    await updateDataTable()
-};
-const onPage = (event) => {
-    lazyParams.value = event;
-    loadLazyData(event);
-};
-const onSort = (event) => {
-    lazyParams.value = event;
-    loadLazyData(event);
-};
-const onFilter = (event) => {
-    lazyParams.value.filters = filters.value ;
-    loadLazyData(event);
-};
-const onSelectAllChange = (event) => {
-    selectAll.value = event.checked;
-
-    if (selectAll.value) {
-        const query = findAllPage(pageable.value)
-        selectAll.value = true;
-        selectedContacts.value = query.data;
+  </template>
+  
+  <script setup lang="ts">
+  
+  import {
+  findAllPage,
+  findAll,
+  createNewMessageApi,
+  updateMessageApi,
+  deleteMessageApi,
+  
+  } from '@/modules/messages/messages.api'
+  
+  
+  import { Message } from '@/modules/messages/types'
+  import type { IMessage } from '@/modules/messages/types'
+  import { FilterMatchMode } from 'primevue/api';
+  import { onMounted, ref } from 'vue'
+  import { Pageable } from '@/modules/shared/types'
+  import { useToast } from 'primevue/usetoast'
+  import DialogConfirmation from '../../../modules/shared/components/DialogConfirmation.vue'
+  import DialogMessage from './DialogMessage.vue'
+  
+  const toast = useToast()
+  const messages = ref(new Array<Message>())
+  const totalRecords = ref(0)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const rowsPerPageOptions = [10, 20, 30]
+  const pageable = ref(new Pageable<IMessage>())
+  const dt = ref()
+  const loading = ref(false)
+  const selectedMessages = ref(new Array<Message>())
+  const selectAll = ref(false)
+  const messageDialog = ref(false)
+  const deleteMessageDialog = ref(false)
+  const deleteMessagesDialog = ref(false)
+  const message = ref(new Message())
+  const searchField = ref('')
+  const isNewMessage = ref(true)
+  
+  
+  onMounted(() => {
+  loading.value = true
+  loadLazyData()
+  })
+  
+  async function updateDataTable() {
+  const query = await findAllPage(pageable.value)
+  messages.value = query.data
+  totalRecords.value = query.meta.totalItems
+  loading.value = false
+  }
+  
+  const globalSearch = async () => {
+  pageable.value.search = searchField.value
+  await loadLazyData()
+  }
+  
+  const openNewMessage = () => {
+  message.value = new Message()
+  messageDialog.value = true
+  isNewMessage.value = true
+  }
+  
+  const editMessage = (updateMessage) => {
+  message.value = updateMessage
+  messageDialog.value = true
+  isNewMessage.value = false
+  }
+  
+  const updateCreateMessage = async () => {
+  if (isNewMessage.value) {
+    try {
+      await createNewMessageApi(message.value)
+      toast.add({
+        severity: 'success',
+        summary: 'Successful',
+        detail: 'Message created',
+        life: 3000
+      })
+    } catch (error) {
+      toast.add({
+        severity: 'error',
+        summary: 'Faillure',
+        detail: 'Message not created',
+        life: 3000
+      })
     }
-    else {
-        selectAll.value = false;
-        selectedContacts.value = [];
+  } else {
+    try {
+      await updateMessageApi(message.value.id, message.value)
+      toast.add({
+        severity: 'success',
+        summary: 'Successful',
+        detail: 'Message updated',
+        life: 3000
+      })
+    } catch (error) {
+      toast.add({
+        severity: 'error',
+        summary: 'Faillure',
+        detail: 'Message not created',
+        life: 3000
+      })
     }
-};
-const onRowSelect = () => {
-    selectAll.value = selectedContacts.value.length === totalRecords.value;
-};
-const onRowUnselect = () => {
-    selectAll.value = false;
-};
-/*
-const saveProduct = () => {
-    submitted.value = true;
-
-    if (product.value.name.trim()) {
-        if (product.value.id) {
-            product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus;
-            products.value[findIndexById(product.value.id)] = product.value;
-            toast.add({severity:'success', summary: 'Successful', detail: 'Product Updated', life: 3000});
-        }
-        else {
-            product.value.id = createId();
-            product.value.code = createId();
-            product.value.image = 'product-placeholder.svg';
-            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK';
-            products.value.push(product.value);
-            toast.add({severity:'success', summary: 'Successful', detail: 'Product Created', life: 3000});
-        }
-
-        productDialog.value = false;
-        product.value = {};
-    }
-};
-*/
-</script>
+  }
+  await loadLazyData()
+  }
+  
+  
+  const confirmDeleteMessage = (messageData) => {
+  message.value = messageData
+  deleteMessageDialog.value = true
+  }
+  
+  const deleteMessage = async () => {
+  deleteMessageDialog.value = false
+  await deleteMessageApi(message.value.id)
+  selectedMessages.value = selectedMessages.value.filter((c) => c.id != message.value.id)
+  toast.add({ severity: 'success', summary: 'Successful', detail: 'Message Deleted', life: 3000 })
+  loadLazyData()
+  }
+  
+  
+  const confirmDeleteSelected = () => {
+  deleteMessagesDialog.value = true
+  }
+  
+  const deleteSelectedMessages = async () => {
+  do {
+    let cont = selectedMessages.value.pop() as Message
+    await deleteMessageApi(cont.id)
+  } while (selectedMessages.value.length > 0)
+  deleteMessagesDialog.value = false
+  selectedMessages.value = new Array<Message>()
+  selectAll.value = false
+  toast.add({ severity: 'success', summary: 'Successful', detail: 'Messages Deleted', life: 3000 })
+  await loadLazyData()
+  }
+  
+  const loadLazyData = async () => {
+  loading.value = true
+  
+  await updateDataTable()
+  }
+  const onPage = (event) => {
+  pageable.value.page = event?.page + 1 || pageable.value.page
+  pageable.value.limit = event?.rows || pageable.value.limit
+  loadLazyData()
+  }
+  const onSort = (event) => {
+  if (event?.sortField != undefined && event?.sortField) {
+    pageable.value.sortBys = [event?.sortField + (event?.sortOrder === 1 ? ':ASC' : ':DESC')]
+  }
+  loadLazyData()
+  }
+  
+  const onSelectAllChange = async (event) => {
+  selectAll.value = event.checked
+  
+  if (selectAll.value) {
+    const allMessages = await findAll()
+    selectAll.value = true
+    selectedMessages.value = allMessages
+  } else {
+    selectAll.value = false
+    selectedMessages.value = []
+  }
+  }
+  
+  </script>
