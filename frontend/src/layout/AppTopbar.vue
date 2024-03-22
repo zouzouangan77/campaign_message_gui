@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router';
 
 const { layoutConfig, onMenuToggle } = useLayout();
 
-const outsideClickListener = ref(null);
+const outsideClickListener = ref<((event: any) => void) | null>(null);
 const topbarMenuActive = ref(false);
 const router = useRouter();
 
@@ -50,7 +50,7 @@ const unbindOutsideClickListener = () => {
         outsideClickListener.value = null;
     }
 };
-const isOutsideClicked = (event) => {
+const isOutsideClicked =  (event: MouseEvent) => {
     if (!topbarMenuActive.value) return;
 
     const sidebarEl = document.querySelector('.layout-topbar-menu');
