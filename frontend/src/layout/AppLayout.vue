@@ -8,7 +8,8 @@ import { useLayout } from '@/layout/composables/layout';
 
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
 
-const outsideClickListener = ref(null);
+const outsideClickListener = ref<null | ((event: MouseEvent) => void)>(null);
+
 
 watch(isSidebarActive, (newVal) => {
     if (newVal) {
@@ -20,10 +21,10 @@ watch(isSidebarActive, (newVal) => {
 
 const containerClass = computed(() => {
     return {
-        'layout-theme-light': layoutConfig.darkTheme.value === 'light',
-        'layout-theme-dark': layoutConfig.darkTheme.value === 'dark',
-        'layout-overlay': layoutConfig.menuMode.value === 'overlay',
-        'layout-static': layoutConfig.menuMode.value === 'static',
+        'layout-theme-light': typeof layoutConfig.darkTheme.value === 'string' && layoutConfig.darkTheme.value === 'light',
+        'layout-theme-dark': typeof layoutConfig.darkTheme.value === 'string' && layoutConfig.darkTheme.value === 'dark',
+        'layout-overlay':typeof layoutConfig.menuMode.value === 'string' && layoutConfig.menuMode.value === 'overlay',
+        'layout-static': typeof layoutConfig.menuMode.value === 'string' && layoutConfig.menuMode.value === 'static',
         'layout-static-inactive': layoutState.staticMenuDesktopInactive.value && layoutConfig.menuMode.value === 'static',
         'layout-overlay-active': layoutState.overlayMenuActive.value,
         'layout-mobile-active': layoutState.staticMenuMobileActive.value,
@@ -39,21 +40,29 @@ const bindOutsideClickListener = () => {
                 layoutState.menuHoverActive.value = false;
             }
         };
-        document.addEventListener('click', outsideClickListener.value);
+        if (outsideClickListener.value) {
+            document.addEventListener('click', outsideClickListener.value);
+        }
     }
 };
+
 const unbindOutsideClickListener = () => {
     if (outsideClickListener.value) {
-        document.removeEventListener('click', outsideClickListener);
+        document.removeEventListener('click', outsideClickListener.value);
         outsideClickListener.value = null;
     }
 };
-const isOutsideClicked = (event) => {
+
+const isOutsideClicked = (event: MouseEvent) => {
     const sidebarEl = document.querySelector('.layout-sidebar');
     const topbarEl = document.querySelector('.layout-menu-button');
 
-    return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
+    if (!sidebarEl || !topbarEl) return false; // Vérification de nullité
+    const targetNode = event.target as Node; 
+
+       return !(sidebarEl.isSameNode(targetNode) || sidebarEl.contains(targetNode) || topbarEl.isSameNode(targetNode) || topbarEl.contains(targetNode));
 };
+
 </script>
 
 <template>

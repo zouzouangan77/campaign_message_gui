@@ -19,6 +19,16 @@ const routes = [
                 name: 'contact',
                 component: () => import('@/views/pages/contact/ContactView.vue')
             },
+            {
+                path: '/message',
+                name: 'message',
+                component: () => import('@/views/pages/message/MessageView.vue')
+            },
+            {
+                path: '/campaign',
+                name: 'campaign',
+                component: () => import('@/views/pages/campaign/CampaignView.vue')
+            },
         ]
     }
 
