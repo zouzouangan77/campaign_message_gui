@@ -64,6 +64,14 @@ export class ContactService {
     });
   }
 
+  async findAllByGroup(id: number): Promise<Contact[]> {
+    return this.contactRepository
+      .createQueryBuilder('contact')
+      .innerJoin('contact.groups', 'group')
+      .where('group.id = :groupId', { groupId: id })
+      .getMany();
+  }
+
   async update(id: number, updateContactDto: UpdateContactDto) {
     console.log('updateContactDto = ', updateContactDto);
     return this.contactRepository.save({ ...updateContactDto, id: id });

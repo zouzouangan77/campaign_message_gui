@@ -5,6 +5,7 @@
 
 #database local
 .db 
+.uploads
 
 # Logs
 logs

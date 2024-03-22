@@ -2,8 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate';
+import { Message } from './entities/message.entity';
 
-@Controller('message')
+@Controller('/api/message')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
@@ -15,6 +17,13 @@ export class MessageController {
   @Get()
   findAll() {
     return this.messageService.findAll();
+  }
+
+  @Get('page')
+  public findAllPage(
+    @Paginate() query: PaginateQuery,
+  ): Promise<Paginated<Message>> {
+    return this.messageService.findAllPage(query);
   }
 
   @Get(':id')

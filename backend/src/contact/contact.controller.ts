@@ -46,6 +46,11 @@ export class ContactController {
     return this.contactService.findOne(+id);
   }
 
+  @Get('group/:id')
+  findAllByGroup(@Param('id', ParseIntPipe) id: number) {
+    return this.contactService.findAllByGroup(+id);
+  }
+
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -71,7 +76,7 @@ export class ContactController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 100000 }),
+          new MaxFileSizeValidator({ maxSize: 10000000 }),
           new FileTypeValidator({ fileType: 'text/csv' }),
         ],
       }),

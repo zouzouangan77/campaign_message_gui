@@ -1,26 +1,54 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { Message } from './entities/message.entity';
+import { Repository } from 'typeorm';
+import {
+  FilterOperator,
+  FilterSuffix,
+  PaginateQuery,
+  Paginated,
+  paginate,
+} from 'nestjs-paginate';
 
 @Injectable()
 export class MessageService {
-  create(createMessageDto: CreateMessageDto) {
-    return 'This action adds a new message';
+  constructor(
+    @Inject('MESSAGES_REPOSITORY')
+    private readonly messageRepository: Repository<Message>,
+  ) {}
+
+  async create(createMessageDto: CreateMessageDto): Promise<Message> {
+    return this.messageRepository.save(createMessageDto);
   }
 
-  findAll() {
-    return `This action returns all message`;
+  async findAll(): Promise<Message[]> {
+    return this.messageRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} message`;
+  async findAllPage(query: PaginateQuery): Promise<Paginated<Message>> {
+    return paginate(query, this.messageRepository, {
+      sortableColumns: ['id', 'name', 'createDate', 'updateDate'],
+      nullSort: 'last',
+      defaultSortBy: [['id', 'DESC']],
+      searchableColumns: ['name', 'content'],
+      select: ['id', 'name', 'content', 'createDate', 'updateDate'],
+      filterableColumns: {
+        name: [FilterOperator.ILIKE, FilterSuffix.NOT],
+        content: [FilterOperator.ILIKE, FilterSuffix.NOT],
+      },
+    });
   }
 
-  update(id: number, updateMessageDto: UpdateMessageDto) {
-    return `This action updates a #${id} message`;
+  async findOne(id: number): Promise<Message> {
+    return this.messageRepository.findOne({ where: { id: id } });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} message`;
+  async update(id: number, updateMessageDto: UpdateMessageDto) {
+    return this.messageRepository.update({ id: id }, updateMessageDto);
+  }
+
+  async remove(id: number): Promise<Message> {
+    return this.messageRepository.remove({ id: id } as Message);
   }
 }
