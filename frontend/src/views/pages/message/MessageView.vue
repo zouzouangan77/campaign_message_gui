@@ -22,7 +22,7 @@
             </Toolbar>
   
             <DataTable 
-                :value="Messages"
+                :value="messages"
                 lazy
                 paginator
                 :rows="10"
