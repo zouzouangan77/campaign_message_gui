@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, defineModel } from 'vue';
+import { defineEmits, defineModel ,ref} from 'vue';
 import { Message } from '@/modules/messages/types';
 
-const props = defineProps<{
-  message: Message;
-}>();
-const emits = defineEmits<{
-  valider: () => void;
-}>();
+const message = defineModel('message', {
+  type: Message,
+  default: new Message()
+})
+const emits = defineEmits(['valider']);
 
+const submitted = ref(false);
 
 const visible = defineModel('visible', {
   type: Boolean,
-  defaultValue: false
+  default: false
 });
 
 
 const handleSave = () => {
-  emits('valider'); 
-  visible.value = false;
+  emits('valider');
+  visible.value = false; 
 };
 </script>
 
@@ -34,17 +34,17 @@ const handleSave = () => {
       <label for="name">Titre du message</label>
       <InputText
         id="name"
-        v-model.trim="props.message.name"
+        v-model.trim="message.name"
         required="true"
         autofocus
-        :class="{ 'p-invalid': submitted && !props.message.name }"
+        :class="{ 'p-invalid': submitted && !message.name }"
       />
-      <small class="p-error" v-if="submitted && !props.message.name">le titre is required.</small>
+      <small class="p-error" v-if="submitted && !message.name">le titre is required.</small>
     </div>
 
     <div class="field">
       <label for="content">Contenu du message</label>
-      <Editor v-model="props.message.content" required="true" editorStyle="height: 250px">
+      <Editor v-model="message.content" required="true" editorStyle="height: 250px">
         <template v-slot:toolbar>
           <span class="ql-formats">
             <button v-tooltip.bottom="'Bold'" class="ql-bold"></button>

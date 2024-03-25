@@ -37,7 +37,7 @@
                 v-model:selection="selectedMessages"
                 :selectAll="selectAll"
                 @select-all-change="onSelectAllChange"
-                tableStyle="min-width: 75rem"
+                :tableStyle="{'min-width': '75rem'}"
             >
                 
                 <template #header>
@@ -104,18 +104,16 @@
   
   import { Message } from '@/modules/messages/types'
   import type { IMessage } from '@/modules/messages/types'
-  import { FilterMatchMode } from 'primevue/api';
   import { onMounted, ref } from 'vue'
   import { Pageable } from '@/modules/shared/types'
   import { useToast } from 'primevue/usetoast'
   import DialogConfirmation from '../../../modules/shared/components/DialogConfirmation.vue'
   import DialogMessage from './DialogMessage.vue'
+  import type { DataTablePageEvent, DataTableSelectAllChangeEvent, DataTableSortEvent } from 'primevue/datatable'
   
   const toast = useToast()
   const messages = ref(new Array<Message>())
   const totalRecords = ref(0)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const rowsPerPageOptions = [10, 20, 30]
   const pageable = ref(new Pageable<IMessage>())
   const dt = ref()
   const loading = ref(false)
@@ -152,7 +150,7 @@
   isNewMessage.value = true
   }
   
-  const editMessage = (updateMessage) => {
+  const editMessage = (updateMessage: Message) => {
   message.value = updateMessage
   messageDialog.value = true
   isNewMessage.value = false
@@ -178,7 +176,7 @@
     }
   } else {
     try {
-      await updateMessageApi(message.value.id, message.value)
+      await updateMessageApi(message.value.id!, message.value)
       toast.add({
         severity: 'success',
         summary: 'Successful',
@@ -198,14 +196,14 @@
   }
   
   
-  const confirmDeleteMessage = (messageData) => {
+  const confirmDeleteMessage = (messageData:Message) => {
   message.value = messageData
   deleteMessageDialog.value = true
   }
   
   const deleteMessage = async () => {
   deleteMessageDialog.value = false
-  await deleteMessageApi(message.value.id)
+  await deleteMessageApi(message.value.id!)
   selectedMessages.value = selectedMessages.value.filter((c) => c.id != message.value.id)
   toast.add({ severity: 'success', summary: 'Successful', detail: 'Message Deleted', life: 3000 })
   loadLazyData()
@@ -219,7 +217,7 @@
   const deleteSelectedMessages = async () => {
   do {
     let cont = selectedMessages.value.pop() as Message
-    await deleteMessageApi(cont.id)
+    await deleteMessageApi(cont.id!)
   } while (selectedMessages.value.length > 0)
   deleteMessagesDialog.value = false
   selectedMessages.value = new Array<Message>()
@@ -233,19 +231,19 @@
   
   await updateDataTable()
   }
-  const onPage = (event) => {
+  const onPage = (event: DataTablePageEvent) => {
   pageable.value.page = event?.page + 1 || pageable.value.page
   pageable.value.limit = event?.rows || pageable.value.limit
   loadLazyData()
   }
-  const onSort = (event) => {
+  const onSort = (event: DataTableSortEvent) => {
   if (event?.sortField != undefined && event?.sortField) {
     pageable.value.sortBys = [event?.sortField + (event?.sortOrder === 1 ? ':ASC' : ':DESC')]
   }
   loadLazyData()
   }
   
-  const onSelectAllChange = async (event) => {
+  const onSelectAllChange = async (event : DataTableSelectAllChangeEvent) => {
   selectAll.value = event.checked
   
   if (selectAll.value) {
