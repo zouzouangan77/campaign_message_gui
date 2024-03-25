@@ -27,19 +27,6 @@ export class Contact {
   @Column({ unique: true, nullable: true })
   idInsta: string;
 
-  @ManyToMany((type) => Group, (group) => group.contacts, {
-    cascade: ['insert', 'update'],
-  })
-  @JoinTable({
-    name: 'contact_groups', // table name for the junction table of this relation
-    joinColumn: {
-      name: 'contact_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'group_id',
-      referencedColumnName: 'id',
-    },
-  })
+  @ManyToMany((type) => Group, (group) => group.contacts)
   groups: Group[];
 }
