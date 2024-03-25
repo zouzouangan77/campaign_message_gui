@@ -18,6 +18,7 @@ import DialogGroup from './DialogGroup.vue';
 import DialogConfirmation from '../../../modules/shared/components/DialogConfirmation.vue'
 import { Group } from "@/modules/groups/types";
 import { useToast } from 'primevue/usetoast'
+import { Contact } from '@/modules/contacts/types';
 
 
 const toast = useToast()
@@ -29,7 +30,7 @@ const groups = ref(new Array<Group>());
 const selectedGroup= ref();
 const deleteGroupDialog = ref(false);
 
-const picklistContactValue=ref(null);
+const picklistContactValue=ref([new Array<Contact>(),new Array<Contact>()]);
 
 onMounted(async () => {
   await updateDataList();
@@ -153,7 +154,7 @@ const editGroup = (updateGroup:Group) => {
             <div class="card">
                 <h5>Groupe selectioné</h5>
                 <!-- PickList pour afficher les groupes sélectionnés -->
-                <PickList v-model="picklistContactValue!" listStyle="height:250px, weight:250px" dataKey="code">
+                <PickList v-model="picklistContactValue" listStyle="height:250px, weight:250px" dataKey="code">
                     <template #sourceheader> contacts </template>
                     <template #targetheader> contacts ajoutés </template>
                     <template #item="slotProps">
