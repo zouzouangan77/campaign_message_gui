@@ -20,14 +20,13 @@ import DialogConfirmation from '../../../modules/shared/components/DialogConfirm
 import { Group } from "@/modules/groups/types";
 import { useToast } from 'primevue/usetoast'
 import { Contact } from '@/modules/contacts/types';
-import type { ListboxChangeEvent } from 'primevue/listbox'
+
 
 
 
 const toast = useToast()
 const groupDialog = ref(false);
 const isNewGroup = ref(true);
-const privateContacts=ref(new Array<Contact>());
 
 const group = ref(new Group());
 const groups = ref(new Array<Group>());
@@ -36,7 +35,7 @@ const deleteGroupDialog = ref(false);
 //const contactsByGroupSelected=ref(new Array<Contact>());
 
 const picklistContactValue=ref([new Array<Contact>(),new Array<Contact>()]);
-const picklistContactSelection=ref([new Array<Contact>(),new Array<Contact>()]);
+
 onMounted(async () => {
   await updateDataList();
   //await updateDataPickList();
@@ -62,10 +61,6 @@ const groupChanged = async () => {
 
 const cancelAddContact = async () => {
   await updateDataPickList();
-}
-
-const affiche = () => {
-  console.log(picklistContactSelection);
 }
 
 
@@ -194,10 +189,10 @@ const editGroup = (updateGroup:Group) => {
         <div class="col-12 lg:col-8">
     
             <div class="card">
-                <h5 v-if="selectedGroup.name.trim()===''">Aucun groupe selectioné </h5>
-                <h5 v-else>Groupe selectioné {{ selectedGroup.name  }}</h5>
+              
+                <h5>Groupe selectioné {{ selectedGroup.name  }}</h5>
                 <!-- PickList pour afficher les groupes sélectionnés -->
-                <PickList v-model="picklistContactValue" listStyle="height:250px, weight:250px" dataKey="id" :selection=" picklistContactSelection">
+                <PickList v-model="picklistContactValue" listStyle="height:250px, weight:250px" dataKey="id">
                     <template #sourceheader> contacts </template>
                     <template #targetheader> contacts ajoutés </template>
                     <template #item="slotProps">
@@ -241,16 +236,6 @@ const editGroup = (updateGroup:Group) => {
 
 
 <style>
-
-/* Exemple de couleurs pour les éléments de la PickList */
-.added-item-color {
-  background-color: #cceeff; /* Couleur de fond pour les éléments ajoutés à la liste cible */
-  color: #000; /* Couleur du texte pour les éléments ajoutés à la liste cible */
-}
-
-.default-color {
-  /* Styles par défaut pour les éléments */
-}
 
 
 </style>
