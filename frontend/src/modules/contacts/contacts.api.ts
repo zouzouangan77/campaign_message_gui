@@ -26,6 +26,12 @@ export const findAll = async (): Promise<Array<Contact>> => {
   return contacts
 }
 
+export const findAllContactsByGroup = async (id: number): Promise<Array<Contact>> => {
+  const response = await fetch(`/api/contact/group/${id}`)
+  const contacts = (await response.json()) as Array<Contact>
+  return contacts
+}
+
 export const createNewContactApi = async (newContact: Contact): Promise<void> => {
   await fetch('/api/contact', {
     method: 'POST',

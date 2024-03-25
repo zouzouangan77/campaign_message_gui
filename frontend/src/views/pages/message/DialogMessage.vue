@@ -6,7 +6,9 @@ const message = defineModel('message', {
   type: Message,
   default: new Message()
 })
-const emits = defineEmits(['valider']);
+const emits = defineEmits<{
+  valider: [] // named tuple syntax
+}>()
 
 const submitted = ref(false);
 

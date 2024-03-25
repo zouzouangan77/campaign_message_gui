@@ -11,6 +11,7 @@ import {
 
 import {
   findAll,
+  findAllContactsByGroup
  
 } from '@/modules/contacts/contacts.api'
 import { ref, onMounted } from 'vue';
@@ -19,22 +20,26 @@ import DialogConfirmation from '../../../modules/shared/components/DialogConfirm
 import { Group } from "@/modules/groups/types";
 import { useToast } from 'primevue/usetoast'
 import { Contact } from '@/modules/contacts/types';
+import type { ListboxChangeEvent } from 'primevue/listbox'
+
 
 
 const toast = useToast()
 const groupDialog = ref(false);
-const isNewGroup = ref(true)
+const isNewGroup = ref(true);
+const privateContacts=ref(new Array<Contact>());
 
 const group = ref(new Group());
 const groups = ref(new Array<Group>());
-const selectedGroup= ref();
+const selectedGroup= ref(new Group());
 const deleteGroupDialog = ref(false);
+//const contactsByGroupSelected=ref(new Array<Contact>());
 
 const picklistContactValue=ref([new Array<Contact>(),new Array<Contact>()]);
-
+const picklistContactSelection=ref([new Array<Contact>(),new Array<Contact>()]);
 onMounted(async () => {
   await updateDataList();
-  await updateDataPickList();
+  //await updateDataPickList();
 })
 
 
@@ -42,10 +47,27 @@ async function updateDataList() {
   const allGroups = await findAllGroup()
   groups.value = allGroups;
 }
+
 async function updateDataPickList() {
   const allContacts = await findAll()
-  picklistContactValue.value = [allContacts,[]];
+  const contactsGroup= await findAllContactsByGroup(selectedGroup.value.id!)
+  const privateContacts= allContacts.filter(contact => !contactsGroup.some(groupContact => groupContact.id === contact.id));
+  picklistContactValue.value = [privateContacts,contactsGroup];
+
 }
+
+const groupChanged = async () => {
+  await updateDataPickList();
+}
+
+const cancelAddContact = async () => {
+  await updateDataPickList();
+}
+
+const affiche = () => {
+  console.log(picklistContactSelection);
+}
+
 
 const openNewGroup = () => {
     group.value = new Group()
@@ -93,6 +115,25 @@ const updateCreateGroup = async () => {
   }
   await updateDataList();
 
+}
+
+const saveContactOnGroupe= async() =>{
+    try {
+      await updateGroupApi(group.value.id!, group.value)
+      toast.add({
+        severity: 'success',
+        summary: 'Successful',
+        detail: 'Conctact updated',
+        life: 3000
+      })
+    } catch (error) {
+      toast.add({
+        severity: 'error',
+        summary: 'Faillure',
+        detail: 'Conctact not created',
+        life: 3000
+      })
+    }
 
 }
 
@@ -114,6 +155,7 @@ const editGroup = (updateGroup:Group) => {
   isNewGroup.value = false
 }
 
+
 </script>
 
 <template>
@@ -125,7 +167,7 @@ const editGroup = (updateGroup:Group) => {
                 <h5>LIST DES GROUPES</h5>
             
                 <div class="card flex justify-content-center">
-                    <Listbox v-model="selectedGroup" :options="groups" filter optionLabel="name" class="w-full md:w-25rem" >
+                    <Listbox v-model="selectedGroup" :options="groups" filter optionLabel="name" class="w-full md:w-25rem" @change="groupChanged">
                         <template #option="{ option }">
                             <div class="flex justify-content-between">
                                 <div>{{ option.name }}</div>
@@ -152,9 +194,10 @@ const editGroup = (updateGroup:Group) => {
         <div class="col-12 lg:col-8">
     
             <div class="card">
-                <h5>Groupe selectioné</h5>
+                <h5 v-if="selectedGroup.name.trim()===''">Aucun groupe selectioné </h5>
+                <h5 v-else>Groupe selectioné {{ selectedGroup.name  }}</h5>
                 <!-- PickList pour afficher les groupes sélectionnés -->
-                <PickList v-model="picklistContactValue" listStyle="height:250px, weight:250px" dataKey="code">
+                <PickList v-model="picklistContactValue" listStyle="height:250px, weight:250px" dataKey="id" :selection=" picklistContactSelection">
                     <template #sourceheader> contacts </template>
                     <template #targetheader> contacts ajoutés </template>
                     <template #item="slotProps">
@@ -175,7 +218,7 @@ const editGroup = (updateGroup:Group) => {
                 </PickList>
                 <!-- Boutons valider et Annuler -->
                 <div>
-                    <Button label="valider" icon="pi pi-times" severity="success" class="mr-2 mt-2 end" @click="deleteContactDialog = false"/>
+                    <Button label="valider" icon="pi pi-times" severity="success" class="mr-2 mt-2 end" @click="saveContactOnGroupe"/>
                     <Button label="Annuler" icon="pi pi-check" severity="danger" @click="cancelAddContact" />
                 </div>
             </div>
@@ -195,3 +238,19 @@ const editGroup = (updateGroup:Group) => {
     />
 
 </template>
+
+
+<style>
+
+/* Exemple de couleurs pour les éléments de la PickList */
+.added-item-color {
+  background-color: #cceeff; /* Couleur de fond pour les éléments ajoutés à la liste cible */
+  color: #000; /* Couleur du texte pour les éléments ajoutés à la liste cible */
+}
+
+.default-color {
+  /* Styles par défaut pour les éléments */
+}
+
+
+</style>

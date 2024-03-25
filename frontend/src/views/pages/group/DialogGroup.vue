@@ -9,7 +9,9 @@ const group = defineModel('group', {
   default: new Group()
 })
 
-const emits = defineEmits(['valider']);
+const emits = defineEmits<{
+  valider: [] // named tuple syntax
+}>()
 
 const submitted = ref(false)
 
