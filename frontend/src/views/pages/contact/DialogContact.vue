@@ -8,7 +8,9 @@ const contact = defineModel('contact', {
   default: new Contact()
 })
 
-const emits = defineEmits(['valider']);
+const emits = defineEmits<{
+  valider: [] // named tuple syntax
+}>()
 
 const submitted = ref(false)
 
@@ -16,7 +18,6 @@ const visible = defineModel('visible', {
   type: Boolean,
   default: false
 });
-
 
 const handleSave = () => {
   emits('valider');
@@ -26,7 +27,7 @@ const handleSave = () => {
 
 <template>
   <Dialog
-    :visible="visible"
+    v-model:visible="visible"
     :style="{ width: '450px' }"
     header="Contact Details"
     :modal="true"
