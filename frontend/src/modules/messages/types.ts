@@ -9,8 +9,8 @@ export interface IMessage {
       public id?: number,
       public name: string = '',
       public content?: string,
-      public createDate?: Date,
-      public updateDate?: Date
+      public createDate?: string,
+      public updateDate?: string
     ) {}
   }
   

@@ -21,9 +21,6 @@ import { useToast } from 'primevue/usetoast'
 
 
 const toast = useToast()
-const sortOrder = ref(1);
-const sortField = ref('');
-const sortKey = ref('');
 const groupDialog = ref(false);
 const isNewGroup = ref(true)
 
@@ -39,18 +36,6 @@ onMounted(async () => {
   await updateDataPickList();
 })
 
-const picklistValue = ref([
-    [
-        { name: 'San Francisco', code: 'SF' },
-        { name: 'London', code: 'LDN' },
-        { name: 'Paris', code: 'PRS' },
-        { name: 'Istanbul', code: 'IST' },
-        { name: 'Berlin', code: 'BRL' },
-        { name: 'Barcelona', code: 'BRC' },
-        { name: 'Rome', code: 'RM' }
-    ],
-    []
-]);
 
 async function updateDataList() {
   const allGroups = await findAllGroup()
@@ -66,25 +51,8 @@ const openNewGroup = () => {
     groupDialog.value = true
     isNewGroup.value = true
 };
-const hideDialog = () => {
-    groupDialog.value = false;
-   
-};
 
-const onSortChange = (event: MouseEvent) => {
-    const value = (event.target as HTMLInputElement).value;
-    const sortValue = value;
 
-    if (value.indexOf('!') === 0) {
-        sortOrder.value = -1;
-        sortField.value = value.substring(1, value.length);
-        sortKey.value = sortValue;
-    } else {
-        sortOrder.value = 1;
-        sortField.value = value;
-        sortKey.value = sortValue;
-    }
-};
 
 const updateCreateGroup = async () => {
   if (isNewGroup.value) {
@@ -106,7 +74,7 @@ const updateCreateGroup = async () => {
     }
   } else {
     try {
-      await updateGroupApi(group.value.id, group.value)
+      await updateGroupApi(group.value.id!, group.value)
       toast.add({
         severity: 'success',
         summary: 'Successful',
@@ -134,12 +102,12 @@ const confirmDeleteGroup = (groupData:Group) => {
 
 const deleteGroup = async () => {
   deleteGroupDialog.value = false
-  await deleteGroupApi(group.value.id)
+  await deleteGroupApi(group.value.id!)
   toast.add({ severity: 'success', summary: 'Successful', detail: 'Conctact Deleted', life: 3000 })
   await updateDataList();
 }
 
-const editGroup = (updateGroup) => {
+const editGroup = (updateGroup:Group) => {
   group.value = updateGroup
   groupDialog.value = true
   isNewGroup.value = false
@@ -185,7 +153,7 @@ const editGroup = (updateGroup) => {
             <div class="card">
                 <h5>Groupe selectioné</h5>
                 <!-- PickList pour afficher les groupes sélectionnés -->
-                <PickList v-model="picklistContactValue" listStyle="height:250px, weight:250px" dataKey="code">
+                <PickList v-model="picklistContactValue!" listStyle="height:250px, weight:250px" dataKey="code">
                     <template #sourceheader> contacts </template>
                     <template #targetheader> contacts ajoutés </template>
                     <template #item="slotProps">

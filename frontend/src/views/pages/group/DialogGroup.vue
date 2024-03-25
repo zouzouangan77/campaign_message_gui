@@ -1,20 +1,21 @@
 <!-- eslint-disable vue/no-mutating-props -->
 <script setup lang="ts">
-import { defineProps, defineEmits, defineModel } from 'vue';
+import { defineEmits, defineModel, ref} from 'vue';
 import { Group } from '@/modules/groups/types';
 
 
-const props = defineProps<{
-  group: Group;
-}>();
-const emits = defineEmits<{
-  valider: () => void;
-}>();
+const group = defineModel('group', {
+  type: Group,
+  default: new Group()
+})
 
+const emits = defineEmits(['valider']);
+
+const submitted = ref(false)
 
 const visible = defineModel('visible', {
   type: Boolean,
-  defaultValue: false
+  default: false
 });
 
 
@@ -36,18 +37,18 @@ const handleSave = () => {
       <label for="name">titre du groupe</label>
       <InputText
         id="name"
-        v-model.trim="props.group.name"
+        v-model.trim="group.name"
         required="true"
         autofocus
-        :class="{ 'p-invalid': submitted && !props.group.name }"
+        :class="{ 'p-invalid': submitted && !group.name }"
       />
-      <small class="p-error" v-if="submitted && !props.group.name"> Name is required.</small>
+      <small class="p-error" v-if="submitted && !group.name"> Name is required.</small>
     </div>
 
     <div class="field">
             <label for="content">commentaire du groupe</label>
             <!-- Textarea pour saisir le commentaire -->
-            <Textarea v-model="props.group.comment" rows="5" cols="30" />
+            <Textarea v-model="group.comment" rows="5" cols="30" />
     </div>
 
     <template #footer>
