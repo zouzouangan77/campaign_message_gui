@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, defineModel } from 'vue';
+import { ref } from 'vue';
 import { Contact } from '@/modules/contacts/types';
 
 
-const props = defineProps<{
-  contact: Contact;
-}>();
-const emits = defineEmits<{
-  valider: () => void;
-}>();
+const contact = defineModel('contact', {
+  type: Contact,
+  default: new Contact()
+})
 
+const emits = defineEmits(['valider']);
+
+const submitted = ref(false)
 
 const visible = defineModel('visible', {
   type: Boolean,
-  defaultValue: false
+  default: false
 });
 
 
@@ -25,7 +26,7 @@ const handleSave = () => {
 
 <template>
   <Dialog
-    v-model:visible="visible"
+    :visible="visible"
     :style="{ width: '450px' }"
     header="Contact Details"
     :modal="true"
@@ -35,22 +36,22 @@ const handleSave = () => {
       <label for="firstName">First Name</label>
       <InputText
         id="firstName"
-        v-model.trim="props.contact.firstName"
+        v-model.trim="contact.firstName"
         required="true"
         autofocus
-        :class="{ 'p-invalid': submitted && !props.contact.firstName }"
+        :class="{ 'p-invalid': submitted && !contact.firstName }"
       />
-      <small class="p-error" v-if="submitted && !props.contact.firstName">First Name is required.</small>
+      <small class="p-error" v-if="submitted && !contact.firstName">First Name is required.</small>
     </div>
     <div class="field">
       <label for="lastName">Last Name</label>
-      <InputText id="lastName" v-model="props.contact.lastName" required="true" rows="3" cols="20" />
+      <InputText id="lastName" v-model="contact.lastName" required="true" rows="3" cols="20" />
     </div>
     <div class="field">
       <label for="phoneNumber">Phone Number</label>
       <InputText
         id="phoneNumber"
-        v-model="props.contact.phoneNumber"
+        v-model="contact.phoneNumber"
         required="true"
         rows="3"
         cols="20"
@@ -58,7 +59,7 @@ const handleSave = () => {
     </div>
     <div class="field">
       <label for="idInsta">Instagram ID</label>
-      <InputText id="idInsta" v-model="props.contact.idInsta" required="true" rows="3" cols="20" />
+      <InputText id="idInsta" v-model="contact.idInsta" required="true" rows="3" cols="20" />
     </div>
 
     <template #footer>

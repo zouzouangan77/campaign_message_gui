@@ -1,5 +1,9 @@
 <script setup lang="ts">
-const visible = defineModel('visible')
+const visible = defineModel('visible', {
+  type: Boolean,
+  default: false
+});
+
 defineProps<{
   message: string
 }>()
@@ -9,7 +13,7 @@ defineEmits<{
 }>()
 </script>
 <template>
-  <Dialog v-model:visible="visible" :style="{ width: '450px' }" header="Confirmation" :modal="true">
+  <Dialog :visible="visible" :style="{ width: '450px' }" header="Confirmation" modal>
     <div class="confirmation-content">
       <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
       <span>{{ message }}</span>
