@@ -3,7 +3,7 @@ import { Pageable } from '@/modules/shared/types'
 import type { Group, IGroup } from './types'
 
 
-export const findAll = async (): Promise<Array<Group>> => {
+export const findAllGroup = async (): Promise<Array<Group>> => {
     const response = await fetch('/api/group')
     const groups = (await response.json()) as Array<Group>
     return groups

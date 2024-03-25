@@ -60,8 +60,8 @@ const handleSave = () => {
     </div>
     
     <template #footer>
-      <Button label="Cancel" icon="pi pi-times" text @click="visible = false" />
-      <Button label="Save" icon="pi pi-check" text @click="handleSave" />
+      <Button label="Cancel" severity="danger" icon="pi pi-times" text @click="visible = false" />
+      <Button label="Save" severity="success" icon="pi pi-check" text @click="handleSave" />
     </template>
   </Dialog>
 </template>
