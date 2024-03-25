@@ -36,29 +36,16 @@ const handleSave = () => {
       <label for="name">Titre du Attachment</label>
       <InputText
         id="name"
-        v-model.trim="Attachment.name"
+        v-model.trim="attachment.name"
         required="true"
         autofocus
-        :class="{ 'p-invalid': submitted && !Attachment.name }"
+        :class="{ 'p-invalid': submitted && !attachment.name }"
       />
-      <small class="p-error" v-if="submitted && !Attachment.name">le titre is required.</small>
+      <small class="p-error" v-if="submitted && !attachment.name">le titre is required.</small>
     </div>
 
     <div class="field">
-      <label for="content">Contenu du Attachment</label>
-      <Editor v-model="Attachment.content" required="true" editorStyle="height: 250px">
-        <template v-slot:toolbar>
-          <span class="ql-formats">
-            <button v-tooltip.bottom="'Bold'" class="ql-bold"></button>
-            <button v-tooltip.bottom="'Italic'" class="ql-italic"></button>
-            <button v-tooltip.bottom="'Underline'" class="ql-underline"></button>
-          </span>
-          <span class="ql-formats">
-            <button v-tooltip.bottom="'ordered'" class="ql-list" value="ordered"></button>
-            <button v-tooltip.bottom="'list'" class="ql-list ql-active "  value="bullet"></button> 
-          </span>
-        </template>
-      </Editor>
+      <label for="content">votre fichier </label>
     </div>
     
     <template #footer>
@@ -67,3 +54,4 @@ const handleSave = () => {
     </template>
   </Dialog>
 </template>
+@/modules/groups/attachments/types

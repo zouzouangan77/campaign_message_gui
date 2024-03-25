@@ -8,7 +8,7 @@ export interface IAttachment {
 }
 export class Attachment implements IAttachment {
   constructor(
-    public id: number,
+    public id?: number,
     public name: string='',
     public filename?: string,
     public type?: string,

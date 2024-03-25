@@ -13,9 +13,10 @@ const model = ref([
         items: [
             { label: 'Contact', icon: 'pi pi-fw pi-comment', to: '/contact' },
             { label: 'Groupe', icon: 'pi pi-fw pi-users', to: '/group' },
+            { label: 'Attachment', icon: 'pi pi-fw pi-link', to: '/attachment' },
+            { label: 'Message', icon: 'pi pi-fw pi-telegram', to: '/message' },   
             { label: 'Campaigne', icon: 'pi pi-fw pi-share-alt', to: '/campaign' },
-            { label: 'Message', icon: 'pi pi-fw pi-telegram', to: '/message' },
-      
+            
         ]
     },
 
