@@ -30,7 +30,7 @@
             @uploader="uploadFileContact"
             @before-upload="()=>{}"
           />
-          <Button label="Export" icon="pi pi-upload" severity="help" @click="exportCSV($event)" />
+          <Button label="Export" icon="pi pi-upload" severity="help" @click="exportCSV" />
         </template>
       </Toolbar>
 
@@ -45,12 +45,12 @@
         :rowsPerPageOptions="[5, 10, 25]"
         :totalRecords="totalRecords"
         :loading="loading"
-        @page="onPage($event)"
-        @sort="onSort($event)"
+        @page="onPage"
+        @sort="onSort"
         v-model:selection="selectedContacts"
         :selectAll="selectAll"
         @select-all-change="onSelectAllChange"
-        tableStyle="min-width: 75rem"
+        :tableStyle="{'min-width': '75rem'}"
       >
         <template #header>
           <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
@@ -128,6 +128,8 @@ import { Pageable } from '@/modules/shared/types'
 import { useToast } from 'primevue/usetoast'
 import DialogConfirmation from '../../../modules/shared/components/DialogConfirmation.vue'
 import DialogContact from './DialogContact.vue'
+import type { DataTablePageEvent, DataTableSelectAllChangeEvent, DataTableSortEvent } from 'primevue/datatable'
+import type { FileUploadUploaderEvent } from 'primevue/fileupload'
 
 const toast = useToast()
 const contacts = ref(new Array<Contact>())
@@ -182,7 +184,7 @@ const openNewContact = () => {
   isNewContact.value = true
 }
 
-const editContact = (updateContact) => {
+const editContact = (updateContact: Contact) => {
   contact.value = updateContact
   contactDialog.value = true
   isNewContact.value = false
@@ -208,7 +210,7 @@ const updateCreateContact = async () => {
     }
   } else {
     try {
-      await updateContactApi(contact.value.id, contact.value)
+      await updateContactApi(contact.value.id!, contact.value)
       toast.add({
         severity: 'success',
         summary: 'Successful',
@@ -227,14 +229,14 @@ const updateCreateContact = async () => {
   await loadLazyData()
 }
 
-const confirmDeleteContact = (contactData) => {
+const confirmDeleteContact = (contactData: Contact) => {
   contact.value = contactData
   deleteContactDialog.value = true
 }
 
 const deleteContact = async () => {
   deleteContactDialog.value = false
-  await deleteContactApi(contact.value.id)
+  await deleteContactApi(contact.value.id!)
   selectedContacts.value = selectedContacts.value.filter((c) => c.id != contact.value.id)
   toast.add({ severity: 'success', summary: 'Successful', detail: 'Conctact Deleted', life: 3000 })
   loadLazyData()
@@ -250,7 +252,7 @@ const confirmDeleteSelected = () => {
 const deleteSelectedContacts = async () => {
   do {
     let cont = selectedContacts.value.pop() as Contact
-    await deleteContactApi(cont.id)
+    await deleteContactApi(cont.id!)
   } while (selectedContacts.value.length > 0)
   deleteContactsDialog.value = false
   selectedContacts.value = new Array<Contact>()
@@ -264,19 +266,19 @@ const loadLazyData = async () => {
 
   await updateDataTable()
 }
-const onPage = (event) => {
+const onPage = (event: DataTablePageEvent) => {
   pageable.value.page = event?.page + 1 || pageable.value.page
   pageable.value.limit = event?.rows || pageable.value.limit
   loadLazyData()
 }
-const onSort = (event) => {
+const onSort = (event: DataTableSortEvent) => {
   if (event?.sortField != undefined && event?.sortField) {
     pageable.value.sortBys = [event?.sortField + (event?.sortOrder === 1 ? ':ASC' : ':DESC')]
   }
   loadLazyData()
 }
 
-const onSelectAllChange = async (event) => {
+const onSelectAllChange = async (event : DataTableSelectAllChangeEvent) => {
   selectAll.value = event.checked
 
   if (selectAll.value) {
@@ -289,8 +291,8 @@ const onSelectAllChange = async (event) => {
   }
 }
 
-const uploadFileContact = async (event) => {
-  const file = event.files[0]
+const uploadFileContact = async (event: FileUploadUploaderEvent) => {
+  const file = event.files instanceof Array?event.files[0]:event.files
   let formData = new FormData()
   formData.append('file', file) // inputFile est l'élément input de type file
 
