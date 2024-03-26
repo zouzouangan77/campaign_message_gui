@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { defineEmits, defineModel ,ref} from 'vue';
 import { Attachment } from '@/modules/attachments/types';
+import type { FileUploadUploaderEvent } from 'primevue/fileupload'
+import { useToast } from 'primevue/usetoast'
 
+
+
+const toast = useToast()
 const attachment = defineModel('Attachment', {
   type: Attachment,
   default: new Attachment()
@@ -22,6 +27,31 @@ const handleSave = () => {
   emits('valider');
   visible.value = false; 
 };
+
+const uploadFileAttachment = async (event: FileUploadUploaderEvent) => {
+  const file = event.files instanceof Array?event.files[0]:event.files
+  let formData = new FormData()
+  formData.append('file', file) // inputFile est l'élément input de type file
+
+  try {
+   // await importFileContactApi(formData)
+    toast.add({
+      severity: 'success',
+      summary: 'Successful',
+      detail: 'File uploaded, contact has been created',
+      life: 3000
+    })
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Faillure',
+      detail: 'Error during uploading file',
+      life: 3000
+    })
+  }
+  //await loadLazyData()
+}
+
 </script>
 
 <template>
@@ -44,9 +74,23 @@ const handleSave = () => {
       <small class="p-error" v-if="submitted && !attachment.name">le titre is required.</small>
     </div>
 
+
     <div class="field">
-      <label for="content">votre fichier </label>
+      <label for="filename">fichier</label>
+      <Toast/>
+      <div>
+        <Toast />
+        <FileUpload  v-model.trim="attachment.filename" customUpload @uploader="uploadFileAttachment" @before-upload="()=>{}" :multiple="true" accept="image/*, .pdf, .docx, audio/*, .csv" :maxFileSize="1000000">
+            <template #empty>
+                <p> Veuillez selection votre fichier</p>
+            </template>
+        </FileUpload>
+      </div>
     </div>
+  
+    
+
+
     
     <template #footer>
       <Button label="Cancel" severity="danger" icon="pi pi-times" text @click="visible = false" />
@@ -54,4 +98,3 @@ const handleSave = () => {
     </template>
   </Dialog>
 </template>
-@/modules/groups/attachments/types

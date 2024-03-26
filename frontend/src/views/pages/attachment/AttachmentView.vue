@@ -255,4 +255,4 @@
   }
   }
   
-  </script>@/modules/groups/attachments/attachments.api@/modules/groups/attachments/types@/modules/groups/attachments/types
+  </script>
