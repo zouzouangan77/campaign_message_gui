@@ -1,5 +1,5 @@
 export class CreateAttachmentDto {
-  id?: number;
+  id: number;
   name: string;
   filename: string;
   type: string;
