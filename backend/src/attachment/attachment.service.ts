@@ -28,6 +28,7 @@ export class AttachmentService {
   }
 
   async findAllPage(query: PaginateQuery): Promise<Paginated<Attachment>> {
+    console.log('query = ',query)
     return paginate(query, this.attachmentRepository, {
       sortableColumns: ['id', 'name', 'createDate', 'updateDate'],
       nullSort: 'last',

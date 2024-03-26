@@ -51,6 +51,7 @@ export class AttachmentController {
   ) {
     console.log('file = ', file);
     const createAttachmentDto: CreateAttachmentDto = {
+      id: null,
       name: name,
       filename: file.originalname,
       type: file.mimetype,
@@ -64,6 +65,14 @@ export class AttachmentController {
   @Get()
   findAll() {
     return this.attachmentService.findAll();
+  }
+
+  @Get('page')
+  public findAllPage(
+      @Paginate() query: PaginateQuery,
+  ): Promise<Paginated<Attachment>> {
+    console.log('findAllPage = ',query)
+    return this.attachmentService.findAllPage(query);
   }
 
   @Get(':id')
@@ -130,12 +139,5 @@ export class AttachmentController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.attachmentService.remove(+id);
-  }
-
-  @Get('page')
-  public findAllPage(
-    @Paginate() query: PaginateQuery,
-  ): Promise<Paginated<Attachment>> {
-    return this.attachmentService.findAllPage(query);
   }
 }
