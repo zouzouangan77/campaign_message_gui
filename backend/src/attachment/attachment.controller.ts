@@ -20,6 +20,8 @@ import { UpdateAttachmentDto } from './dto/update-attachment.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as fs from 'fs';
+import { Attachment } from './entities/attachment.entity';
+import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate';
 
 @Controller('/api/attachment')
 export class AttachmentController {
@@ -128,5 +130,12 @@ export class AttachmentController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.attachmentService.remove(+id);
+  }
+
+  @Get('page')
+  public findAllPage(
+    @Paginate() query: PaginateQuery,
+  ): Promise<Paginated<Attachment>> {
+    return this.attachmentService.findAllPage(query);
   }
 }
