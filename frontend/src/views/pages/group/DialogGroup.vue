@@ -22,8 +22,8 @@ const visible = defineModel('visible', {
 
 
 const handleSave = () => {
+  visible.value = false;
   emits('valider');
-  visible.value = false; 
 };
 </script>
 
@@ -32,7 +32,6 @@ const handleSave = () => {
     v-model:visible="visible"
     :style="{ width: '450px' }"
     header="Groupe Details"
-    :modal="true"
     class="p-fluid"
   >
     <div class="field">

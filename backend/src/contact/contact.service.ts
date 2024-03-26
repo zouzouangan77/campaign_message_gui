@@ -22,13 +22,7 @@ export class ContactService {
   ) {}
 
   async create(createContactDto: CreateContactDto): Promise<Contact> {
-    const contact = await this.contactRepository.create(createContactDto);
-    const contactSave = {
-      ...contact,
-      groups: createContactDto.groups,
-    };
-    return this.contactRepository.save(contactSave);
-    //return this.contactRepository.save(createContactDto);
+    return this.contactRepository.save(createContactDto);
   }
 
   async findAll(): Promise<Contact[]> {
@@ -60,7 +54,6 @@ export class ContactService {
   async findOne(id: number): Promise<Contact> {
     return this.contactRepository.findOne({
       where: { id: id },
-      relations: ['groups'],
     });
   }
 

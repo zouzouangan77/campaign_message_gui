@@ -41,11 +41,31 @@ export class GroupService {
   }
 
   async findOne(id: number): Promise<Group> {
-    return this.groupRepository.findOne({ where: { id: id } });
+    return this.groupRepository.findOne({
+      where: { id: id },
+      relations: ['contacts'],
+    });
   }
 
   async update(id: number, updateGroupDto: UpdateGroupDto) {
-    return this.groupRepository.update({ id: id }, updateGroupDto);
+    const {
+      contacts,
+      removeContacts,
+      addContacts,
+      ...updateContactDtoWithoutContact
+    } = updateGroupDto;
+
+    const update1 = await this.groupRepository.update(
+      { id: id },
+      updateContactDtoWithoutContact,
+    );
+    await this.groupRepository
+      .createQueryBuilder()
+      .relation(Group, 'contacts')
+      .of(id)
+      .addAndRemove(addContacts ?? [], removeContacts ?? []);
+
+    return update1;
   }
 
   async remove(id: number): Promise<Group> {
