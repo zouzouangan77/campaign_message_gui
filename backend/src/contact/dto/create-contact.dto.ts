@@ -1,5 +1,4 @@
-import { CreateGroupDto } from 'src/group/dto/create-group.dto';
-import { Expose, Type } from 'class-transformer';
+import { Expose } from 'class-transformer';
 
 @Expose()
 export class CreateContactDto {

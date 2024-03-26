@@ -38,6 +38,14 @@ export class Campaign {
   })
   statut: string;
 
+  @Column({
+    type: 'varchar',
+    nullable: false,
+    enum: ['WHATAPPS', 'INSTAGRAM'],
+    default: 'WHATAPPS',
+  })
+  canal: string;
+
   @ManyToOne((type) => Message)
   @JoinColumn({ name: 'message_id' })
   message: Message;
