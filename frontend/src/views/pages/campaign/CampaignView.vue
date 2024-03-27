@@ -79,6 +79,7 @@
             </DataTable>
       </div>
         <DialogCampaign
+        :infoCampaign="infoCampaign"
         v-model:campaign="campaign"
         :messages="messages"
         :groups="groups"
@@ -147,7 +148,7 @@
   const campaign = ref(new Campaign())
   const searchField = ref('')
   const isNewCampaign = ref(true)
-  
+  const infoCampaign= ref()
   
   onMounted(async () => {
   loading.value = true
@@ -177,24 +178,34 @@
   }
   
   const openNewCampaign = () => {
+  infoCampaign.value=1
   campaign.value = new Campaign()
   campaignDialog.value = true
   isNewCampaign.value = true
   }
   
-  const editCampaign = (updateCampaign: Campaign) => {
-  campaign.value = updateCampaign
+  const editCampaign = async (updateCampaign: Campaign) => {
+  infoCampaign.value=2
+  campaign.value = await findOneCampaign(updateCampaign.id!)
   campaignDialog.value = true
   isNewCampaign.value = false
   }
 
   const duplicateCampaign = async (dcampaign: Campaign) => {
-    campaign.value = await findOneCampaign(dcampaign.id!)
-    const randomNumber= Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
+  infoCampaign.value=1
+  campaign.value = await findOneCampaign(dcampaign.id!)
+  const randomNumber= Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
   campaign.value.name+='-'+randomNumber;
   campaign.value.id=undefined;
   campaignDialog.value = true
   isNewCampaign.value = true
+  }
+
+  const detailCampaign = (updateCampaign: Campaign) => {
+  infoCampaign.value=2
+  campaign.value = updateCampaign
+  campaignDialog.value = true
+  isNewCampaign.value = false
   }
   
   const updateCreateCampaign = async () => {
@@ -319,13 +330,30 @@ const items = (rowData:Campaign) => {
                 }
             }
         ];
-    } else {
+    } else if (rowData.statut === 'SENT'){
         return [
             {
-                label: 'Duplique',
+                label: 'Dupliquer',
                 icon: 'pi pi-sent',
                 command: () => {
                     duplicateCampaign(rowData)
+                }
+            },
+            {
+                label: 'detail',
+                icon: 'pi pi-sent',
+                command: () => {
+                    duplicateCampaign(rowData)
+                }
+            }
+        ];
+    }else{
+        return [
+            {
+                label: 'Dupliquer',
+                icon: 'pi pi-sent',
+                command: () => {
+                    detailCampaign(rowData)
                 }
             }
         ];
@@ -333,8 +361,5 @@ const items = (rowData:Campaign) => {
 };
 
 
-const save = () => {
-    toast.add({ severity: 'success', summary: 'Success', detail: 'Data Saved', life: 3000 });
-};
-  
+
   </script>
