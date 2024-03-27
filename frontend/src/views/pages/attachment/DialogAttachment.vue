@@ -23,6 +23,8 @@ const visible = defineModel('visible', {
 });
 
 
+
+
 const handleSave = () => {
   emits('valider');
   visible.value = false; 
@@ -80,7 +82,7 @@ const uploadFileAttachment = async (event: FileUploadUploaderEvent) => {
       <Toast/>
       <div>
         <Toast />
-        <FileUpload  v-model.trim="attachment.filename" customUpload @uploader="uploadFileAttachment" @before-upload="()=>{}" :multiple="true" accept="image/*, .pdf, .docx, audio/*, .csv" :maxFileSize="1000000">
+        <FileUpload  v-model.trim="attachment.filename" customUpload @uploader="uploadFileAttachment" @before-upload="()=>{}" :multiple="true" accept="image/*, application/*, audio/*" :maxFileSize="1000000">
             <template #empty>
                 <p> Veuillez selection votre fichier</p>
             </template>
