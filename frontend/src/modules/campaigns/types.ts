@@ -1,12 +1,17 @@
+import { Message } from '@/modules/messages/types';
+import { Group } from '@/modules/groups/types';
+import { Attachment } from '@/modules/attachments/types';
+
+
 export interface ICampaign {
     name: string;
     createDate?: string;
     updateDate?: string;
     statut?: string;
     canal?: string;
-    message?: {id: number};
-    attachments?: Array<{id: number}>;
-    groups?: Array<{id: number}>;
+    message?: {id: number}  | Message;
+    attachments?: Array<{id: number} | Attachment>;
+    groups?: Array<{id: number} | Group>;
 }
 export class Campaign implements ICampaign {
     constructor(
@@ -16,9 +21,9 @@ export class Campaign implements ICampaign {
       public updateDate?: string,
       public statut?: string,
       public canal?: string,
-      public message?:  {id: number},
-      public attachments?: Array<{id: number}>,
-      public groups?: Array<{id: number}>
+      public message?:  {id: number} | Message,
+      public attachments?: Array<{id: number} | Attachment>,
+      public groups?: Array<{id: number} | Group>
 
     ) {}
   }
@@ -40,7 +45,7 @@ export class CampaignSending implements ICampaignSending {
     ) {}
 }
 
-export interface CampaignReject {
+export interface ICampaignReject {
     rejectDate?: string;
     contact?:  {id: number};
     campaign?:  {id: number};

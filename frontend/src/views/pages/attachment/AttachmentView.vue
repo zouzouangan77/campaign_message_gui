@@ -108,7 +108,7 @@
 import {
   createNewAttachmentApi,
   deleteAttachmentApi,
-  findAll,
+  findAllAttachment,
   findAllPage,
   updateAttachmentApi
 } from '@/modules/attachments/attachments.api'
@@ -121,7 +121,6 @@ import {useToast} from 'primevue/usetoast'
 import DialogConfirmation from '../../../modules/shared/components/DialogConfirmation.vue'
 import DialogAttachment from './DialogAttachment.vue'
 import type {DataTablePageEvent, DataTableSelectAllChangeEvent, DataTableSortEvent} from 'primevue/datatable'
-import {FileUploadUploaderEvent} from "primevue/fileupload";
 
 const toast = useToast()
 const attachments = ref(new Array<Attachment>())
@@ -267,7 +266,7 @@ const onSelectAllChange = async (event: DataTableSelectAllChangeEvent) => {
   selectAll.value = event.checked
 
   if (selectAll.value) {
-    const allAttachments = await findAll()
+    const allAttachments = await findAllAttachment()
     selectAll.value = true
     selectedAttachments.value = allAttachments
   } else {

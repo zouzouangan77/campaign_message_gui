@@ -23,18 +23,8 @@ const submitted = ref(false);
 const visible = defineModel('visible', {
   type: Boolean,
   default: false
-});
+}); 
 
-const selectedCountry = ref();
-
-const selectedCities = ref();
-const cities = ref([
-    { name: 'New York', code: 'NY' },
-    { name: 'Rome', code: 'RM' },
-    { name: 'London', code: 'LDN' },
-    { name: 'Istanbul', code: 'IST' },
-    { name: 'Paris', code: 'PRS' }
-]);
 
 const handleSave = () => {
   emits('valider');
@@ -64,13 +54,13 @@ const handleSave = () => {
 
     <div class="field">
         <label class="mb-3">Message</label>
-        <Dropdown v-model="selectedCountry" :options="messages" optionLabel="name" placeholder="Select a City"/>
+        <Dropdown v-model="campaign.message" :options="messages" optionLabel="name" placeholder="Selectionné un message"/>
     </div>
 
     <div class="field">
         <label class="mb-3">Groupe</label>
         
-        <MultiSelect v-model="selectedCities" :options="groups" filter optionLabel="name" placeholder="Selectionné le groupe"
+        <MultiSelect v-model="campaign.groups" :options="groups" filter optionLabel="name" placeholder="Selectionné les groupes"
             :maxSelectedLabels="3" />
 
     </div>
@@ -78,7 +68,7 @@ const handleSave = () => {
     <div class="field">
         <label class="mb-3">Piece jointe</label>
         
-        <MultiSelect v-model="selectedCities" :options="cities" filter optionLabel="name" placeholder="Select Cities"
+        <MultiSelect v-model="campaign.attachments" :options="attachments" filter optionLabel="name" placeholder="Selectionné vos pièces jointes"
             :maxSelectedLabels="3" />
 
     </div>
@@ -88,7 +78,7 @@ const handleSave = () => {
         <label class="mb-3">Canal</label>
         <div class="formgrid grid">
             <div class="field-radiobutton col-6">
-                <RadioButton  name="canal" value="WHATAPPS" v-model="campaign.canal" />
+                <RadioButton  name="canal" value="WHATS_APP" v-model="campaign.canal" />
                 <label for="canal1">WhatsApp</label>
             </div>
             <div class="field-radiobutton col-6">

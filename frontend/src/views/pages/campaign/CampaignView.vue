@@ -82,6 +82,7 @@
         v-model:campaign="campaign"
         :messages="messages"
         :groups="groups"
+        :attachments="attachments"
         v-model:visible="campaignDialog"
         @valider="updateCreateCampaign"
         />
@@ -100,7 +101,7 @@
   
   import {
   findAllPage,
-  findAllCampaign,
+  findOneCampaign,
   createNewCampaignApi,
   updateCampaignApi,
   deleteCampaignApi,
@@ -110,7 +111,7 @@
  findAll
   } from '@/modules/messages/messages.api'
   import {
- createNewAttachmentApi
+  findAllAttachment
   } from '@/modules/attachments/attachments.api'
   import {
    findAllGroup
@@ -161,9 +162,11 @@
   totalRecords.value = query.meta.totalItems
   loading.value = false
   }
-  async function getAllList() {
+   async function getAllList() {
    messages.value = await findAll()
    groups.value = await findAllGroup()
+   attachments.value= await findAllAttachment()
+
   }
   
 
@@ -185,11 +188,13 @@
   isNewCampaign.value = false
   }
 
-  const duplicateCampaign = (dcampaign: Campaign) => {
-  campaign.value = dcampaign
+  const duplicateCampaign = async (dcampaign: Campaign) => {
+    campaign.value = await findOneCampaign(dcampaign.id!)
+    const randomNumber= Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
+  campaign.value.name+='-'+randomNumber;
   campaign.value.id=undefined;
   campaignDialog.value = true
-  isNewCampaign.value = false
+  isNewCampaign.value = true
   }
   
   const updateCreateCampaign = async () => {
@@ -267,21 +272,19 @@
   
 
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: string): 'success' | 'warning' | 'danger' | undefined => {
     switch (status) {
         case 'SENT':
             return 'success';
-
         case 'PROCESSING':
             return 'warning';
-
         case 'NOT_SENT':
             return 'danger';
-
         default:
-            return null;
+            return undefined;
     }
 };
+
 
 const items = (rowData:Campaign) => {
     if (rowData.statut === 'NOT_SENT') {

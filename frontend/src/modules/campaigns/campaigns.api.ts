@@ -26,6 +26,13 @@ export const findAllCampaign = async (): Promise<Array<Campaign>> => {
     return campaign
   }
   
+  export const findOneCampaign = async (id:number): Promise<Campaign> => {
+    const response = await fetch(`/api/campaign/${id}`)
+    const campaign = (await response.json()) as Campaign
+    return campaign
+  }
+
+
 export const createNewCampaignApi = async (newCampaign: Campaign): Promise<void> => {
     await fetch('/api/Campaign', {
       method: 'POST',

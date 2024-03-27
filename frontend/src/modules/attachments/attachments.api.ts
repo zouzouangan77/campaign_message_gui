@@ -20,7 +20,7 @@ export const findAllPage = async (pageable: Pageable<IAttachment>): Promise<Page
     return page
 }
 
-export const findAll = async (): Promise<Array<Attachment>> => {
+export const findAllAttachment = async (): Promise<Array<Attachment>> => {
     const response = await fetch('/api/attachment')
     const attachments = (await response.json()) as Array<Attachment>
     return attachments
@@ -38,7 +38,7 @@ export const createNewAttachmentApi = async (formData: FormData): Promise<void> 
         }
     } catch (error) {
         console.log('updateAttachmentApi =', error)
-        throw new Error(error);
+        throw new Error(error as string);
     }
 }
 
@@ -53,7 +53,7 @@ export const updateAttachmentApi = async (id: number, formData: FormData): Promi
         }
     } catch (error) {
         console.log('updateAttachmentApi =', error)
-        throw new Error(error);
+        throw new Error(error as string);
     }
 }
 
