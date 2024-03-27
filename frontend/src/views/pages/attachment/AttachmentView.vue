@@ -9,14 +9,14 @@
               icon="pi pi-plus"
               severity="success"
               class="mr-2"
-              @click="openNewAttachment"
+              @click="openNewAttachment" raised
           />
           <Button
               label="Delete"
               icon="pi pi-trash"
               severity="danger"
               @click="confirmDeleteSelected"
-              :disabled="!selectedAttachments || !selectedAttachments.length"
+              :disabled="!selectedAttachments || !selectedAttachments.length" raised
           />
         </template>
       </Toolbar>
@@ -73,9 +73,9 @@
         <Column field="updateDate" header="Date de Modification" sortable style="min-width:8rem"></Column>
         <Column :exportable="false" style="min-width:3rem">
           <template #body="slotProps">
-            <Button icon="pi pi-pencil" outlined rounded class="mr-0" @click="editAttachment(slotProps.data)"/>
+            <Button icon="pi pi-pencil" outlined rounded class="mr-0" @click="editAttachment(slotProps.data)" raised/>
             <Button icon="pi pi-trash" outlined rounded severity="danger"
-                    @click="confirmDeleteAttachment(slotProps.data)"/>
+                    @click="confirmDeleteAttachment(slotProps.data)" raised/>
           </template>
         </Column>
 

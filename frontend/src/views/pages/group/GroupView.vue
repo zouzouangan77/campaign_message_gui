@@ -40,8 +40,8 @@ const privateContacts = computed(() => {
 
 const picklistContacts = ref([new Array<Contact>(), new Array<Contact>()]);
 const canBeValidateOrCancel = computed(() => {
-  const [sourceContacts, targetContacts] = picklistContacts.value
-  return targetContacts.every(targetContact => contactsGroup.value.some((contact) => contact.id === targetContact.id))
+  const [_, targetContacts] = picklistContacts.value
+  return targetContacts.every(targetContact => contactsGroup.value.some((contact) => contact.id === targetContact.id)) && targetContacts.length===contactsGroup.value.length
 
 })
 onMounted(async () => {
@@ -134,6 +134,7 @@ const saveContactOnGroupe = async () => {
 
   try {
     await updateGroupApi(group.value.id!, group.value)
+    await groupChanged()
     toast.add({
       severity: 'success',
       summary: 'Successful',
@@ -190,14 +191,14 @@ const editGroup = (updateGroup: Group) => {
                   <Button icon="pi pi-pencil" rounded class="mr-1" @click="editGroup(slotProps.option)"/>
                   <!-- Bouton pour supprimer le groupe -->
                   <Button icon="pi pi-trash" rounded severity="danger"
-                          @click="confirmDeleteGroup(slotProps.option)"/>
+                          @click="confirmDeleteGroup(slotProps.option)" raised/>
                 </div>
               </div>
             </template>
           </Listbox>
         </div>
         <div>
-          <Button label="ajouter" icon="pi pi-times" severity="success" class="mr-2 mt-2 end" @click="openNewGroup"/>
+          <Button label="ajouter" icon="pi pi-times" severity="success" class="mr-2 mt-2 end" @click="openNewGroup" raised/>
         </div>
 
 
@@ -234,9 +235,9 @@ const editGroup = (updateGroup: Group) => {
         <div>
           <Button label="valider" icon="pi pi-times" severity="success" class="mr-2 mt-2 end"
                   :disabled="canBeValidateOrCancel"
-                  @click="saveContactOnGroupe"/>
+                  @click="saveContactOnGroupe" raised/>
           <Button label="Annuler" icon="pi pi-check" severity="danger" @click="cancelAddContact"
-                  :disabled="canBeValidateOrCancel"/>
+                  :disabled="canBeValidateOrCancel" raised/>
         </div>
       </div>
     </div>

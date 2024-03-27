@@ -59,21 +59,24 @@
                 </Column>
                 <Column :exportable="false" style="min-width:3rem">
                         <template #body="slotProps">
-                           
-                            <Toast />
-                            <SplitButton label="Action" icon="pi pi-check" severity="secondary" menuButtonIcon="pi pi-cog"  :model="items(slotProps.data)" >
+                            <div class="flex justify-content-center flex-wrap gap-3">
+                                <SplitButton label="Action" icon="pi pi-check" severity="secondary" menuButtonIcon="pi pi-cog"  :model="items(slotProps.data)">
                                 <template #item="option">
                                     <span>{{ option.label }}</span>
                                 </template>
                             
                             </SplitButton>
 
-                            <!--<Button icon="pi pi-pencil" outlined rounded class="mr-0" @click="editCampaign(slotProps.data)" />
-                            <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteCampaign(slotProps.data)" />-->
+                            <Button v-if="slotProps.data.statut === 'NOT_SENT'" icon="pi pi-send" label="Envoyer"  @click="sendCampaign" />
+                            
+                            </div>
+                            <Toast />
+
+                            
                          
                         </template>
 
-                        
+                       
                 </Column>
                 
             </DataTable>
@@ -285,7 +288,7 @@
   
 
 
-  const getStatusLabel = (status: string): 'success' | 'warning' | 'danger' | undefined => {
+  const getStatusLabel = (status: string): 'success' | 'warning' | 'danger' | 'info' | undefined => {
     switch (status) {
         case 'SENT':
             return 'success';
@@ -293,6 +296,8 @@
             return 'warning';
         case 'NOT_SENT':
             return 'danger';
+        case 'PENDING':
+            return 'info';
         default:
             return undefined;
     }
@@ -317,13 +322,7 @@ const items = (rowData:Campaign) => {
                     confirmDeleteCampaign(rowData)
                 }
             },
-            {
-                label: 'Envoyer',
-                icon: 'pi pi-sent',
-                command: () => {
-                    toast.add({ severity: 'success', summary: 'Updated', detail: 'Envoie en Cours', life: 3000 });
-                }
-            },
+         
             {
                 label: 'Dupliquer',
                 icon: 'pi pi-sent',
@@ -345,7 +344,7 @@ const items = (rowData:Campaign) => {
                 label: 'detail',
                 icon: 'pi pi-sent',
                 command: () => {
-                    duplicateCampaign(rowData)
+                    detailCampaign(rowData)
                 }
             }
         ];
@@ -362,6 +361,11 @@ const items = (rowData:Campaign) => {
     }
 };
 
-
+const sendCampaign= ()=>{
+    
+    toast.add({ severity: 'success', summary: 'Envoie', detail: 'Envoie en Cours', life: 3000 });
+            
+            
+}
 
   </script>
