@@ -86,6 +86,49 @@ export class CampaignService {
             .getMany();
     }
 
+    async findPageSendingByCampaign(query: PaginateQuery): Promise<Paginated<CampaignSending>> {
+        return paginate(query, this.campaignSendingRepository, {
+            relations: ['contact', 'campaign'],
+            sortableColumns: [
+                'id',
+                'sendingDate',
+                'contact.firstName',
+                'contact.lastName',
+                'contact.phoneNumber',
+                'contact.idInsta',
+            ],
+            nullSort: 'last',
+            defaultSortBy: [['id', 'DESC']],
+            searchableColumns: ['contact.firstName', 'contact.lastName', 'contact.phoneNumber', 'contact.idInsta'],
+            select: ['id', 'sendingDate', 'contact.firstName', 'contact.lastName', 'contact.phoneNumber', 'contact.idInsta'],
+            filterableColumns: {
+                'campaign.id': [FilterOperator.EQ, FilterSuffix.NOT],
+            },
+        });
+    }
+
+    async findPageRejectByCampaign(query: PaginateQuery): Promise<Paginated<CampaignReject>> {
+        return paginate(query, this.campaignRejectRepository, {
+            relations: ['contact', 'campaign'],
+            sortableColumns: [
+                'id',
+                'rejectDate',
+                'cause',
+                'contact.firstName',
+                'contact.lastName',
+                'contact.phoneNumber',
+                'contact.idInsta',
+            ],
+            nullSort: 'last',
+            defaultSortBy: [['id', 'DESC']],
+            searchableColumns: ['cause', 'contact.firstName', 'contact.lastName', 'contact.phoneNumber', 'contact.idInsta'],
+            select: ['id', 'rejectDate', 'cause', 'contact.firstName', 'contact.lastName', 'contact.phoneNumber', 'contact.idInsta'],
+            filterableColumns: {
+                'campaign.id': [FilterOperator.EQ, FilterSuffix.NOT],
+            },
+        });
+    }
+
     async update(id: number, updateCampaignDto: UpdateCampaignDto) {
 
         console.log('updateCampaignDto = ', updateCampaignDto);
