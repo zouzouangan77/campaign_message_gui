@@ -79,15 +79,18 @@
             </DataTable>
       </div>
         <DialogCampaign
-        :infoCampaign="infoCampaign"
         v-model:campaign="campaign"
         :messages="messages"
         :groups="groups"
-        :campaignSending="campaignSending"
-        :campaignReject="campaignReject"
         :attachments="attachments"
         v-model:visible="campaignDialog"
         @valider="updateCreateCampaign"
+        />
+
+        <DialogDetailCampaign
+        :campaignSelected="campaign"
+        v-model:visible="campaignDetailDialog"
+
         />
   
         <DialogConfirmation
@@ -107,7 +110,7 @@
   findOneCampaign,
   createNewCampaignApi,
   updateCampaignApi,
-  deleteCampaignApi,
+  deleteCampaignApi
   
   } from '@/modules/campaigns/campaigns.api'
   import {
@@ -121,13 +124,14 @@
 
   } from '@/modules/groups/groups.api'
   
-  import { Campaign, CampaignReject, CampaignSending } from '@/modules/campaigns/types'
+  import { Campaign } from '@/modules/campaigns/types'
   import type { ICampaign } from '@/modules/campaigns/types'
   import { onMounted, ref } from 'vue'
   import { Pageable } from '@/modules/shared/types'
   import { useToast } from 'primevue/usetoast'
   import DialogConfirmation from '../../../modules/shared/components/DialogConfirmation.vue'
   import DialogCampaign from './DialogCampaign.vue'
+  import DialogDetailCampaign from './DialogDetailCampaign.vue'
   import { Message } from '@/modules/messages/types';
   import { Group } from '@/modules/groups/types';
   import { Attachment } from '@/modules/attachments/types';
@@ -137,22 +141,20 @@
   const campaigns = ref(new Array<Campaign>())
   const messages = ref(new Array<Message>())
   const groups = ref(new Array<Group>())
-  const campaignSending = ref(new Array<CampaignSending>())
-  const campaignReject = ref(new Array<CampaignReject>())
   const attachments = ref(new Array<Attachment>())
   const totalRecords = ref(0)
   const pageable = ref(new Pageable<ICampaign>())
   const dt = ref()
   const loading = ref(false)
   const selectedCampaigns = ref(new Array<Campaign>())
-
   const campaignDialog = ref(false)
+  const campaignDetailDialog = ref(false)
   const deleteCampaignDialog = ref(false)
 
   const campaign = ref(new Campaign())
   const searchField = ref('')
   const isNewCampaign = ref(true)
-  const infoCampaign= ref()
+
   
   onMounted(async () => {
   loading.value = true
@@ -182,21 +184,18 @@
   }
   
   const openNewCampaign = () => {
-  infoCampaign.value=1
   campaign.value = new Campaign()
   campaignDialog.value = true
   isNewCampaign.value = true
   }
   
   const editCampaign = async (updateCampaign: Campaign) => {
-  infoCampaign.value=2
   campaign.value = await findOneCampaign(updateCampaign.id!)
   campaignDialog.value = true
   isNewCampaign.value = false
   }
 
   const duplicateCampaign = async (dcampaign: Campaign) => {
-  infoCampaign.value=1
   campaign.value = await findOneCampaign(dcampaign.id!)
   const randomNumber= Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
   campaign.value.name+='-'+randomNumber;
@@ -206,10 +205,9 @@
   }
 
   const detailCampaign = (updateCampaign: Campaign) => {
-  infoCampaign.value=2
   campaign.value = updateCampaign
-  campaignDialog.value = true
-  isNewCampaign.value = false
+  campaignDetailDialog.value = true
+
   }
   
   const updateCreateCampaign = async () => {
@@ -354,7 +352,7 @@ const items = (rowData:Campaign) => {
     }else{
         return [
             {
-                label: 'Dupliquer',
+                label: 'Detail',
                 icon: 'pi pi-sent',
                 command: () => {
                     detailCampaign(rowData)

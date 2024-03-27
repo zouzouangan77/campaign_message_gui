@@ -36,11 +36,15 @@ import Editor from 'primevue/editor';
 import ToastService from 'primevue/toastservice';
 import SplitButton from 'primevue/splitbutton';
 import RadioButton from 'primevue/radiobutton';
+import TabView from 'primevue/tabview';
+import TabPanel from 'primevue/tabpanel';
 import App from './App.vue'
 import router from './router'
 
 const app = createApp(App)
 
+app.component('TabPanel', TabPanel)
+app.component('TabView', TabView)
 app.component('InputText', InputText)
 app.component('SplitButton', SplitButton)
 app.component('RadioButton', RadioButton)

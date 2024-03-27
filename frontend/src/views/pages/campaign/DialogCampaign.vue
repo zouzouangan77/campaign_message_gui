@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { defineEmits, defineModel ,ref, defineProps} from 'vue';
-import { Campaign, CampaignReject, CampaignSending } from '@/modules/campaigns/types'
+import { ref } from 'vue';
+import { Campaign } from '@/modules/campaigns/types';
 import { Message } from '@/modules/messages/types';
 import { Group } from '@/modules/groups/types';
 import { Attachment } from '@/modules/attachments/types';
@@ -17,9 +17,7 @@ const emits = defineEmits<{
   messages:  Array<Message>;
   groups: Array<Group>;
   attachments: Array<Attachment>;
-  campaignReject: Array<CampaignReject>;
-  campaignSending: Array<CampaignSending>;
-  infoCampaign: number;
+ 
 }>()
 const submitted = ref(false);
 
@@ -37,7 +35,6 @@ const handleSave = () => {
 
 <template>
   <Dialog
-    v-if="infoCampaign === 1"
     v-model:visible="visible"
     :style="{ width: '450px' }"
     header="Campaigne  Details"
@@ -97,20 +94,4 @@ const handleSave = () => {
       <Button label="Save" severity="success" icon="pi pi-check" text @click="handleSave" />
     </template>
   </Dialog>
-
-  <Dialog v-if="infoCampaign === 2"
-      v-model:visible="visible"
-      header="Detail de la Campagne"
-      :style="{ width: '75vw' }" 
-      maximizable modal 
-      :contentStyle="{ height: '300px' }">
-            <DataTable :value="samuel" :scrollable="true" scrollHeight="flex">
-                <Column field="name" header="Name" :expander="true" style="min-width: 200px"></Column>
-                <Column field="size" header="Size" style="min-width: 200px"></Column>
-                <Column field="type" header="Type" style="min-width: 200px"></Column>
-            </DataTable>
-            <template #footer>
-                <Button label="Ok" icon="pi pi-check" @click="visible = false" />
-            </template>
-    </Dialog>
 </template>

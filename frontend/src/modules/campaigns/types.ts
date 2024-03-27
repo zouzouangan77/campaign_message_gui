@@ -1,6 +1,7 @@
 import { Message } from '@/modules/messages/types';
 import { Group } from '@/modules/groups/types';
 import { Attachment } from '@/modules/attachments/types';
+import { Contact } from '@/modules/contacts/types';
 
 
 export interface ICampaign {
@@ -32,23 +33,23 @@ export class Campaign implements ICampaign {
 
 export interface ICampaignSending {
     sendingDate?: string;
-    contact?:  {id: number};
-    campaign?:  {id: number};
+    contact?:  {id: number} | Contact;
+    campaign?:  {id: number} | Campaign;
 }
 
 export class CampaignSending implements ICampaignSending {
     constructor(
       public id?: number,
       public sendingDate?: string,
-      public contact?:  {id: number},
-      public campaign?:  {id: number}
+      public contact?:  {id: number} | Contact,
+      public campaign?:  {id: number} | Campaign
     ) {}
 }
 
 export interface ICampaignReject {
     rejectDate?: string;
-    contact?:  {id: number};
-    campaign?:  {id: number};
+    contact?:  {id: number} | Contact;
+    campaign?:  {id: number} | Campaign;
     cause?: string;
 }
 
@@ -56,8 +57,8 @@ export class CampaignReject implements ICampaignReject {
     constructor(
       public id?: number,
       public rejectDate?: string,
-      public contact?:  {id: number},
-      public campaign?:  {id: number},
+      public contact?:  {id: number} | Contact,
+      public campaign?:  {id: number} | Campaign,
       public  cause?: string
     ) {}
 }

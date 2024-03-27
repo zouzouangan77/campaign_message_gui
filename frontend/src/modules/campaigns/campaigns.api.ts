@@ -1,6 +1,6 @@
 import type {Page} from '@/modules/shared/types'
 import {Pageable} from '@/modules/shared/types'
-import type {ICampaign, Campaign, ICampaignSending, ICampaignReject} from './types'
+import type {ICampaign, Campaign} from './types'
 import {CampaignReject, CampaignSending} from "./types";
 
 export const findAllPage = async (pageable: Pageable<ICampaign>): Promise<Page<Campaign>> => {
@@ -60,7 +60,7 @@ export const deleteCampaignApi = async (id: number): Promise<void> => {
     })
 }
 
-export const findAllSendingPage = async (pageable: Pageable<ICampaignSending>): Promise<Page<CampaignSending>> => {
+export const findAllSendingPage = async (pageable: Pageable<{'campaign.id':number}>): Promise<Page<CampaignSending>> => {
     const searchParam = new URLSearchParams()
     searchParam.append('limit', pageable.limit.toString())
     searchParam.append('page', pageable.page.toString())
@@ -69,7 +69,7 @@ export const findAllSendingPage = async (pageable: Pageable<ICampaignSending>): 
     if (pageable.search) searchParam.append('search', pageable.search)
     if (pageable.filter) {
         Object.entries(pageable.filter).forEach(([key, value]) => {
-            searchParam.append('filter.' + key, value)
+            searchParam.append('filter.' + key, value.toString())
         })
     }
 
@@ -78,7 +78,7 @@ export const findAllSendingPage = async (pageable: Pageable<ICampaignSending>): 
     return page
 }
 
-export const findAllRejectPage = async (pageable: Pageable<ICampaignReject>): Promise<Page<CampaignReject>> => {
+export const findAllRejectPage = async (pageable: Pageable<{'campaign.id':number}>): Promise<Page<CampaignReject>> => {
     const searchParam = new URLSearchParams()
     searchParam.append('limit', pageable.limit.toString())
     searchParam.append('page', pageable.page.toString())
@@ -87,7 +87,7 @@ export const findAllRejectPage = async (pageable: Pageable<ICampaignReject>): Pr
     if (pageable.search) searchParam.append('search', pageable.search)
     if (pageable.filter) {
         Object.entries(pageable.filter).forEach(([key, value]) => {
-            searchParam.append('filter.' + key, value)
+            searchParam.append('filter.' + key, value.toString())
         })
     }
 
