@@ -1,278 +1,281 @@
-
 <template>
     <div>
         <div class="card">
+  
             <Toolbar class="mb-4">
                 <template #start>
-                    <Button label="New" icon="pi pi-plus" severity="success" class="mr-2" @click="openNew" />
-                    <Button label="Delete" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
-                </template>
-
-                <template #end>
-                    <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block" />
-                    <Button label="Export" icon="pi pi-upload" severity="help" @click="exportCSV($event)"  />
-                </template>
+                    <Button
+                        label="New"
+                        icon="pi pi-plus"
+                        severity="success"
+                        class="mr-2"
+                        @click="openNewCampaign"
+                        raised
+                    />
+                    </template>
             </Toolbar>
-
-            <DataTable ref="dt" :value="products" v-model:selection="selectedProducts" dataKey="id"
-                :paginator="true" :rows="10" :filters="filters"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" :rowsPerPageOptions="[5,10,25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
+  
+            <DataTable 
+                :value="campaigns"
+                lazy
+                paginator
+                :rows="10"
+                ref="dt"
+                dataKey="id"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                :rowsPerPageOptions="[5, 10, 25]"
+                :totalRecords="totalRecords"
+                :loading="loading"
+                @page="onPage($event)"
+                @sort="onSort($event)"
+                v-model:selection="selectedCampaigns"
+               
+                :tableStyle="{'min-width': '75rem'}"
+            >
+                
                 <template #header>
                     <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
-                        <h4 class="m-0">Manage Products</h4>
-						<IconField iconPosition="left">
+                        <h4 class="m-1">Gestion des Campaignes</h4>
+                        <IconField iconPosition="left">
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Search..." />
+                            <InputText
+                                v-model="searchField"
+                                placeholder="Search..."
+                                @keydown.enter="globalSearch"
+                            />
                         </IconField>
-					</div>
+                    </div>
                 </template>
+                <Column field="name" header="Titre" sortable style="min-width:8rem"></Column>
+                <Column field="canal" header="Canal" sortable style="min-width:8rem"></Column>
+                <Column field="createDate" header="Date de création" sortable style="min-width:8rem"></Column>
+                <Column field="updateDate" header="Date de Modification" sortable style="min-width:8rem"></Column>
+                <Column field="statut" header="Statut" sortable style="min-width:4rem">
+                    <template #body="slotProps">
+                        <Tag :value="slotProps.data.statut" :severity="getStatusLabel(slotProps.data.statut)" raised/>
+                    </template>
+                </Column>
+                <Column :exportable="false" style="min-width:3rem">
+                        <template #body="slotProps">
+                           
+                            <Toast />
+                            <SplitButton label="Action" icon="pi pi-check" severity="secondary" menuButtonIcon="pi pi-cog"  :model="items(slotProps.data)" >
+                                <template #item="option">
+                                    <span>{{ option.label }}</span>
+                                </template>
+                            
+                            </SplitButton>
 
-                <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                <Column field="code" header="Code" sortable style="min-width:12rem"></Column>
-                <Column field="name" header="Name" sortable style="min-width:16rem"></Column>
-                <Column header="Image">
-                    <template #body="slotProps">
-                        <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.image}`" :alt="slotProps.data.image" class="border-round" style="width: 64px" />
-                    </template>
+                            <!--<Button icon="pi pi-pencil" outlined rounded class="mr-0" @click="editCampaign(slotProps.data)" />
+                            <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteCampaign(slotProps.data)" />-->
+                         
+                        </template>
+
+                        
                 </Column>
-                <Column field="price" header="Price" sortable style="min-width:8rem">
-                    <template #body="slotProps">
-                        {{formatCurrency(slotProps.data.price)}}
-                    </template>
-                </Column>
-                <Column field="category" header="Category" sortable style="min-width:10rem"></Column>
-                <Column field="rating" header="Reviews" sortable style="min-width:12rem">
-                    <template #body="slotProps">
-                        <Rating :modelValue="slotProps.data.rating" :readonly="true" :cancel="false" />
-                    </template>
-                </Column>
-                <Column field="inventoryStatus" header="Status" sortable style="min-width:12rem">
-                    <template #body="slotProps">
-                        <Tag :value="slotProps.data.inventoryStatus" :severity="getStatusLabel(slotProps.data.inventoryStatus)" />
-                    </template>
-                </Column>
-                <Column :exportable="false" style="min-width:8rem">
-                    <template #body="slotProps">
-                        <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editProduct(slotProps.data)" />
-                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
-                    </template>
-                </Column>
+                
             </DataTable>
-        </div>
+      </div>
+        <DialogCampaign
+        v-model:campaign="campaign"
+        :messages="messages"
+        :groups="groups"
+        v-model:visible="campaignDialog"
+        @valider="updateCreateCampaign"
+        />
+  
+        <DialogConfirmation
+        v-model:visible="deleteCampaignDialog"
+        message="Voulez vous vraiment supprimer ce Campaign ?"
+        @confirmation="deleteCampaign"
+        />
+        
+    </div>
+  
+  </template>
+  
+  <script setup lang="ts">
+  
+  import {
+  findAllPage,
+  findAllCampaign,
+  createNewCampaignApi,
+  updateCampaignApi,
+  deleteCampaignApi,
+  
+  } from '@/modules/campaigns/campaigns.api'
+  import {
+ findAll
+  } from '@/modules/messages/messages.api'
+  import {
+ createNewAttachmentApi
+  } from '@/modules/attachments/attachments.api'
+  import {
+   findAllGroup
 
-        <Dialog v-model:visible="productDialog" :style="{width: '450px'}" header="Product Details" :modal="true" class="p-fluid">
-            <img v-if="product.image" :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`" :alt="product.image" class="block m-auto pb-3" />
-            <div class="field">
-                <label for="name">Name</label>
-                <InputText id="name" v-model.trim="product.name" required="true" autofocus :class="{'p-invalid': submitted && !product.name}" />
-                <small class="p-error" v-if="submitted && !product.name">Name is required.</small>
-            </div>
-            <div class="field">
-                <label for="description">Description</label>
-                <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" />
-            </div>
+  } from '@/modules/groups/groups.api'
+  
+  import { Campaign } from '@/modules/campaigns/types'
+  import type { ICampaign } from '@/modules/campaigns/types'
+  import { onMounted, ref } from 'vue'
+  import { Pageable } from '@/modules/shared/types'
+  import { useToast } from 'primevue/usetoast'
+  import DialogConfirmation from '../../../modules/shared/components/DialogConfirmation.vue'
+  import DialogCampaign from './DialogCampaign.vue'
+  import { Message } from '@/modules/messages/types';
+  import { Group } from '@/modules/groups/types';
+  import { Attachment } from '@/modules/attachments/types';
+  import type { DataTablePageEvent, DataTableSelectAllChangeEvent, DataTableSortEvent } from 'primevue/datatable'
+  
+  const toast = useToast()
+  const campaigns = ref(new Array<Campaign>())
+  const messages = ref(new Array<Message>())
+  const groups = ref(new Array<Group>())
+  const attachments = ref(new Array<Attachment>())
+  const totalRecords = ref(0)
+  const pageable = ref(new Pageable<ICampaign>())
+  const dt = ref()
+  const loading = ref(false)
+  const selectedCampaigns = ref(new Array<Campaign>())
 
-            <div class="field">
-				<label for="inventoryStatus" class="mb-3">Inventory Status</label>
-				<Dropdown id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status">
-					<template #value="slotProps">
-						<div v-if="slotProps.value && slotProps.value.value">
-                            <Tag :value="slotProps.value.value" :severity="getStatusLabel(slotProps.value.label)" />
-                        </div>
-                        <div v-else-if="slotProps.value && !slotProps.value.value">
-                            <Tag :value="slotProps.value" :severity="getStatusLabel(slotProps.value)" />
-                        </div>
-						<span v-else>
-							{{slotProps.placeholder}}
-						</span>
-					</template>
-				</Dropdown>
-			</div>
+  const campaignDialog = ref(false)
+  const deleteCampaignDialog = ref(false)
 
-            <div class="field">
-                <label class="mb-3">Category</label>
-                <div class="formgrid grid">
-                    <div class="field-radiobutton col-6">
-                        <RadioButton id="category1" name="category" value="Accessories" v-model="product.category" />
-                        <label for="category1">Accessories</label>
-                    </div>
-                    <div class="field-radiobutton col-6">
-                        <RadioButton id="category2" name="category" value="Clothing" v-model="product.category" />
-                        <label for="category2">Clothing</label>
-                    </div>
-                    <div class="field-radiobutton col-6">
-                        <RadioButton id="category3" name="category" value="Electronics" v-model="product.category" />
-                        <label for="category3">Electronics</label>
-                    </div>
-                    <div class="field-radiobutton col-6">
-                        <RadioButton id="category4" name="category" value="Fitness" v-model="product.category" />
-                        <label for="category4">Fitness</label>
-                    </div>
-                </div>
-            </div>
+  const campaign = ref(new Campaign())
+  const searchField = ref('')
+  const isNewCampaign = ref(true)
+  
+  
+  onMounted(async () => {
+  loading.value = true
+  await loadLazyData()
+  campaign.value.canal='WHATS_APP'
+  await getAllList()
+  })
+  
+  async function updateDataTable() {
+  const query = await findAllPage(pageable.value)
+  campaigns.value = query.data
+  totalRecords.value = query.meta.totalItems
+  loading.value = false
+  }
+  async function getAllList() {
+   messages.value = await findAll()
+   groups.value = await findAllGroup()
+  }
+  
 
-            <div class="formgrid grid">
-                <div class="field col">
-                    <label for="price">Price</label>
-                    <InputNumber id="price" v-model="product.price" mode="currency" currency="USD" locale="en-US" />
-                </div>
-                <div class="field col">
-                    <label for="quantity">Quantity</label>
-                    <InputNumber id="quantity" v-model="product.quantity" integeronly />
-                </div>
-            </div>
-            <template #footer>
-                <Button label="Cancel" icon="pi pi-times" text @click="hideDialog"/>
-                <Button label="Save" icon="pi pi-check" text @click="saveProduct" />
-            </template>
-        </Dialog>
+  
+  const globalSearch = async () => {
+  pageable.value.search = searchField.value
+  await loadLazyData()
+  }
+  
+  const openNewCampaign = () => {
+  campaign.value = new Campaign()
+  campaignDialog.value = true
+  isNewCampaign.value = true
+  }
+  
+  const editCampaign = (updateCampaign: Campaign) => {
+  campaign.value = updateCampaign
+  campaignDialog.value = true
+  isNewCampaign.value = false
+  }
 
-        <Dialog v-model:visible="deleteProductDialog" :style="{width: '450px'}" header="Confirm" :modal="true">
-            <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false"/>
-                <Button label="Yes" icon="pi pi-check" text @click="deleteProduct" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductsDialog" :style="{width: '450px'}" header="Confirm" :modal="true">
-            <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="product">Are you sure you want to delete the selected products?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false"/>
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
-            </template>
-        </Dialog>
-	</div>
-</template>
-
-<script setup>
-import { ref, onMounted } from 'vue';
-import { FilterMatchMode } from 'primevue/api';
-import { useToast } from 'primevue/usetoast';
-
-
-onMounted(() => {
-    ProductService.getProducts().then((data) => (products.value = data));
-});
-
-const toast = useToast();
-const dt = ref();
-const products = ref();
-const productDialog = ref(false);
-const deleteProductDialog = ref(false);
-const deleteProductsDialog = ref(false);
-const product = ref({});
-const selectedProducts = ref();
-const filters = ref({
-    'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
-});
-const submitted = ref(false);
-const statuses = ref([
-    {label: 'INSTOCK', value: 'instock'},
-    {label: 'LOWSTOCK', value: 'lowstock'},
-    {label: 'OUTOFSTOCK', value: 'outofstock'}
-]);
-
-const formatCurrency = (value) => {
-    if(value)
-        return value.toLocaleString('en-US', {style: 'currency', currency: 'USD'});
-    return;
-};
-const openNew = () => {
-    product.value = {};
-    submitted.value = false;
-    productDialog.value = true;
-};
-const hideDialog = () => {
-    productDialog.value = false;
-    submitted.value = false;
-};
-const saveProduct = () => {
-    submitted.value = true;
-
-    if (product.value.name.trim()) {
-        if (product.value.id) {
-            product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus;
-            products.value[findIndexById(product.value.id)] = product.value;
-            toast.add({severity:'success', summary: 'Successful', detail: 'Product Updated', life: 3000});
-        }
-        else {
-            product.value.id = createId();
-            product.value.code = createId();
-            product.value.image = 'product-placeholder.svg';
-            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK';
-            products.value.push(product.value);
-            toast.add({severity:'success', summary: 'Successful', detail: 'Product Created', life: 3000});
-        }
-
-        productDialog.value = false;
-        product.value = {};
+  const duplicateCampaign = (dcampaign: Campaign) => {
+  campaign.value = dcampaign
+  campaign.value.id=undefined;
+  campaignDialog.value = true
+  isNewCampaign.value = false
+  }
+  
+  const updateCreateCampaign = async () => {
+  if (isNewCampaign.value) {
+    try {
+      await createNewCampaignApi(campaign.value)
+      toast.add({
+        severity: 'success',
+        summary: 'Successful',
+        detail: 'Campaign created',
+        life: 3000
+      })
+    } catch (error) {
+      toast.add({
+        severity: 'error',
+        summary: 'Faillure',
+        detail: 'Campaign not created',
+        life: 3000
+      })
     }
-};
-const editProduct = (prod) => {
-    product.value = {...prod};
-    productDialog.value = true;
-};
-const confirmDeleteProduct = (prod) => {
-    product.value = prod;
-    deleteProductDialog.value = true;
-};
-const deleteProduct = () => {
-    products.value = products.value.filter(val => val.id !== product.value.id);
-    deleteProductDialog.value = false;
-    product.value = {};
-    toast.add({severity:'success', summary: 'Successful', detail: 'Product Deleted', life: 3000});
-};
-const findIndexById = (id) => {
-    let index = -1;
-    for (let i = 0; i < products.value.length; i++) {
-        if (products.value[i].id === id) {
-            index = i;
-            break;
-        }
+  } else {
+    try {
+      await updateCampaignApi(campaign.value.id!, campaign.value)
+      toast.add({
+        severity: 'success',
+        summary: 'Successful',
+        detail: 'Campaign updated',
+        life: 3000
+      })
+    } catch (error) {
+      toast.add({
+        severity: 'error',
+        summary: 'Faillure',
+        detail: 'Campaign not created',
+        life: 3000
+      })
     }
+  }
+  await loadLazyData()
+  }
+  
+  
+  const confirmDeleteCampaign = (campaignData:Campaign) => {
+  campaign.value = campaignData
+  deleteCampaignDialog.value = true
+  }
+  
+  const deleteCampaign = async () => {
+  deleteCampaignDialog.value = false
+  await deleteCampaignApi(campaign.value.id!)
+  selectedCampaigns.value = selectedCampaigns.value.filter((c) => c.id != campaign.value.id)
+  toast.add({ severity: 'success', summary: 'Successful', detail: 'Campaign Deleted', life: 3000 })
+  loadLazyData()
+  }
+  
+  
 
-    return index;
-};
-const createId = () => {
-    let id = '';
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for ( var i = 0; i < 5; i++ ) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
-}
-const exportCSV = () => {
-    dt.value.exportCSV();
-};
-const confirmDeleteSelected = () => {
-    deleteProductsDialog.value = true;
-};
-const deleteSelectedProducts = () => {
-    products.value = products.value.filter(val => !selectedProducts.value.includes(val));
-    deleteProductsDialog.value = false;
-    selectedProducts.value = null;
-    toast.add({severity:'success', summary: 'Successful', detail: 'Products Deleted', life: 3000});
-};
 
-const getStatusLabel = (status) => {
+  const loadLazyData = async () => {
+  loading.value = true
+  
+  await updateDataTable()
+  }
+  const onPage = (event: DataTablePageEvent) => {
+  pageable.value.page = event?.page + 1 || pageable.value.page
+  pageable.value.limit = event?.rows || pageable.value.limit
+  loadLazyData()
+  }
+  const onSort = (event: DataTableSortEvent) => {
+  if (event?.sortField != undefined && event?.sortField) {
+    pageable.value.sortBys = [event?.sortField + (event?.sortOrder === 1 ? ':ASC' : ':DESC')]
+  }
+  loadLazyData()
+  }
+  
+
+
+  const getStatusLabel = (status: string) => {
     switch (status) {
-        case 'INSTOCK':
+        case 'SENT':
             return 'success';
 
-        case 'LOWSTOCK':
+        case 'PROCESSING':
             return 'warning';
 
-        case 'OUTOFSTOCK':
+        case 'NOT_SENT':
             return 'danger';
 
         default:
@@ -280,4 +283,55 @@ const getStatusLabel = (status) => {
     }
 };
 
-</script>
+const items = (rowData:Campaign) => {
+    if (rowData.statut === 'NOT_SENT') {
+        return [
+            {
+                label: 'Modifier',
+                icon: 'pi pi-refresh',
+                command: () => {
+                    editCampaign(rowData)
+                       
+                }
+            },
+            {
+                label: 'Supprimer',
+                icon: 'pi pi-times',
+                command: () => {
+                    confirmDeleteCampaign(rowData)
+                }
+            },
+            {
+                label: 'Envoyer',
+                icon: 'pi pi-sent',
+                command: () => {
+                    toast.add({ severity: 'success', summary: 'Updated', detail: 'Envoie en Cours', life: 3000 });
+                }
+            },
+            {
+                label: 'Dupliquer',
+                icon: 'pi pi-sent',
+                command: () => {
+                    duplicateCampaign(rowData)
+                }
+            }
+        ];
+    } else {
+        return [
+            {
+                label: 'Duplique',
+                icon: 'pi pi-sent',
+                command: () => {
+                    duplicateCampaign(rowData)
+                }
+            }
+        ];
+    }
+};
+
+
+const save = () => {
+    toast.add({ severity: 'success', summary: 'Success', detail: 'Data Saved', life: 3000 });
+};
+  
+  </script>

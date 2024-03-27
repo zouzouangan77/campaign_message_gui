@@ -4,7 +4,8 @@ import PrimeVue from 'primevue/config'
 
 import 'primeflex/primeflex.scss'
 import 'primeicons/primeicons.css'
-import 'primevue/resources/themes/tailwind-light/theme.css'
+import "primevue/resources/themes/aura-light-green/theme.css"
+//import 'primevue/resources/themes/tailwind-light/theme.css'
 import 'primevue/resources/primevue.min.css'
 
 import './assets/flags.css'
@@ -23,7 +24,6 @@ import Toolbar from 'primevue/toolbar'
 import FileUpload from 'primevue/fileupload'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import { useToast } from 'primevue/usetoast'
 import MultiSelect from 'primevue/multiselect'
 import Tag from 'primevue/tag'
 import Dropdown from 'primevue/dropdown'
@@ -34,14 +34,16 @@ import Listbox from 'primevue/listbox'
 import Textarea from 'primevue/textarea';
 import Editor from 'primevue/editor';
 import ToastService from 'primevue/toastservice';
-
-
+import SplitButton from 'primevue/splitbutton';
+import RadioButton from 'primevue/radiobutton';
 import App from './App.vue'
 import router from './router'
 
 const app = createApp(App)
 
 app.component('InputText', InputText)
+app.component('SplitButton', SplitButton)
+app.component('RadioButton', RadioButton)
 app.component('Textarea', Textarea)
 app.component('Listbox', Listbox)
 app.component('Editor', Editor)
