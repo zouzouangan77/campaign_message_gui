@@ -7,10 +7,11 @@ import { useToast } from 'primevue/usetoast'
 
 
 const toast = useToast()
-const attachment = defineModel('Attachment', {
+const attachment = defineModel('attachment', {
   type: Attachment,
   default: new Attachment()
 })
+const inputFileAttach = defineModel('inputAttachment')
 const emits = defineEmits<{
   valider: [] // named tuple syntax
 }>()
@@ -27,32 +28,8 @@ const visible = defineModel('visible', {
 
 const handleSave = () => {
   emits('valider');
-  visible.value = false; 
+  visible.value = false;
 };
-
-const uploadFileAttachment = async (event: FileUploadUploaderEvent) => {
-  const file = event.files instanceof Array?event.files[0]:event.files
-  let formData = new FormData()
-  formData.append('file', file) // inputFile est l'élément input de type file
-
-  try {
-   // await importFileContactApi(formData)
-    toast.add({
-      severity: 'success',
-      summary: 'Successful',
-      detail: 'File uploaded, contact has been created',
-      life: 3000
-    })
-  } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: 'Faillure',
-      detail: 'Error during uploading file',
-      life: 3000
-    })
-  }
-  //await loadLazyData()
-}
 
 </script>
 
@@ -82,9 +59,9 @@ const uploadFileAttachment = async (event: FileUploadUploaderEvent) => {
       <Toast/>
       <div>
         <Toast />
-        <FileUpload  v-model.trim="attachment.filename" customUpload @uploader="uploadFileAttachment" @before-upload="()=>{}" :multiple="true" accept="image/*, application/*, audio/*" :maxFileSize="1000000">
+        <FileUpload ref="inputFileAttach" v-model.trim="attachment.filename" customUpload accept="image/*, application/*, audio/*" :maxFileSize="1000000">
             <template #empty>
-                <p> Veuillez selection votre fichier</p>
+                <p> Veuillez déposer votre fichier ici</p>
             </template>
         </FileUpload>
       </div>

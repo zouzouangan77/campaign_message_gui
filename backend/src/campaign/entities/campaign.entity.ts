@@ -41,8 +41,8 @@ export class Campaign {
   @Column({
     type: 'varchar',
     nullable: false,
-    enum: ['WHATAPPS', 'INSTAGRAM'],
-    default: 'WHATAPPS',
+    enum: ['WHATS_APPS', 'INSTAGRAM'],
+    default: 'WHATS_APPS',
   })
   canal: string;
 
