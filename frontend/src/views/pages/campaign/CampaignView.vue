@@ -83,6 +83,8 @@
         v-model:campaign="campaign"
         :messages="messages"
         :groups="groups"
+        :campaignSending="campaignSending"
+        :campaignReject="campaignReject"
         :attachments="attachments"
         v-model:visible="campaignDialog"
         @valider="updateCreateCampaign"
@@ -119,7 +121,7 @@
 
   } from '@/modules/groups/groups.api'
   
-  import { Campaign } from '@/modules/campaigns/types'
+  import { Campaign, CampaignReject, CampaignSending } from '@/modules/campaigns/types'
   import type { ICampaign } from '@/modules/campaigns/types'
   import { onMounted, ref } from 'vue'
   import { Pageable } from '@/modules/shared/types'
@@ -129,12 +131,14 @@
   import { Message } from '@/modules/messages/types';
   import { Group } from '@/modules/groups/types';
   import { Attachment } from '@/modules/attachments/types';
-  import type { DataTablePageEvent, DataTableSelectAllChangeEvent, DataTableSortEvent } from 'primevue/datatable'
+  import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable'
   
   const toast = useToast()
   const campaigns = ref(new Array<Campaign>())
   const messages = ref(new Array<Message>())
   const groups = ref(new Array<Group>())
+  const campaignSending = ref(new Array<CampaignSending>())
+  const campaignReject = ref(new Array<CampaignReject>())
   const attachments = ref(new Array<Attachment>())
   const totalRecords = ref(0)
   const pageable = ref(new Pageable<ICampaign>())

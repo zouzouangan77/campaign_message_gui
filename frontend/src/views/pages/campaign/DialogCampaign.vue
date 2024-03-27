@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineEmits, defineModel ,ref, defineProps} from 'vue';
-import { Campaign } from '@/modules/campaigns/types';
+import { Campaign, CampaignReject, CampaignSending } from '@/modules/campaigns/types'
 import { Message } from '@/modules/messages/types';
 import { Group } from '@/modules/groups/types';
 import { Attachment } from '@/modules/attachments/types';
@@ -17,8 +17,9 @@ const emits = defineEmits<{
   messages:  Array<Message>;
   groups: Array<Group>;
   attachments: Array<Attachment>;
+  campaignReject: Array<CampaignReject>;
+  campaignSending: Array<CampaignSending>;
   infoCampaign: number;
- 
 }>()
 const submitted = ref(false);
 
