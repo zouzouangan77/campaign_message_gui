@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineEmits, defineModel ,ref} from 'vue';
+import { ref} from 'vue';
 import { Message } from '@/modules/messages/types';
 
 const message = defineModel('message', {

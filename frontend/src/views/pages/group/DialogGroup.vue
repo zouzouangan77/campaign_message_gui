@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/no-mutating-props -->
 <script setup lang="ts">
-import { defineEmits, defineModel, ref} from 'vue';
+import { ref} from 'vue';
 import { Group } from '@/modules/groups/types';
 
 
