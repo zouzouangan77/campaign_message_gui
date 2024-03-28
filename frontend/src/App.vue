@@ -4,4 +4,3 @@
 </template>
 
 <style scoped></style>
-

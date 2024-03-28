@@ -28,7 +28,7 @@
             class="mr-2 inline-block"
             customUpload
             @uploader="uploadFileContact"
-            @before-upload="()=>{}"
+            @before-upload="() => {}"
           />
           <Button label="Export" icon="pi pi-upload" severity="help" @click="exportCSV" />
         </template>
@@ -50,7 +50,7 @@
         v-model:selection="selectedContacts"
         :selectAll="selectAll"
         @select-all-change="onSelectAllChange"
-        :tableStyle="{'min-width': '75rem'}"
+        :tableStyle="{ 'min-width': '75rem' }"
       >
         <template #header>
           <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
@@ -128,7 +128,11 @@ import { Pageable } from '@/modules/shared/types'
 import { useToast } from 'primevue/usetoast'
 import DialogConfirmation from '../../../modules/shared/components/DialogConfirmation.vue'
 import DialogContact from './DialogContact.vue'
-import type { DataTablePageEvent, DataTableSelectAllChangeEvent, DataTableSortEvent } from 'primevue/datatable'
+import type {
+  DataTablePageEvent,
+  DataTableSelectAllChangeEvent,
+  DataTableSortEvent
+} from 'primevue/datatable'
 import type { FileUploadUploaderEvent } from 'primevue/fileupload'
 
 const toast = useToast()
@@ -278,7 +282,7 @@ const onSort = (event: DataTableSortEvent) => {
   loadLazyData()
 }
 
-const onSelectAllChange = async (event : DataTableSelectAllChangeEvent) => {
+const onSelectAllChange = async (event: DataTableSelectAllChangeEvent) => {
   selectAll.value = event.checked
 
   if (selectAll.value) {
@@ -292,7 +296,7 @@ const onSelectAllChange = async (event : DataTableSelectAllChangeEvent) => {
 }
 
 const uploadFileContact = async (event: FileUploadUploaderEvent) => {
-  const file = event.files instanceof Array?event.files[0]:event.files
+  const file = event.files instanceof Array ? event.files[0] : event.files
   let formData = new FormData()
   formData.append('file', file) // inputFile est l'élément input de type file
 

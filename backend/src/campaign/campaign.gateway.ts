@@ -1,9 +1,16 @@
-import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import {
+  SubscribeMessage,
+  WebSocketGateway,
+  MessageBody,
+  WsResponse,
+} from '@nestjs/websockets';
 
 @WebSocketGateway()
 export class CampaignGateway {
   @SubscribeMessage('message')
-  handleMessage(client: any, payload: any): string {
-    return 'Hello world!';
+  handleMessage(@MessageBody() data: unknown): WsResponse<unknown> {
+    const event = 'message';
+    console.log(' data = ', data);
+    return { event, data: 'tony' };
   }
 }

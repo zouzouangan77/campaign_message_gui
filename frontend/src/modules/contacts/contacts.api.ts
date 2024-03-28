@@ -64,7 +64,7 @@ export const importFileContactApi = async (formData: FormData): Promise<void> =>
     body: formData
   })
 
-  if(!response.ok){
-    throw new Error('Erreur lors de l\'import du fichier csv');
+  if (!response.ok) {
+    throw new Error("Erreur lors de l'import du fichier csv")
   }
 }

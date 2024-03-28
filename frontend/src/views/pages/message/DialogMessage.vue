@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref} from 'vue';
-import { Message } from '@/modules/messages/types';
+import { ref } from 'vue'
+import { Message } from '@/modules/messages/types'
 
 const message = defineModel('message', {
   type: Message,
@@ -10,18 +10,17 @@ const emits = defineEmits<{
   valider: [] // named tuple syntax
 }>()
 
-const submitted = ref(false);
+const submitted = ref(false)
 
 const visible = defineModel('visible', {
   type: Boolean,
   default: false
-});
-
+})
 
 const handleSave = () => {
-  emits('valider');
-  visible.value = false; 
-};
+  emits('valider')
+  visible.value = false
+}
 </script>
 
 <template>
@@ -55,12 +54,12 @@ const handleSave = () => {
           </span>
           <span class="ql-formats">
             <button v-tooltip.bottom="'ordered'" class="ql-list" value="ordered"></button>
-            <button v-tooltip.bottom="'list'" class="ql-list ql-active "  value="bullet"></button> 
+            <button v-tooltip.bottom="'list'" class="ql-list ql-active" value="bullet"></button>
           </span>
         </template>
       </Editor>
     </div>
-    
+
     <template #footer>
       <Button label="Cancel" severity="danger" icon="pi pi-times" text @click="visible = false" />
       <Button label="Save" severity="success" icon="pi pi-check" text @click="handleSave" />

@@ -1,56 +1,56 @@
 <template>
   <div>
     <div class="card">
-
       <Toolbar class="mb-4">
         <template #start>
           <Button
-              label="New"
-              icon="pi pi-plus"
-              severity="success"
-              class="mr-2"
-              @click="openNewAttachment" raised
+            label="New"
+            icon="pi pi-plus"
+            severity="success"
+            class="mr-2"
+            @click="openNewAttachment"
+            raised
           />
           <Button
-              label="Delete"
-              icon="pi pi-trash"
-              severity="danger"
-              @click="confirmDeleteSelected"
-              :disabled="!selectedAttachments || !selectedAttachments.length" raised
+            label="Delete"
+            icon="pi pi-trash"
+            severity="danger"
+            @click="confirmDeleteSelected"
+            :disabled="!selectedAttachments || !selectedAttachments.length"
+            raised
           />
         </template>
       </Toolbar>
 
       <DataTable
-          :value="attachments"
-          lazy
-          paginator
-          :rows="10"
-          ref="dt"
-          dataKey="id"
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          :rowsPerPageOptions="[5, 10, 25]"
-          :totalRecords="totalRecords"
-          :loading="loading"
-          @page="onPage($event)"
-          @sort="onSort($event)"
-          v-model:selection="selectedAttachments"
-          :selectAll="selectAll"
-          @select-all-change="onSelectAllChange"
-          :tableStyle="{'min-width': '75rem'}"
+        :value="attachments"
+        lazy
+        paginator
+        :rows="10"
+        ref="dt"
+        dataKey="id"
+        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+        :rowsPerPageOptions="[5, 10, 25]"
+        :totalRecords="totalRecords"
+        :loading="loading"
+        @page="onPage($event)"
+        @sort="onSort($event)"
+        v-model:selection="selectedAttachments"
+        :selectAll="selectAll"
+        @select-all-change="onSelectAllChange"
+        :tableStyle="{ 'min-width': '75rem' }"
       >
-
         <template #header>
           <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
             <h4 class="m-1">Gestion des Attachment</h4>
             <IconField iconPosition="left">
               <InputIcon>
-                <i class="pi pi-search"/>
+                <i class="pi pi-search" />
               </InputIcon>
               <InputText
-                  v-model="searchField"
-                  placeholder="Search..."
-                  @keydown.enter="globalSearch"
+                v-model="searchField"
+                placeholder="Search..."
+                @keydown.enter="globalSearch"
               />
             </IconField>
           </div>
@@ -59,52 +59,76 @@
         <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
         <Column header="Image">
           <template #body="slotProps">
-            <img v-if="slotProps.data.type.trim().startsWith('image')" :src="`/api/attachment/${slotProps.data.id}`"
-                 :alt="slotProps.data.id" class="border-round" style="width: 64px"/>
+            <img
+              v-if="slotProps.data.type.trim().startsWith('image')"
+              :src="`/api/attachment/${slotProps.data.id}`"
+              :alt="slotProps.data.id"
+              class="border-round"
+              style="width: 64px"
+            />
             <InputIcon v-else>
-              <i class="pi pi-file" style="font-size: 2rem"/>
+              <i class="pi pi-file" style="font-size: 2rem" />
             </InputIcon>
           </template>
         </Column>
-        <Column field="name" header="Name" sortable style="min-width:8rem"></Column>
-        <Column field="filename" header="File name" sortable style="min-width:8rem"></Column>
-        <Column field="type" header="Type" sortable style="min-width:8rem"></Column>
-        <Column field="createDate" header="Date de création" sortable style="min-width:8rem"></Column>
-        <Column field="updateDate" header="Date de Modification" sortable style="min-width:8rem"></Column>
-        <Column :exportable="false" style="min-width:3rem">
+        <Column field="name" header="Name" sortable style="min-width: 8rem"></Column>
+        <Column field="filename" header="File name" sortable style="min-width: 8rem"></Column>
+        <Column field="type" header="Type" sortable style="min-width: 8rem"></Column>
+        <Column
+          field="createDate"
+          header="Date de création"
+          sortable
+          style="min-width: 8rem"
+        ></Column>
+        <Column
+          field="updateDate"
+          header="Date de Modification"
+          sortable
+          style="min-width: 8rem"
+        ></Column>
+        <Column :exportable="false" style="min-width: 3rem">
           <template #body="slotProps">
-            <Button icon="pi pi-pencil" outlined rounded class="mr-0" @click="editAttachment(slotProps.data)" raised/>
-            <Button icon="pi pi-trash" outlined rounded severity="danger"
-                    @click="confirmDeleteAttachment(slotProps.data)" raised/>
+            <Button
+              icon="pi pi-pencil"
+              outlined
+              rounded
+              class="mr-0"
+              @click="editAttachment(slotProps.data)"
+              raised
+            />
+            <Button
+              icon="pi pi-trash"
+              outlined
+              rounded
+              severity="danger"
+              @click="confirmDeleteAttachment(slotProps.data)"
+              raised
+            />
           </template>
         </Column>
-
       </DataTable>
     </div>
     <DialogAttachment
-        :attachment="attachment"
-        v-model:inputAttachment="inputAttachment"
-        v-model:visible="attachmentDialog"
-        @valider="updateCreateAttachment"
+      :attachment="attachment"
+      v-model:inputAttachment="inputAttachment"
+      v-model:visible="attachmentDialog"
+      @valider="updateCreateAttachment"
     />
 
     <DialogConfirmation
-        v-model:visible="deleteAttachmentDialog"
-        message="Voulez vous vraiment supprimer cette pièce jointe ?"
-        @confirmation="deleteAttachment"
+      v-model:visible="deleteAttachmentDialog"
+      message="Voulez vous vraiment supprimer cette pièce jointe ?"
+      @confirmation="deleteAttachment"
     />
     <DialogConfirmation
-        v-model:visible="deleteAttachmentsDialog"
-        message="Voulez vous vraiment supprimer tous vos pièces pointes ?"
-        @confirmation="deleteSelectedAttachments"
+      v-model:visible="deleteAttachmentsDialog"
+      message="Voulez vous vraiment supprimer tous vos pièces pointes ?"
+      @confirmation="deleteSelectedAttachments"
     />
-
   </div>
-
 </template>
 
 <script setup lang="ts">
-
 import {
   createNewAttachmentApi,
   deleteAttachmentApi,
@@ -113,14 +137,18 @@ import {
   updateAttachmentApi
 } from '@/modules/attachments/attachments.api'
 
-import {Attachment} from '@/modules/attachments/types'
-import type {IAttachment} from '@/modules/attachments/types'
-import {onMounted, ref} from 'vue'
-import {Pageable} from '@/modules/shared/types'
-import {useToast} from 'primevue/usetoast'
+import { Attachment } from '@/modules/attachments/types'
+import type { IAttachment } from '@/modules/attachments/types'
+import { onMounted, ref } from 'vue'
+import { Pageable } from '@/modules/shared/types'
+import { useToast } from 'primevue/usetoast'
 import DialogConfirmation from '../../../modules/shared/components/DialogConfirmation.vue'
 import DialogAttachment from './DialogAttachment.vue'
-import type {DataTablePageEvent, DataTableSelectAllChangeEvent, DataTableSortEvent} from 'primevue/datatable'
+import type {
+  DataTablePageEvent,
+  DataTableSelectAllChangeEvent,
+  DataTableSortEvent
+} from 'primevue/datatable'
 
 const toast = useToast()
 const attachments = ref(new Array<Attachment>())
@@ -133,11 +161,10 @@ const selectAll = ref(false)
 const attachmentDialog = ref(false)
 const deleteAttachmentDialog = ref(false)
 const deleteAttachmentsDialog = ref(false)
-const attachment = ref(new Attachment());
+const attachment = ref(new Attachment())
 const searchField = ref('')
 const isNewAttachment = ref(true)
 const inputAttachment = ref()
-
 
 onMounted(() => {
   loading.value = true
@@ -224,10 +251,14 @@ const deleteAttachment = async () => {
   deleteAttachmentDialog.value = false
   await deleteAttachmentApi(attachment.value.id!)
   selectedAttachments.value = selectedAttachments.value.filter((c) => c.id != attachment.value.id)
-  toast.add({severity: 'success', summary: 'Successful', detail: 'Attachment Deleted', life: 3000})
+  toast.add({
+    severity: 'success',
+    summary: 'Successful',
+    detail: 'Attachment Deleted',
+    life: 3000
+  })
   loadLazyData()
 }
-
 
 const confirmDeleteSelected = () => {
   deleteAttachmentsDialog.value = true
@@ -241,7 +272,12 @@ const deleteSelectedAttachments = async () => {
   deleteAttachmentsDialog.value = false
   selectedAttachments.value = new Array<Attachment>()
   selectAll.value = false
-  toast.add({severity: 'success', summary: 'Successful', detail: 'Attachments Deleted', life: 3000})
+  toast.add({
+    severity: 'success',
+    summary: 'Successful',
+    detail: 'Attachments Deleted',
+    life: 3000
+  })
   await loadLazyData()
 }
 
@@ -274,5 +310,4 @@ const onSelectAllChange = async (event: DataTableSelectAllChangeEvent) => {
     selectedAttachments.value = []
   }
 }
-
 </script>

@@ -4,7 +4,7 @@ import PrimeVue from 'primevue/config'
 
 import 'primeflex/primeflex.scss'
 import 'primeicons/primeicons.css'
-import "primevue/resources/themes/aura-light-green/theme.css"
+import 'primevue/resources/themes/aura-light-green/theme.css'
 //import 'primevue/resources/themes/tailwind-light/theme.css'
 import 'primevue/resources/primevue.min.css'
 
@@ -31,13 +31,13 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import PickList from 'primevue/picklist'
 import Listbox from 'primevue/listbox'
-import Textarea from 'primevue/textarea';
-import Editor from 'primevue/editor';
-import ToastService from 'primevue/toastservice';
-import SplitButton from 'primevue/splitbutton';
-import RadioButton from 'primevue/radiobutton';
-import TabView from 'primevue/tabview';
-import TabPanel from 'primevue/tabpanel';
+import Textarea from 'primevue/textarea'
+import Editor from 'primevue/editor'
+import ToastService from 'primevue/toastservice'
+import SplitButton from 'primevue/splitbutton'
+import RadioButton from 'primevue/radiobutton'
+import TabView from 'primevue/tabview'
+import TabPanel from 'primevue/tabpanel'
 import App from './App.vue'
 import router from './router'
 
@@ -74,7 +74,7 @@ app.component('PickList', PickList)
 app.directive('tooltip', Tooltip)
 app.use(createPinia())
 app.use(router)
-app.use(ToastService);
+app.use(ToastService)
 app.use(PrimeVue, { ripple: true })
 
 app.mount('#app')

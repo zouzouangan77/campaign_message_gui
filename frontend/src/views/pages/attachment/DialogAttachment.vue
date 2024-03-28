@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { defineEmits, defineModel ,ref} from 'vue';
-import { Attachment } from '@/modules/attachments/types';
+import { defineEmits, defineModel, ref } from 'vue'
+import { Attachment } from '@/modules/attachments/types'
 import type { FileUploadUploaderEvent } from 'primevue/fileupload'
 import { useToast } from 'primevue/usetoast'
-
-
 
 const toast = useToast()
 const attachment = defineModel('attachment', {
@@ -16,21 +14,17 @@ const emits = defineEmits<{
   valider: [] // named tuple syntax
 }>()
 
-const submitted = ref(false);
+const submitted = ref(false)
 
 const visible = defineModel('visible', {
   type: Boolean,
   default: false
-});
-
-
-
+})
 
 const handleSave = () => {
-  emits('valider');
-  visible.value = false;
-};
-
+  emits('valider')
+  visible.value = false
+}
 </script>
 
 <template>
@@ -53,24 +47,25 @@ const handleSave = () => {
       <small class="p-error" v-if="submitted && !attachment.name">le titre is required.</small>
     </div>
 
-
     <div class="field">
       <label for="filename">fichier</label>
-      <Toast/>
+      <Toast />
       <div>
         <Toast />
-        <FileUpload ref="inputFileAttach" v-model.trim="attachment.filename" customUpload accept="image/*, application/*, audio/*" :maxFileSize="1000000">
-            <template #empty>
-                <p> Veuillez déposer votre fichier ici</p>
-            </template>
+        <FileUpload
+          ref="inputFileAttach"
+          v-model.trim="attachment.filename"
+          customUpload
+          accept="image/*, application/*, audio/*"
+          :maxFileSize="1000000"
+        >
+          <template #empty>
+            <p>Veuillez déposer votre fichier ici</p>
+          </template>
         </FileUpload>
       </div>
     </div>
-  
-    
 
-
-    
     <template #footer>
       <Button label="Cancel" severity="danger" icon="pi pi-times" text @click="visible = false" />
       <Button label="Save" severity="success" icon="pi pi-check" text @click="handleSave" />

@@ -1,14 +1,12 @@
 /* eslint-disable prettier/prettier */
 
 export function useFunction() {
-  
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const sleep= (milliseconds:number)=> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const sleep = (milliseconds: number) => {
     return new Promise((resolve) => setTimeout(resolve, milliseconds));
-    }
+  };
 
-    /*formatDateToISOStringWithMilliseconds(date) {
+  /*formatDateToISOStringWithMilliseconds(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
@@ -21,7 +19,5 @@ export function useFunction() {
     
         return formattedDate;
     }*/
-    return {  sleep};
+  return { sleep };
 }
-
-

@@ -1,8 +1,7 @@
 <!-- eslint-disable vue/no-mutating-props -->
 <script setup lang="ts">
-import { ref} from 'vue';
-import { Group } from '@/modules/groups/types';
-
+import { ref } from 'vue'
+import { Group } from '@/modules/groups/types'
 
 const group = defineModel('group', {
   type: Group,
@@ -18,13 +17,12 @@ const submitted = ref(false)
 const visible = defineModel('visible', {
   type: Boolean,
   default: false
-});
-
+})
 
 const handleSave = () => {
-  visible.value = false;
-  emits('valider');
-};
+  visible.value = false
+  emits('valider')
+}
 </script>
 
 <template>
@@ -47,21 +45,14 @@ const handleSave = () => {
     </div>
 
     <div class="field">
-            <label for="content">commentaire du groupe</label>
-            <!-- Textarea pour saisir le commentaire -->
-            <Textarea v-model="group.comment" rows="5" cols="30" />
+      <label for="content">commentaire du groupe</label>
+      <!-- Textarea pour saisir le commentaire -->
+      <Textarea v-model="group.comment" rows="5" cols="30" />
     </div>
 
     <template #footer>
-      <Button label="Cancel"  severity="danger" icon="pi pi-times" text @click="visible = false" />
+      <Button label="Cancel" severity="danger" icon="pi pi-times" text @click="visible = false" />
       <Button label="Save" severity="success" icon="pi pi-check" text @click="handleSave" />
     </template>
   </Dialog>
 </template>
-  
-  
-  
-  
-  
-  
-  

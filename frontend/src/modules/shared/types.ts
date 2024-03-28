@@ -31,23 +31,22 @@ export interface PaginatorProps {
    * Number of total records.
    * @defaultValue 0
    */
-  totalRecords?: number | undefined;
+  totalRecords?: number | undefined
   /**
    * Data count to display per page.
    * @defaultValue 10
    */
-  rows?: number | undefined;
+  rows?: number | undefined
 
   /**
    * Number of page links to display.
    * @defaultValue 5
    */
-  pageLinkSize?: number | undefined;
+  pageLinkSize?: number | undefined
   /**
    * Array of integer values to display inside rows per page dropdown.
    */
-  rowsPerPageOptions?: number[] | undefined;
-
+  rowsPerPageOptions?: number[] | undefined
 }
 
 /**
@@ -57,17 +56,17 @@ export interface PageState {
   /**
    * Index of first record
    */
-  first: number;
+  first: number
   /**
    * Number of rows to display in new page
    */
-  rows: number;
+  rows: number
   /**
    * New page number
    */
-  page: number;
+  page: number
   /**
    * Total number of pages
    */
-  pageCount: number;
+  pageCount: number
 }

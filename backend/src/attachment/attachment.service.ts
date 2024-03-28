@@ -28,7 +28,7 @@ export class AttachmentService {
   }
 
   async findAllPage(query: PaginateQuery): Promise<Paginated<Attachment>> {
-    console.log('query = ',query)
+    console.log('query = ', query);
     return paginate(query, this.attachmentRepository, {
       sortableColumns: ['id', 'name', 'filename', 'createDate', 'updateDate'],
       nullSort: 'last',
@@ -50,11 +50,14 @@ export class AttachmentService {
   }
 
   async update(id: number, updateAttachmentDto: UpdateAttachmentDto) {
-    console.log('updateAttachmentDto = ', updateAttachmentDto)
-    return this.attachmentRepository.update({ id: id }, {
-      ...updateAttachmentDto,
-      updateDate: new Date(),
-    });
+    console.log('updateAttachmentDto = ', updateAttachmentDto);
+    return this.attachmentRepository.update(
+      { id: id },
+      {
+        ...updateAttachmentDto,
+        updateDate: new Date(),
+      },
+    );
   }
   async remove(id: number): Promise<any> {
     const attachment = await this.attachmentRepository.findOne({

@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Contact } from '@/modules/contacts/types';
-
+import { ref } from 'vue'
+import { Contact } from '@/modules/contacts/types'
 
 const contact = defineModel('contact', {
   type: Contact,
@@ -17,12 +16,12 @@ const submitted = ref(false)
 const visible = defineModel('visible', {
   type: Boolean,
   default: false
-});
+})
 
 const handleSave = () => {
-  emits('valider');
-  visible.value = false; 
-};
+  emits('valider')
+  visible.value = false
+}
 </script>
 
 <template>

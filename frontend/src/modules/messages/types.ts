@@ -1,16 +1,15 @@
 export interface IMessage {
-    name: string
-    content?: string
-    createDate?: string
-    updateDate?: string
-  }
-  export class Message implements IMessage {
-    constructor(
-      public id?: number,
-      public name: string = '',
-      public content?: string,
-      public createDate?: string,
-      public updateDate?: string
-    ) {}
-  }
-  
+  name: string
+  content?: string
+  createDate?: string
+  updateDate?: string
+}
+export class Message implements IMessage {
+  constructor(
+    public id?: number,
+    public name: string = '',
+    public content?: string,
+    public createDate?: string,
+    public updateDate?: string
+  ) {}
+}

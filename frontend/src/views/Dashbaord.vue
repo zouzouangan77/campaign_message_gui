@@ -1,15 +1,8 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-    <div class="text-center">
-        hello dashbaord
-    </div>
-
+  <div class="text-center">hello dashbaord</div>
 </template>
 
-<script setup  lang="ts">
+<script setup lang="ts"></script>
 
-</script>
-
-<style >
-
-</style>
+<style></style>
