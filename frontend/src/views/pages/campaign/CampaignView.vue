@@ -111,6 +111,11 @@
       message="Voulez vous vraiment supprimer ce Campaign ?"
       @confirmation="deleteCampaign"
     />
+    <DialogConfirmation
+        v-model:visible="dialogOK"
+        message="Vous-vous continuez l'envoi des campagnes ?"
+        @confirmation="envoiOK"
+    />
   </div>
 </template>
 
@@ -158,7 +163,13 @@ const campaign = ref(new Campaign())
 const searchField = ref('')
 const isNewCampaign = ref(true)
 const socket = io()
+const dialogOK = ref(false)
 
+const envoiOK = ()=>{
+  dialogOK.value=false;
+  socket.emit('connectionPageOK', 'coucou')
+
+}
 onMounted(async () => {
   loading.value = true
   await loadLazyData()
@@ -167,9 +178,15 @@ onMounted(async () => {
 
   // Écoutez les messages du serveur
   socket.on('message', (message) => {
-    console.log('nouveau message = ', message)
+    console.log('Ouverture message = ', message)
   })
 
+  socket.on('connectionPage', (message) => {
+    console.log('Ouverture de confirmation denvoi campagne = ', message)
+    dialogOK.value=true
+  })
+
+  connectionPage
   socket.on('updateListCampaign', async (message) => {
     //le backend signal au frond de mettre à jour la liste des campagnes
     console.log('updateListCampaign', message)

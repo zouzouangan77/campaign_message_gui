@@ -12,8 +12,10 @@ import { CreateCampaignDto } from '../campaign/dto/create-campaign.dto';
 import { SocketService } from './socket.service';
 import { chromium } from 'playwright';
 import { useVariable } from '../shared/channel.config';
+import { WhatsappChannelService } from './channel/whatsapp.channel.service';
+import { InstagramChannelService } from './channel/instagram.channel.service';
 
-const { whatsappUrl, instagramUrl } = useVariable();
+const { whatsappUrl, instagramUrl, balise_replace } = useVariable();
 
 @Injectable()
 export class SendingMessageService {
@@ -37,6 +39,8 @@ export class SendingMessageService {
     private readonly campaignService: CampaignService,
     private readonly contactService: ContactService,
     private readonly socketService: SocketService,
+    private readonly whatsappChannelService: WhatsappChannelService,
+    private readonly instagramChannelService: InstagramChannelService,
   ) {}
 
   public async sendCampaignMessage(campaignId: number): Promise<void> {
@@ -48,7 +52,7 @@ export class SendingMessageService {
       'updateListCampaign',
       'mise à jour de la liste des campagne dans le front car le statut de la campagne a changé',
     );
-    console.log('campaign = ', campaign);
+   // console.log('campaign = ', campaign);
     if (!campaign) return;
     for (const group of campaign.groups) {
       const contactsGroup = await this.contactService.findAllByGroup(group.id);
@@ -57,10 +61,43 @@ export class SendingMessageService {
       }
     }
 
-    console.log('liste de personnes à contacter = ', this.mapContacts);
+    //console.log('liste de personnes à contacter = ', this.mapContacts);
+    await this.initBrowserPage(campaign.canal);
+
+    // Demande d'authentification à la page à l'utilisateur
+    this.socketService.emitClientEvent(
+      'connectionPage',
+      'Veuillez vous connecter à la page',
+    );
+
+    //Attente de retour de confirmation du client
+    this.socketService.listenEvent('connectionPageOK', (data) => {
+      console.log('traitement lancé');
+      for (const [key, contact] of this.mapContacts) {
+        const messageTransformed = campaign.message.content.replace(
+          new RegExp(balise_replace.FIRSTNAME, 'g'),
+          contact.firstName,
+        );
+        const [attachment] = campaign.attachments;
+        const location = attachment ? attachment.location : undefined;
+        this.whatsappChannelService.sendMessage(
+          this.page,
+          contact,
+          messageTransformed,
+          location,
+        );
+      }
+    });
+
+    //On met un temps d'attente dans le quel si l'utilisateur ne repond pas on arrete d'attendre
+    setTimeout(
+      () => this.socketService.stoplistenEvent('connectionPageOK'),
+      30000,
+    );
   }
 
   private async initBrowserPage(channelParam: string) {
+    console.log('initBrowserPage')
     this.browser = await this.BROWSER_SELECT.launch({ headless: false });
     this.context = await this.browser.newContext();
     this.page = await this.context.newPage();
