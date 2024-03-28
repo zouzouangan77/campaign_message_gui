@@ -33,7 +33,7 @@ export class Campaign {
   @Column({
     type: 'varchar',
     nullable: false,
-    enum: ['NOT_SENT', 'PROCESSING', 'SENT'],
+    enum: ['NOT_SENT', 'PROCESSING', 'SENT', 'PENDING'],
     default: 'NOT_SENT',
   })
   statut: string;
