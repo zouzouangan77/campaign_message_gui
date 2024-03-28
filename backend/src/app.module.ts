@@ -6,6 +6,7 @@ import { GroupModule } from './group/group.module';
 import { MessageModule } from './message/message.module';
 import { CampaignModule } from './campaign/campaign.module';
 import { AttachmentModule } from './attachment/attachment.module';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AttachmentModule } from './attachment/attachment.module';
     MessageModule,
     CampaignModule,
     AttachmentModule,
+    SocketModule,
   ],
   controllers: [],
   providers: [],
