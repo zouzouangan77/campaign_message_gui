@@ -3,9 +3,11 @@ import { Injectable } from '@nestjs/common';
 import { useFunction } from '../../shared/function.util';
 import { useVariable } from '../../shared/channel.config';
 import * as readline from 'readline';
-import { chromium } from 'playwright';
+import { Page, BrowserContext, chromium } from 'playwright';
 import * as fs from 'fs';
 import * as csvParser from 'csv-parser';
+import { ChannelService } from './channel.service';
+import { Contact } from '../../contact/entities/contact.entity';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -15,15 +17,16 @@ const rl = readline.createInterface({
 const BROWSER_SELECT = chromium;
 
 const { sleep } = useFunction();
-const { message1, myTime, whatsappUrl, balise_replace } = useVariable();
+const { message_info, myTime, whatsappUrl, balise_replace } = useVariable();
 
 @Injectable()
-export class WhatsappChannelService {
-  public sendMessage = async (
-    contact,
-    message,
-    image,
-    page,
+export class WhatsappChannelService implements ChannelService {
+  public;
+  sendMessage = async (
+    page: Page,
+    contact: Contact,
+    message: string,
+    attachment?: string,
   ): Promise<boolean> => {
     let success = false;
     try {
@@ -37,7 +40,7 @@ export class WhatsappChannelService {
       await page
         .locator('div#side p.selectable-text.copyable-text.iq0m558w.g0rxnol2')
         .first()
-        .fill(contact, { timeout: myTime.TIME_OUT });
+        .fill(contact.phoneNumber, { timeout: myTime.TIME_OUT });
     } catch (e) {
       //logger.error(contact,problem.search_contact);
       return;
@@ -90,7 +93,7 @@ export class WhatsappChannelService {
       //on recupère le numero en enlevant le + et les espaces
       const numberChecked = span ? span.slice(1).replace(/\s/g, '') : '';
 
-      if (contact !== numberChecked) {
+      if (contact.phoneNumber !== numberChecked) {
         //logger.error(contact, problem.check_detail_contact);
         return;
       }
@@ -117,7 +120,7 @@ export class WhatsappChannelService {
       //logger.error(contact, problem.select_zone_message);
       return;
     }
-    if (image != undefined) {
+    if (attachment != undefined) {
       await sleep(myTime.TIME_WAIT_ACTION);
 
       try {
@@ -141,7 +144,7 @@ export class WhatsappChannelService {
           .locator(
             '#main > footer > div._2lSWV._3cjY2.copyable-area > div > span:nth-child(2) > div > div._2xy_p._1bAtO > div._1OT67 > div > span > div > ul > div > div:nth-child(2) input[type=file]',
           )
-          .setInputFiles(image);
+          .setInputFiles(attachment);
       } catch (e) {
         //logger.error(contact, problem.load_image);
         return;
@@ -177,21 +180,18 @@ export class WhatsappChannelService {
     }
     await sleep(myTime.TIME_WAIT_ACTION);
 
-    //logger.info(contact, success ? message1.send : message1.send_failed);
+    //logger.info(contact, success ? message_info.send : message_info.send_failed);
     return success;
   };
 
-  public sendAllMessage = async (
-    your_message,
-    list_contact,
-    image,
-  ): Promise<void> => {
+ /* public
+  sendAllMessage = async (your_message, list_contact, image): Promise<void> => {
     const browser = await BROWSER_SELECT.launch({ headless: false });
     const context = await browser.newContext();
     const page = await context.newPage();
 
     await page.goto(whatsappUrl);
-    await this.askUser(message1.prompt_before_start);
+    await this.askUser(message_info.prompt_before_start);
     await sleep(myTime.TIME_WHATS_APP_LOADING);
 
     try {
@@ -237,7 +237,7 @@ export class WhatsappChannelService {
             messagesSentFailedCount + messagesSentSuccedCount;
 
           if (messagesSentFailedCount > 0) {
-            const answer = await this.askUser(message1.question);
+            const answer = await this.askUser(message_info.question);
             if (answer.toLowerCase() === 'oui') {
               for (const contact of contactsNotSent) {
                 const prenom = contact[0];
@@ -268,5 +268,5 @@ export class WhatsappChannelService {
         resolve(answer);
       });
     });
-  };
+  };*/
 }

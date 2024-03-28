@@ -169,11 +169,12 @@ export class CampaignService {
   }
 
   async update(id: number, updateCampaignDto: UpdateCampaignDto) {
-    console.log('updateCampaignDto = ', updateCampaignDto);
-    return this.campaignRepository.update(
-      { id: id },
-      { ...updateCampaignDto, updateDate: new Date() },
-    );
+    const campaign = await this.findOne(id);
+    return this.campaignRepository.save({
+      ...campaign,
+      ...updateCampaignDto,
+      updateDate: new Date(),
+    });
   }
 
   async remove(id: number): Promise<Campaign> {

@@ -87,7 +87,7 @@
                 v-if="slotProps.data.statut === 'NOT_SENT'"
                 icon="pi pi-send"
                 label="Envoyer"
-                @click="sendCampaign"
+                @click="sendCampaign(slotProps.data.id)"
               />
             </div>
             <Toast />
@@ -169,6 +169,12 @@ onMounted(async () => {
   socket.on('message', (message) => {
     console.log('nouveau message = ', message)
   })
+
+  socket.on('updateListCampaign', async (message) => {
+    //le backend signal au frond de mettre à jour la liste des campagnes
+    console.log('updateListCampaign', message)
+    await loadLazyData()
+  })
 })
 
 async function updateDataTable() {
@@ -193,7 +199,6 @@ const openNewCampaign = () => {
   campaign.value = new Campaign()
   campaignDialog.value = true
   isNewCampaign.value = true
-  socket.emit('message', 'Hello from Vue.js!')
 }
 
 const editCampaign = async (updateCampaign: Campaign) => {
@@ -356,7 +361,8 @@ const items = (rowData: Campaign) => {
   }
 }
 
-const sendCampaign = () => {
+const sendCampaign = (campaignId: number) => {
+  socket.emit('sendCampaignMessage', campaignId)
   toast.add({ severity: 'success', summary: 'Envoie', detail: 'Envoie en Cours', life: 3000 })
 }
 </script>

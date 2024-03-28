@@ -17,7 +17,7 @@ export function useVariable() {
     load_image: " probleme chargement de l'image",
   };
 
-  const message1 = {
+  const message_info = {
     send: 'message envoyé',
     send_failed: 'message non envoyé',
     load_whatsappUrl: "Attente chargement de l'interface WhatApp",
@@ -40,7 +40,8 @@ export function useVariable() {
     file_contact_not_found: 'le fichier de contact est introuvable',
   };
 
-  const whatsappUrl = 'http://web.whatsapp.com/';
+  const whatsappUrl = 'https://web.whatsapp.com';
+  const instagramUrl = 'https://www.instagram.com';
 
   const myTime = {
     TIME_WAIT_END_ACTION: 5000,
@@ -51,16 +52,18 @@ export function useVariable() {
 
   const balise_replace = {
     PRENOM: '___PRENOM___',
+    FIRSTNAME: '___FIRSTNAME___',
   };
 
   const logger_file = 'campaign_whatsapp.log';
 
   return {
     problem,
-    message1,
+    message_info,
     message_error,
     myTime,
     whatsappUrl,
+    instagramUrl,
     balise_replace,
     logger_file,
   };

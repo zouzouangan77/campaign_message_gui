@@ -29,4 +29,8 @@ export class Contact {
 
   @ManyToMany((type) => Group, (group) => group.contacts)
   groups: Group[];
+
+  equals(other) {
+    return this.id === other.id;
+  }
 }
