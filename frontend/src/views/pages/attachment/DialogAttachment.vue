@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineEmits, defineModel, ref } from 'vue'
+import { ref } from 'vue'
 import { Attachment } from '@/modules/attachments/types'
 import type { FileUploadUploaderEvent } from 'primevue/fileupload'
 import { useToast } from 'primevue/usetoast'
