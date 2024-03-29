@@ -41,8 +41,8 @@ export class SendingMessageService {
 
   public async sendCampaignMessage(campaignId: number): Promise<void> {
     const campaign = await this.campaignService.findOne(campaignId);
-    //campaign.statut = this.statut.PROCESSING;
-    campaign.statut = this.statut.NOT_SENT;
+    campaign.statut = this.statut.PROCESSING;
+    //campaign.statut = this.statut.NOT_SENT;
     await this.campaignService.create(campaign);
     this.socketService.emitClientEvent(
       'updateListCampaign',
