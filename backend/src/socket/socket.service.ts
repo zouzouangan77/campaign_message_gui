@@ -25,7 +25,7 @@ export class SocketService {
     });
   }
 
-  public stoplistenEvent(event: string, callback: (param: any) => void) {
+  public stoplistenEvent(event: string) {
     // StopListen  event from the server
     this.socket.off(event);
   }

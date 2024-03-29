@@ -41,7 +41,8 @@
     
     <template #footer>
       <Button label="Anuller" icon="pi pi-times" severity="danger" text @click="visible = false" />*
-      <Button label="OK" icon="pi pi-check" severity="success" text @click="visible = false" :disabled="countdownValue >= 100"/>
+      <Button label="OK" icon="pi pi-check" severity="success" texttext @click="handleSave"/>
+    
     </template>
   </Dialog>
 </template>
@@ -55,6 +56,10 @@ defineProps<{
   campaign:Campaign
 }>()
 
+const emits = defineEmits<{
+  valider: [] // named tuple syntax
+}>()
+
 const countdownValue = defineModel('countdownValue', {
   type: Number,
   default: 0
@@ -66,9 +71,10 @@ const visible = defineModel('visible', {
   default: false
 })
 
-defineEmits<{
-  confirmation: []
-}>()
+const handleSave = () => {
+  emits('valider')
+  visible.value = false
+}
 
 // Surveillez countdownValue et fermez la boîte de dialogue si la valeur atteint zéro
 watch(countdownValue, (newValue) => {

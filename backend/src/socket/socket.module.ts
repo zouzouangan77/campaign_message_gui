@@ -8,6 +8,8 @@ import { contactsProviders } from '../contact/contact.provider';
 import { CsvService } from '../shared/csv.service';
 import { SendingMessageService } from './sending.message.service';
 import { DatabaseModule } from '../database/database.module';
+import { WhatsappChannelService } from './channel/whatsapp.channel.service';
+import { InstagramChannelService } from './channel/instagram.channel.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -20,6 +22,8 @@ import { DatabaseModule } from '../database/database.module';
     ...campaignsProviders,
     ...contactsProviders,
     CsvService,
+    WhatsappChannelService,
+    InstagramChannelService,
   ],
 })
 export class SocketModule {}

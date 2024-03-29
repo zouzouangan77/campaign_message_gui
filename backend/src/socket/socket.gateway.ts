@@ -43,16 +43,21 @@ export class SocketGateway
 
   @SubscribeMessage('sendCampaignMessage')
   handleSendCampaignMessage(client: Socket, campaignId: number): void {
-    console.log(
-      `sendCampaignMessage Message from client ${client.id} :`,
-      campaignId,
-    );
     this.sendingMessageService.sendCampaignMessage(campaignId);
-    //this.server.emit('findOneCampaign',payload);
   }
 
   @SubscribeMessage('updateListCampaign')
   handleUpdateListCampaign(client: Socket, payload: any): void {
     this.server.emit('updateListCampaign', payload);
+  }
+
+  @SubscribeMessage('connectionPage')
+  handleConnectionPage(client: Socket, payload: any): void {
+    this.server.emit('connectionPage', payload);
+  }
+
+  @SubscribeMessage('connectionPageOK')
+  handleConnectionPageOK(client: Socket, payload: any): void {
+    this.server.emit('connectionPageOK', payload);
   }
 }

@@ -115,7 +115,8 @@
       :campaign="campaign"
       v-model:countdownValue="countdownValue"
       v-model:visible="infoSendCampaignDialog"
-      message="Veuillez vous autghentifier"
+      message="Veuillez-vous authentifier"
+      @valider="confirmSendingCampaign"
       
     />
   </div>
@@ -168,6 +169,11 @@ const campaign = ref(new Campaign())
 const searchField = ref('')
 const isNewCampaign = ref(true)
 const socket = io()
+const dialogOK = ref(false)
+
+const confirmSendingCampaign = ()=>{
+  socket.emit('connectionPageOK', 'OK')
+}
 
 onMounted(async () => {
   loading.value = true
@@ -177,7 +183,14 @@ onMounted(async () => {
 
   // Écoutez les messages du serveur
   socket.on('message', (message) => {
-    console.log('nouveau message = ', message)
+    console.log('Ouverture message = ', message)
+  })
+
+  socket.on('connectionPage', (campaignData) => {
+    console.log('Ouverture de confirmation denvoi campagne = ', campaignData)
+    campaign.value = campaignData
+    infoSendCampaignDialog.value = true
+    countdownValue.value= 300 
   })
 
   socket.on('updateListCampaign', async (message) => {
@@ -274,14 +287,6 @@ const confirmDeleteCampaign = (campaignData: Campaign) => {
   campaign.value = campaignData
   deleteCampaignDialog.value = true
 }
-const confirmInfoSend = (campaignData: Campaign) => {
-  campaign.value = campaignData
-  console.log("campain data=  ",campaignData)
-  console.log("campain value=  ",campaign.value)
-  infoSendCampaignDialog.value = true
-  countdownValue.value= 300 //300 secondes (5 minutes)
-}
-
 
 const deleteCampaign = async () => {
   deleteCampaignDialog.value = false
@@ -372,8 +377,7 @@ const items = (rowData: Campaign) => {
         label: 'Detail',
         icon: 'pi pi-sent',
         command: () => {
-          //detailCampaign(rowData)
-          confirmInfoSend(rowData)
+          detailCampaign(rowData)
         }
       }
     ]
