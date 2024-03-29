@@ -70,8 +70,9 @@
         </Column>
         <Column :exportable="false" style="min-width: 3rem">
           <template #body="slotProps">
-            <div class="flex justify-content-center flex-wrap gap-3">
+            <div class="flex justify-content-left flex-wrap gap-3">
               <SplitButton
+                v-if="slotProps.data.statut === 'NOT_SENT'"
                 label="Action"
                 icon="pi pi-check"
                 severity="secondary"
@@ -84,17 +85,31 @@
               </SplitButton>
 
               <Button
+                v-if="slotProps.data.statut === 'SENT'"
+                icon="pi pi-bars"
+                label="Details"
+                severity="secondary"
+                @click="detailCampaign(slotProps.data)"
+              />
+              <Button
+                v-if="slotProps.data.statut === 'SENT'"
+                icon="pi pi-clone"
+                label="Dupliquer"
+                severity="info"
+                @click="duplicateCampaign(slotProps.data)"
+              />
+              <Button
                 v-if="slotProps.data.statut === 'NOT_SENT'"
                 icon="pi pi-send"
                 label="Envoyer"
                 @click="sendCampaign(slotProps.data.id)"
               />
               <Button
-                  v-if="slotProps.data.statut === 'PROCESSING' || slotProps.data.statut === 'PENDING'"
-                  icon="pi pi-stop-circle"
-                  severity="danger"
-                  label="Stop"
-                  @click="stopCampaign(slotProps.data.id)"
+                v-if="slotProps.data.statut === 'PROCESSING' || slotProps.data.statut === 'PENDING'"
+                icon="pi pi-stop-circle"
+                severity="danger"
+                label="Stop"
+                @click="stopCampaign(slotProps.data.id)"
               />
             </div>
             <Toast />
@@ -111,7 +126,11 @@
       @valider="updateCreateCampaign"
     />
 
-    <DialogDetailCampaign :campaignSelected="campaign" v-model:visible="campaignDetailDialog" />
+    <DialogDetailCampaign
+      :campaignSelected="campaign"
+      v-model:visible="campaignDetailDialog"
+      @resend="sendCampaignReject(campaign.id)"
+    />
 
     <DialogConfirmation
       v-model:visible="deleteCampaignDialog"
@@ -124,7 +143,6 @@
       v-model:visible="infoSendCampaignDialog"
       message="Veuillez-vous authentifier"
       @valider="confirmSendingCampaign(campaign.id)"
-      
     />
   </div>
 </template>
@@ -169,15 +187,15 @@ const selectedCampaigns = ref(new Array<Campaign>())
 const campaignDialog = ref(false)
 const campaignDetailDialog = ref(false)
 const deleteCampaignDialog = ref(false)
-const infoSendCampaignDialog= ref(false)
-const countdownValue = ref(0); 
+const infoSendCampaignDialog = ref(false)
+const countdownValue = ref(0)
 
 const campaign = ref(new Campaign())
 const searchField = ref('')
 const isNewCampaign = ref(true)
 const socket = io()
 
-const confirmSendingCampaign = (campaignId)=>{
+const confirmSendingCampaign = (campaignId) => {
   console.log('confirmSendingCampaign = ', campaignId)
   socket.emit('connectionPageOK', campaignId)
 }
@@ -191,7 +209,7 @@ onMounted(async () => {
     console.log('Ouverture de confirmation denvoi campagne = ', campaignData.payload)
     campaign.value = campaignData.payload
     infoSendCampaignDialog.value = true
-    countdownValue.value= 300 
+    countdownValue.value = 300
   })
 
   socket.on('updateListCampaign', async (message) => {
@@ -237,6 +255,7 @@ const duplicateCampaign = async (dcampaign: Campaign) => {
   const randomNumber = Math.floor(Math.random() * (10000 - 100 + 1)) + 100
   campaign.value.name += '-' + randomNumber
   campaign.value.id = undefined
+  campaign.value.statut = 'NOT_SENT'
   campaignDialog.value = true
   isNewCampaign.value = true
 }
@@ -331,67 +350,42 @@ const getStatusLabel = (status: string): 'success' | 'warning' | 'danger' | 'inf
 }
 
 const items = (rowData: Campaign) => {
-  if (rowData.statut === 'NOT_SENT') {
-    return [
-      {
-        label: 'Modifier',
-        icon: 'pi pi-refresh',
-        command: () => {
-          editCampaign(rowData)
-        }
-      },
-      {
-        label: 'Supprimer',
-        icon: 'pi pi-times',
-        command: () => {
-          confirmDeleteCampaign(rowData)
-        }
-      },
+  return [
+    {
+      label: 'Modifier',
+      icon: 'pi pi-refresh',
+      command: () => {
+        editCampaign(rowData)
+      }
+    },
+    {
+      label: 'Supprimer',
+      icon: 'pi pi-times',
+      command: () => {
+        confirmDeleteCampaign(rowData)
+      }
+    },
 
-      {
-        label: 'Dupliquer',
-        icon: 'pi pi-sent',
-        command: () => {
-          duplicateCampaign(rowData)
-        }
+    {
+      label: 'Dupliquer',
+      icon: 'pi pi-sent',
+      command: () => {
+        duplicateCampaign(rowData)
       }
-    ]
-  } else if (rowData.statut === 'SENT') {
-    return [
-      {
-        label: 'Dupliquer',
-        icon: 'pi pi-sent',
-        command: () => {
-          duplicateCampaign(rowData)
-        }
-      },
-      {
-        label: 'detail',
-        icon: 'pi pi-sent',
-        command: () => {
-          detailCampaign(rowData)
-        }
-      }
-    ]
-  } else {
-    return [
-      {
-        label: 'Detail',
-        icon: 'pi pi-sent',
-        command: () => {
-          detailCampaign(rowData)
-        }
-      }
-    ]
-  }
+    }
+  ]
 }
 
 const sendCampaign = (campaignId: number) => {
   socket.emit('sendCampaignMessage', campaignId)
 }
 
+const sendCampaignReject = (campaignId: number) => {
+  console.log('sendCampaignReject = ', campaignId)
+  socket.emit('sendCampaignRejectMessage', campaignId)
+}
+
 const stopCampaign = (campaignId: number) => {
   socket.emit('cancelSendCampaignMessage', campaignId)
 }
-
 </script>

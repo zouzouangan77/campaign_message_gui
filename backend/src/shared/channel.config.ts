@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 export function useVariable() {
   const problem = {
-    search_contact: 'probleme recherche contact"',
+    search_contact: 'probleme recherche contact',
     select_contact: "probleme d'envoi selection contact",
     select_zone_message: "probleme d'envoi selection de la zone de message",
     select_button_send: " probleme d'envoi selection du bouton d'envoi",

@@ -12,6 +12,7 @@ import {InstagramChannelService} from './channel/instagram.channel.service';
 import {useFunction} from '../shared/function.util';
 import {ChannelService} from './channel/channel.service';
 import {CreateCampaignSendingDto, CreateCampaignRejectDto} from "../campaign/dto/create-campaign.dto";
+import {CampaignReject} from "../campaign/entities/campaign_reject.entity";
 
 const {whatsappUrl, instagramUrl, balise_replace, myTime} = useVariable();
 const {sleep} = useFunction();
@@ -52,7 +53,6 @@ export class SendingMessageService {
         //campaign.statut = this.statut.NOT_SENT;
         await this.campaignService.create(campaign);
         this.socketService.emitClientEvent('updateListCampaign', 'OK');
-        // console.log('campaign = ', campaign);
 
         for (const group of campaign.groups) {
             const contactsGroup = await this.contactService.findAllByGroup(group.id);
@@ -72,7 +72,6 @@ export class SendingMessageService {
             const campaignRejects = new Array<CreateCampaignRejectDto>();
             if (campaign.id === campaignId) {
                 console.log('traitement lancé');
-                //console.log('liste de personnes à contacter = ', this.mapContacts);
                 campaign.statut = this.statut.PROCESSING;
                 await this.campaignService.create(campaign);
                 this.socketService.emitClientEvent('updateListCampaign', 'OK');
@@ -106,15 +105,16 @@ export class SendingMessageService {
                 }
 
                 //Tous les contacts on été traité, on sauvegarde maintenant les information d'envoi et de rejet
-                console.log('campaignSendings = ', campaignSendings)
-                console.log('campaignRejects = ', campaignRejects)
-
                 if (campaignSendings.length > 0) {
-                    this.campaignService.createSendings(campaignSendings)
+                    await this.campaignService.createSendings(campaignSendings)
                 }
                 if(campaignRejects.length > 0) {
-                    this.campaignService.createRejects(campaignRejects)
+                    await this.campaignService.createRejects(campaignRejects)
                 }
+                campaign.statut = this.statut.SENT;
+                await this.campaignService.create(campaign);
+                this.socketService.emitClientEvent('updateListCampaign', 'OK');
+
                 await this.closeBrowserPage();
             }
         });
@@ -125,6 +125,91 @@ export class SendingMessageService {
                 if (campaign.id === campaignId) {
                     console.log("annulation de l'envoi ", campaignId);
                     campaign.statut = this.statut.NOT_SENT;
+                    await this.campaignService.create(campaign);
+                    this.socketService.emitClientEvent('updateListCampaign', 'OK');
+                    await this.closeBrowserPage();
+                }
+            },
+        );
+
+        //On met un temps d'attente dans le quel si l'utilisateur ne repond pas on arrete d'attendre
+        setTimeout(async () => {
+            this.socketService.stoplistenEvent('connectionPageOK');
+            await this.closeBrowserPage();
+        }, myTime.TIME_WAIT_CONNECTION);
+    }
+
+    public async sendCampaignRejectMessage(campaignId: number): Promise<void> {
+        const campaign = await this.campaignService.findOne(campaignId);
+        if (!campaign) return;
+
+        campaign.statut = this.statut.PENDING;
+        //campaign.statut = this.statut.NOT_SENT;
+        await this.campaignService.create(campaign);
+        this.socketService.emitClientEvent('updateListCampaign', 'OK');
+
+        const lastCampaignRejects = await this.campaignService.findAllRejectByCampaign(campaign.id)
+
+        await this.initBrowserPage(campaign.canal);
+
+        // Demande d'authentification à la page à l'utilisateur
+        this.socketService.emitClientEvent('connectionPage', campaign);
+
+        //Attente de retour de confirmation du client
+        this.socketService.listenEvent('connectionPageOK', async (campaignId) => {
+            const campaignSendings = new Array<CreateCampaignSendingDto>();
+            const removeCampaignRejects = new Array<CampaignReject>();
+            if (campaign.id === campaignId) {
+                console.log('traitement lancé');
+                campaign.statut = this.statut.PROCESSING;
+                await this.campaignService.create(campaign);
+                this.socketService.emitClientEvent('updateListCampaign', 'OK');
+
+                for (const lastCampaignReject of lastCampaignRejects) {
+                    const contact = lastCampaignReject.contact;
+                    const messageTransformed = campaign.message.content.replace(
+                        new RegExp(balise_replace.FIRSTNAME, 'g'),
+                        contact.firstName,
+                    );
+                    const [attachment] = campaign.attachments;
+                    const location = attachment ? attachment.location : undefined;
+
+                    const sendMessageResponse = await this.channelService.sendMessage(
+                        this.page,
+                        contact,
+                        messageTransformed,
+                        location,
+                    );
+                    if (sendMessageResponse.statut) {
+                        campaignSendings.push({
+                            contact: {id: contact.id},
+                            campaign: {id: campaign.id}
+                        } as CreateCampaignSendingDto)
+
+                        removeCampaignRejects.push(lastCampaignReject)
+                    }
+                }
+
+                //Tous les contacts on été traité, on sauvegarde maintenant les information d'envoi et de rejet
+                if (campaignSendings.length > 0) {
+                    await this.campaignService.createSendings(campaignSendings)
+                    await this.campaignService.removeManyReject(removeCampaignRejects)
+                }
+
+                campaign.statut = this.statut.SENT;
+                await this.campaignService.create(campaign);
+                this.socketService.emitClientEvent('updateListCampaign', 'OK');
+
+                await this.closeBrowserPage();
+            }
+        });
+
+        this.socketService.listenEvent(
+            'cancelSendCampaignMessage',
+            async (campaignId) => {
+                if (campaign.id === campaignId) {
+                    console.log("annulation de l'envoi ", campaignId);
+                    campaign.statut = this.statut.SENT;
                     await this.campaignService.create(campaign);
                     this.socketService.emitClientEvent('updateListCampaign', 'OK');
                     await this.closeBrowserPage();

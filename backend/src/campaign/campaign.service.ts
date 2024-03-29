@@ -80,8 +80,8 @@ export class CampaignService {
   async findAllSendingByCampaign(id: number): Promise<CampaignSending[]> {
     return this.campaignSendingRepository
       .createQueryBuilder('campaign_sending')
-      .innerJoin('campaign_sending.contact', 'contact')
-      .innerJoin('campaign_sending.campaign', 'campaign')
+      .innerJoinAndSelect('campaign_sending.contact', 'contact')
+      .innerJoinAndSelect('campaign_sending.campaign', 'campaign')
       .where('campaign.id = :campaignId', { campaignId: id })
       .getMany();
   }
@@ -89,8 +89,8 @@ export class CampaignService {
   async findAllRejectByCampaign(id: number): Promise<CampaignReject[]> {
     return this.campaignRejectRepository
       .createQueryBuilder('campaign_reject')
-      .innerJoin('campaign_reject.contact', 'contact')
-      .innerJoin('campaign_reject.campaign', 'campaign')
+      .innerJoinAndSelect('campaign_reject.contact', 'contact')
+      .innerJoinAndSelect('campaign_reject.campaign', 'campaign')
       .where('campaign.id = :campaignId', { campaignId: id })
       .getMany();
   }
@@ -180,4 +180,9 @@ export class CampaignService {
   async remove(id: number): Promise<Campaign> {
     return this.campaignRepository.remove({ id: id } as Campaign);
   }
+
+  async removeManyReject(campaignRejects: Array<CampaignReject>): Promise<Array<CampaignReject>> {
+    return this.campaignRejectRepository.remove(campaignRejects);
+  }
+
 }

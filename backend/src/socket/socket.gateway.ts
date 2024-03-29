@@ -40,6 +40,11 @@ export class SocketGateway
     this.sendingMessageService.sendCampaignMessage(campaignId);
   }
 
+  @SubscribeMessage('sendCampaignRejectMessage')
+  handleSendCampaignRejectMessage(client: Socket, campaignId: number): void {
+    this.sendingMessageService.sendCampaignRejectMessage(campaignId);
+  }
+
   @SubscribeMessage('updateListCampaign')
   handleUpdateListCampaign(client: Socket, payload: any): void {
     this.server.emit('updateListCampaign', payload);

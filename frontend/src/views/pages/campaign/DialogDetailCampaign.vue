@@ -18,12 +18,17 @@ const visible = defineModel('visible', {
   default: false
 })
 
+const emits = defineEmits<{
+  resend: [campaignid: number] // named tuple syntax
+}>()
+
 const totalRecordSendings = ref(0)
 const totalRecordsRejects = ref(0)
 const pageableSending = ref(new Pageable<{ 'campaign.id': number }>())
 const pageableReject = ref(new Pageable<{ 'campaign.id': number }>())
 const dt = ref()
 const loading = ref(false)
+const tabActiveIndex= ref(0)
 const campaignsSendings = ref(new Array<CampaignSending>())
 const campaignRejects = ref(new Array<CampaignReject>())
 const searchField = ref('')
@@ -51,8 +56,6 @@ const loadLazyData = async () => {
 }
 
 const showDialog = async () => {
-  console.log('campaignSelected =', props.campaignSelected)
-
   pageableSending.value.filter = { 'campaign.id': props.campaignSelected.id ?? -1 }
   pageableReject.value.filter = { 'campaign.id': props.campaignSelected.id ?? -1 }
   await loadLazyData()
@@ -77,6 +80,12 @@ const onSort = (event: DataTableSortEvent, int: number) => {
   }
   loadLazyData()
 }
+
+const handleReSend = () => {
+  emits('resend')
+  visible.value = false
+  tabActiveIndex.value = 0
+}
 </script>
 
 <template>
@@ -89,7 +98,7 @@ const onSort = (event: DataTableSortEvent, int: number) => {
     modal
     :contentStyle="{ height: '300px' }"
   >
-    <TabView>
+    <TabView v-model:active-index="tabActiveIndex">
       <TabPanel header="CAMPAGNES ENVOY&Eacute;ES">
         <DataTable
           :value="campaignsSendings"
@@ -125,13 +134,11 @@ const onSort = (event: DataTableSortEvent, int: number) => {
           <Column
             field="contact.lastName"
             header="Nom"
-            :expander="true"
             style="min-width: 200px"
           ></Column>
           <Column
             field="contact.firstName"
             header="Prenom"
-            :expander="true"
             style="min-width: 200px"
           ></Column>
           <Column field="sendingDate" header="Date Envoie" style="min-width: 200px"></Column>
@@ -173,13 +180,11 @@ const onSort = (event: DataTableSortEvent, int: number) => {
           <Column
             field="contact.lastName"
             header="Nom"
-            :expander="true"
             style="min-width: 200px"
           ></Column>
           <Column
             field="contact.firstName"
             header="Prenom"
-            :expander="true"
             style="min-width: 200px"
           ></Column>
           <Column field="rejectDate" header="Date reject" style="min-width: 200px"></Column>
@@ -189,7 +194,8 @@ const onSort = (event: DataTableSortEvent, int: number) => {
     </TabView>
 
     <template #footer>
-      <Button label="Ok" icon="pi pi-check" @click="visible = false" />
+      <Button label="Quitter" icon="pi pi-check" @click="visible = false; tabActiveIndex = 0" severity="danger"/>
+      <Button v-if="tabActiveIndex===1 && campaignRejects.length > 0" label="Re-envoyer" icon="pi pi-send" @click="handleReSend"  />
     </template>
   </Dialog>
 </template>
