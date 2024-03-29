@@ -7,5 +7,12 @@ export interface ChannelService {
     contact: Contact,
     message: string,
     attachment?: string,
-  ): Promise<boolean>;
+  ): Promise<SendMessageResponse>;
+}
+
+export class SendMessageResponse {
+  constructor(
+  public statut: boolean,
+  public error_message: string,
+  ){}
 }

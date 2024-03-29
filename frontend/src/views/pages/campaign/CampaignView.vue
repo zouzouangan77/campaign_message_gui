@@ -89,6 +89,13 @@
                 label="Envoyer"
                 @click="sendCampaign(slotProps.data.id)"
               />
+              <Button
+                  v-if="slotProps.data.statut === 'PROCESSING' || slotProps.data.statut === 'PENDING'"
+                  icon="pi pi-stop-circle"
+                  severity="danger"
+                  label="Stop"
+                  @click="stopCampaign(slotProps.data.id)"
+              />
             </div>
             <Toast />
           </template>
@@ -116,7 +123,7 @@
       v-model:countdownValue="countdownValue"
       v-model:visible="infoSendCampaignDialog"
       message="Veuillez-vous authentifier"
-      @valider="confirmSendingCampaign"
+      @valider="confirmSendingCampaign(campaign.id)"
       
     />
   </div>
@@ -169,26 +176,20 @@ const campaign = ref(new Campaign())
 const searchField = ref('')
 const isNewCampaign = ref(true)
 const socket = io()
-const dialogOK = ref(false)
 
-const confirmSendingCampaign = ()=>{
-  socket.emit('connectionPageOK', 'OK')
+const confirmSendingCampaign = (campaignId)=>{
+  console.log('confirmSendingCampaign = ', campaignId)
+  socket.emit('connectionPageOK', campaignId)
 }
 
 onMounted(async () => {
   loading.value = true
   await loadLazyData()
-  campaign.value.canal = 'WHATS_APP'
   await getAllList()
 
-  // Écoutez les messages du serveur
-  socket.on('message', (message) => {
-    console.log('Ouverture message = ', message)
-  })
-
   socket.on('connectionPage', (campaignData) => {
-    console.log('Ouverture de confirmation denvoi campagne = ', campaignData)
-    campaign.value = campaignData
+    console.log('Ouverture de confirmation denvoi campagne = ', campaignData.payload)
+    campaign.value = campaignData.payload
     infoSendCampaignDialog.value = true
     countdownValue.value= 300 
   })
@@ -220,6 +221,7 @@ const globalSearch = async () => {
 
 const openNewCampaign = () => {
   campaign.value = new Campaign()
+  campaign.value.canal = 'WHATS_APP'
   campaignDialog.value = true
   isNewCampaign.value = true
 }
@@ -386,6 +388,10 @@ const items = (rowData: Campaign) => {
 
 const sendCampaign = (campaignId: number) => {
   socket.emit('sendCampaignMessage', campaignId)
-  toast.add({ severity: 'success', summary: 'Envoie', detail: 'Envoie en Cours', life: 3000 })
 }
+
+const stopCampaign = (campaignId: number) => {
+  socket.emit('cancelSendCampaignMessage', campaignId)
+}
+
 </script>

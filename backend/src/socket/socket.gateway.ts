@@ -34,12 +34,6 @@ export class SocketGateway
     console.log(`Client disconnected: ${client.id}`);
     this.clients.delete(client);
   }
-  //
-  // @SubscribeMessage('messageToServer')
-  // handleMessage(client: Socket, payload: any): void {
-  //     console.log(`handleMessage Message from client ${client.id}:`, payload);
-  //     this.server.emit('messageToClient',payload);
-  // }
 
   @SubscribeMessage('sendCampaignMessage')
   handleSendCampaignMessage(client: Socket, campaignId: number): void {
@@ -59,5 +53,10 @@ export class SocketGateway
   @SubscribeMessage('connectionPageOK')
   handleConnectionPageOK(client: Socket, payload: any): void {
     this.server.emit('connectionPageOK', payload);
+  }
+
+  @SubscribeMessage('cancelSendCampaignMessage')
+  handleCancelSendCampaignMessage(client: Socket, payload: any): void {
+    this.server.emit('cancelSendCampaignMessage', payload);
   }
 }

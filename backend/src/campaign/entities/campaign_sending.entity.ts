@@ -1,13 +1,13 @@
 import { Contact } from 'src/contact/entities/contact.entity';
 import { Campaign } from './campaign.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
 
 @Entity({ name: 'campaign_sending' })
 export class CampaignSending {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'datetime' })
+  @CreateDateColumn()
   sendingDate: Date;
 
   @ManyToOne(() => Contact)

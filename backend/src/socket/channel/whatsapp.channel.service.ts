@@ -6,7 +6,7 @@ import * as readline from 'readline';
 import { Page, BrowserContext, chromium } from 'playwright';
 import * as fs from 'fs';
 import * as csvParser from 'csv-parser';
-import { ChannelService } from './channel.service';
+import { ChannelService, SendMessageResponse } from './channel.service';
 import { Contact } from '../../contact/entities/contact.entity';
 
 const rl = readline.createInterface({
@@ -17,7 +17,7 @@ const rl = readline.createInterface({
 const BROWSER_SELECT = chromium;
 
 const { sleep } = useFunction();
-const { message_info, myTime, whatsappUrl, balise_replace } = useVariable();
+const { message_info, myTime, whatsappUrl, balise_replace, problem } = useVariable();
 
 @Injectable()
 export class WhatsappChannelService implements ChannelService {
@@ -26,7 +26,7 @@ export class WhatsappChannelService implements ChannelService {
     contact: Contact,
     message: string,
     attachment?: string,
-  ): Promise<boolean> => {
+  ): Promise<SendMessageResponse> => {
     let success = false;
     try {
       await page
@@ -42,7 +42,7 @@ export class WhatsappChannelService implements ChannelService {
         .fill(contact.phoneNumber, { timeout: myTime.TIME_OUT });
     } catch (e) {
       //logger.error(contact,problem.search_contact);
-      return;
+      return new SendMessageResponse(false, problem.search_contact);
     }
     await sleep(myTime.TIME_WAIT_ACTION);
 
@@ -54,7 +54,7 @@ export class WhatsappChannelService implements ChannelService {
       await zone_contact.first().click({ timeout: myTime.TIME_OUT });
     } catch (e) {
       //logger.error(contact, problem.select_contact);
-      return;
+      return new SendMessageResponse(false, problem.select_contact);
     }
     await sleep(myTime.TIME_WAIT_ACTION);
     //Vérification de la personne à qui ont envoie le message
@@ -66,7 +66,7 @@ export class WhatsappChannelService implements ChannelService {
         .click({ timeout: myTime.TIME_OUT });
     } catch (e) {
       //logger.error(contact, problem.check_select_detail_contact);
-      return;
+      return new SendMessageResponse(false, problem.check_select_detail_contact);
     }
 
     await sleep(myTime.TIME_WAIT_ACTION);
@@ -78,7 +78,9 @@ export class WhatsappChannelService implements ChannelService {
           'div._2Ts6i._1xFRo  span.enbbiyaj.e1gr2w1z.hp667wtd',
           { timeout: myTime.TIME_OUT },
         );
-      } catch (e) {}
+      } catch (e) {
+        return new SendMessageResponse(false, e.message);
+      }
 
       //Pour gérer le cas des comptes professionnels
       if (!spanLocator) {
@@ -94,11 +96,11 @@ export class WhatsappChannelService implements ChannelService {
 
       if (contact.phoneNumber !== numberChecked) {
         //logger.error(contact, problem.check_detail_contact);
-        return;
+        return new SendMessageResponse(false, problem.check_detail_contact);
       }
     } catch (e) {
       //logger.error(contact, problem.check_select_detail_contact_get);
-      return;
+      return new SendMessageResponse(false, problem.check_select_detail_contact_get);
     }
 
     await sleep(myTime.TIME_WAIT_ACTION);
@@ -107,7 +109,9 @@ export class WhatsappChannelService implements ChannelService {
       await page
         .locator('div._2Ts6i._1xFRo header.cm280p3y div.kk3akd72.svlsagor')
         .click({ timeout: myTime.TIME_OUT });
-    } catch (e) {}
+    } catch (e) {
+      return new SendMessageResponse(false, e.message);
+    }
 
     //selection de la zone de message
     try {
@@ -117,7 +121,7 @@ export class WhatsappChannelService implements ChannelService {
       zone_message.fill(message);
     } catch (e) {
       //logger.error(contact, problem.select_zone_message);
-      return;
+      return new SendMessageResponse(false, problem.select_zone_message);
     }
     if (attachment != undefined) {
       await sleep(myTime.TIME_WAIT_ACTION);
@@ -132,7 +136,7 @@ export class WhatsappChannelService implements ChannelService {
           .click({ timeout: myTime.TIME_OUT });
       } catch (e) {
         //logger.error(contact, problem.select_button_attach);
-        return;
+        return new SendMessageResponse(false, problem.select_button_attach);
       }
 
       await sleep(myTime.TIME_WAIT_ACTION);
@@ -146,126 +150,40 @@ export class WhatsappChannelService implements ChannelService {
           .setInputFiles(attachment);
       } catch (e) {
         //logger.error(contact, problem.load_image);
-        return;
+        return new SendMessageResponse(false, problem.load_image);
       }
       await sleep(myTime.TIME_WAIT_ACTION);
       //clic sur le bouton envoyer avec image
       try {
         /*await page
-          .locator(
-            '#app > div > div.two._1jJ70 > div._2QgSC > div._2Ts6i._2xAQV > span > div > span > div > div > div.g0rxnol2.thghmljt.p357zi0d.rjo8vgbg.ggj6brxn.f8m0rgwh.gfz4du6o.r7fjleex.bs7a17vp > div > div.O2_ew > div._3wFFT > div',
-          )
-          .first()
-          .click({ timeout: myTime.TIME_OUT });*/
+                  .locator(
+                    '#app > div > div.two._1jJ70 > div._2QgSC > div._2Ts6i._2xAQV > span > div > span > div > div > div.g0rxnol2.thghmljt.p357zi0d.rjo8vgbg.ggj6brxn.f8m0rgwh.gfz4du6o.r7fjleex.bs7a17vp > div > div.O2_ew > div._3wFFT > div',
+                  )
+                  .first()
+                  .click({ timeout: myTime.TIME_OUT });*/
         success = true;
       } catch (e) {
         //logger.error(contact, problem.select_button_send);
-        return;
+        return new SendMessageResponse(false, problem.select_button_send);
       }
     } else {
       await sleep(myTime.TIME_WAIT_ACTION);
       try {
         /*await page
-          .locator(
-            'button.tvf2evcx.oq44ahr5.lb5m6g5c.svlsagor.p2rjqpw5.epia9gcq',
-          )
-          .first()
-          .click({ timeout: myTime.TIME_OUT });*/
+                  .locator(
+                    'button.tvf2evcx.oq44ahr5.lb5m6g5c.svlsagor.p2rjqpw5.epia9gcq',
+                  )
+                  .first()
+                  .click({ timeout: myTime.TIME_OUT });*/
         success = true;
       } catch (e) {
         //logger.error(contact, problem.select_button_send);
-        return;
+        return new SendMessageResponse(false, problem.select_button_send);
       }
     }
     await sleep(myTime.TIME_WAIT_ACTION);
 
     //logger.info(contact, success ? message_info.send : message_info.send_failed);
-    return success;
+    return new SendMessageResponse(success, '');
   };
-
- /* public
-  sendAllMessage = async (your_message, list_contact, image): Promise<void> => {
-    const browser = await BROWSER_SELECT.launch({ headless: false });
-    const context = await browser.newContext();
-    const page = await context.newPage();
-
-    await page.goto(whatsappUrl);
-    await this.askUser(message_info.prompt_before_start);
-    await sleep(myTime.TIME_WHATS_APP_LOADING);
-
-    try {
-      const message = fs.readFileSync(your_message, 'utf8');
-
-      const contacts = [];
-      const contactsNotSent = [];
-
-      fs.createReadStream(list_contact)
-        .pipe(csvParser({ separator: ';', skipLines: 1 }))
-        .on('data', (row) => {
-          contacts.push(row);
-        })
-        .on('end', async () => {
-          let messagesSentFailedCount = 0;
-          let messagesSentSuccedCount = 0;
-          let messagesSentAllCount = 0;
-
-          do {
-            const contact = contacts.shift();
-            const prenom = contact[0];
-            const phone = contact[1];
-
-            const messageTransformed = message.replace(
-              new RegExp(balise_replace.PRENOM, 'g'),
-              prenom,
-            );
-            const success = await this.sendMessage(
-              phone,
-              messageTransformed,
-              image,
-              page,
-            );
-
-            if (!success) {
-              messagesSentFailedCount++;
-              contactsNotSent.push(contact);
-            }
-            messagesSentSuccedCount++;
-          } while (contacts.length > 0);
-
-          messagesSentAllCount =
-            messagesSentFailedCount + messagesSentSuccedCount;
-
-          if (messagesSentFailedCount > 0) {
-            const answer = await this.askUser(message_info.question);
-            if (answer.toLowerCase() === 'oui') {
-              for (const contact of contactsNotSent) {
-                const prenom = contact[0];
-                const phone = contact[1];
-                const messageTransformed = message.replace(
-                  new RegExp(balise_replace.PRENOM, 'g'),
-                  prenom,
-                );
-                await this.sendMessage(phone, messageTransformed, image, page);
-                await sleep(myTime.TIME_WAIT_ACTION);
-              }
-            }
-          }
-
-          rl.close();
-          await sleep(myTime.TIME_WAIT_END_ACTION);
-          await context.close();
-          await browser.close();
-        });
-    } catch (err) {
-      //logger.error(err);
-    }
-  };
-
-  public askUser = (question: string): Promise<string> => {
-    return new Promise((resolve) => {
-      rl.question(question, (answer: string) => {
-        resolve(answer);
-      });
-    });
-  };*/
 }

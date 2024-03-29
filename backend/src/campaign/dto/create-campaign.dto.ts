@@ -14,14 +14,14 @@ export class CreateCampaignDto {
 }
 
 export class CreateCampaignSendingDto {
-  id: number;
+  id?: number;
   sendingDate?: string;
   contact: { id: number };
   campaign: { id: number };
 }
 
 export class CreateCampaignRejectDto {
-  id: number;
+  id?: number;
   rejectDate?: string;
   contact: { id: number };
   campaign: { id: number };

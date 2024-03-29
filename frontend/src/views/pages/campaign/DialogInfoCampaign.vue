@@ -40,7 +40,7 @@
    
     
     <template #footer>
-      <Button label="Anuller" icon="pi pi-times" severity="danger" text @click="visible = false" />*
+      <Button label="Anuller" icon="pi pi-times" severity="danger" text @click="handleCancel" />
       <Button label="OK" icon="pi pi-check" severity="success" texttext @click="handleSave"/>
     
     </template>
@@ -57,7 +57,8 @@ defineProps<{
 }>()
 
 const emits = defineEmits<{
-  valider: [] // named tuple syntax
+  valider: [campaignId : number] // named tuple syntax
+  cancel: [] // named tuple syntax
 }>()
 
 const countdownValue = defineModel('countdownValue', {
@@ -73,6 +74,11 @@ const visible = defineModel('visible', {
 
 const handleSave = () => {
   emits('valider')
+  visible.value = false
+}
+
+const handleCancel = () => {
+  emits('cancel')
   visible.value = false
 }
 

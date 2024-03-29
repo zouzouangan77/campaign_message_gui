@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ChannelService } from './channel.service';
+import {ChannelService, SendMessageResponse} from './channel.service';
 import { Page } from 'playwright';
 import { Contact } from '../../contact/entities/contact.entity';
 
@@ -10,7 +10,7 @@ export class InstagramChannelService implements ChannelService {
     contact: Contact,
     message: string,
     attachment?: string,
-  ): Promise<boolean> {
-    return false;
+  ): Promise<SendMessageResponse> {
+    return new SendMessageResponse(false, '');
   }
 }
