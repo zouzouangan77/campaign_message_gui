@@ -7,6 +7,7 @@ export class SocketService {
 
   constructor() {
     const url = `${process.env.PROTOCOLE}://${process.env.HOST}:${process.env.PORT}`;
+    console.log('socket url = ', url);
     this.socket = require('socket.io-client')(url); // Replace with your server URL
     //this.setupSocketEvents();
   }
