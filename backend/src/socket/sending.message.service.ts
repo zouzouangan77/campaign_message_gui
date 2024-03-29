@@ -98,7 +98,8 @@ export class SendingMessageService {
 
   private async initBrowserPage(channelParam: string) {
     console.log('initBrowserPage')
-    this.browser = await this.BROWSER_SELECT.launch({ headless: false });
+    this.browser = await this.BROWSER_SELECT.launch(/*{ headless: true }*/);
+    console.log('lancement du navigateur')
     this.context = await this.browser.newContext();
     this.page = await this.context.newPage();
 
@@ -111,6 +112,7 @@ export class SendingMessageService {
         url = instagramUrl;
         break;
     }
+    console.log('url = ', url)
     await this.page.goto(url);
   }
 }
