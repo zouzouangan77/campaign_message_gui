@@ -108,8 +108,15 @@
 
     <DialogConfirmation
       v-model:visible="deleteCampaignDialog"
-      message="Voulez vous vraiment supprimer ce Campaign ?"
+      message="Voulez vous vraiment supprimer ce Campaign à?"
       @confirmation="deleteCampaign"
+    />
+    <DialogInfoCampaign
+      :campaign="campaign"
+      v-model:countdownValue="countdownValue"
+      v-model:visible="infoSendCampaignDialog"
+      message="Veuillez vous autghentifier"
+      
     />
   </div>
 </template>
@@ -134,6 +141,7 @@ import { useToast } from 'primevue/usetoast'
 import DialogConfirmation from '../../../modules/shared/components/DialogConfirmation.vue'
 import DialogCampaign from './DialogCampaign.vue'
 import DialogDetailCampaign from './DialogDetailCampaign.vue'
+import DialogInfoCampaign from './DialogInfoCampaign.vue'
 import { Message } from '@/modules/messages/types'
 import { Group } from '@/modules/groups/types'
 import { Attachment } from '@/modules/attachments/types'
@@ -153,6 +161,8 @@ const selectedCampaigns = ref(new Array<Campaign>())
 const campaignDialog = ref(false)
 const campaignDetailDialog = ref(false)
 const deleteCampaignDialog = ref(false)
+const infoSendCampaignDialog= ref(false)
+const countdownValue = ref(0); 
 
 const campaign = ref(new Campaign())
 const searchField = ref('')
@@ -264,6 +274,14 @@ const confirmDeleteCampaign = (campaignData: Campaign) => {
   campaign.value = campaignData
   deleteCampaignDialog.value = true
 }
+const confirmInfoSend = (campaignData: Campaign) => {
+  campaign.value = campaignData
+  console.log("campain data=  ",campaignData)
+  console.log("campain value=  ",campaign.value)
+  infoSendCampaignDialog.value = true
+  countdownValue.value= 300 //300 secondes (5 minutes)
+}
+
 
 const deleteCampaign = async () => {
   deleteCampaignDialog.value = false
@@ -354,7 +372,8 @@ const items = (rowData: Campaign) => {
         label: 'Detail',
         icon: 'pi pi-sent',
         command: () => {
-          detailCampaign(rowData)
+          //detailCampaign(rowData)
+          confirmInfoSend(rowData)
         }
       }
     ]

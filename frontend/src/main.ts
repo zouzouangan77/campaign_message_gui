@@ -38,12 +38,16 @@ import SplitButton from 'primevue/splitbutton'
 import RadioButton from 'primevue/radiobutton'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
+import Knob from 'primevue/knob'
+import Card from 'primevue/card'
 import App from './App.vue'
 import router from './router'
 
 const app = createApp(App)
 
 app.component('TabPanel', TabPanel)
+app.component('Card', Card)
+app.component('Knob', Knob)
 app.component('TabView', TabView)
 app.component('InputText', InputText)
 app.component('SplitButton', SplitButton)
