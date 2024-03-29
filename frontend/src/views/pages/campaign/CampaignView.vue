@@ -186,7 +186,6 @@ onMounted(async () => {
     dialogOK.value=true
   })
 
-  connectionPage
   socket.on('updateListCampaign', async (message) => {
     //le backend signal au frond de mettre à jour la liste des campagnes
     console.log('updateListCampaign', message)

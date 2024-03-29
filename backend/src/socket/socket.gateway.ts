@@ -43,10 +43,6 @@ export class SocketGateway
 
   @SubscribeMessage('sendCampaignMessage')
   handleSendCampaignMessage(client: Socket, campaignId: number): void {
-    console.log(
-      `sendCampaignMessage Message from client ${client.id} :`,
-      campaignId,
-    );
     this.sendingMessageService.sendCampaignMessage(campaignId);
   }
 
@@ -64,6 +60,4 @@ export class SocketGateway
   handleConnectionPageOK(client: Socket, payload: any): void {
     this.server.emit('connectionPageOK', payload);
   }
-
-
 }

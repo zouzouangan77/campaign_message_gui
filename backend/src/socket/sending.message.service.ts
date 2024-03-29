@@ -1,16 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Campaign } from '../campaign/entities/campaign.entity';
-import { Message } from '../message/entities/message.entity';
-import { Group } from '../group/entities/group.entity';
 import { Contact } from '../contact/entities/contact.entity';
-import { Attachment } from '../attachment/entities/attachment.entity';
 import { CampaignService } from '../campaign/campaign.service';
-import { Socket } from 'socket.io';
 import { ContactService } from '../contact/contact.service';
-import { CreateCampaignDto } from '../campaign/dto/create-campaign.dto';
 import { SocketService } from './socket.service';
-import { chromium } from 'playwright';
+import { chromium, firefox } from 'playwright';
 import { useVariable } from '../shared/channel.config';
 import { WhatsappChannelService } from './channel/whatsapp.channel.service';
 import { InstagramChannelService } from './channel/instagram.channel.service';
@@ -48,11 +43,12 @@ export class SendingMessageService {
     //campaign.statut = this.statut.PROCESSING;
     campaign.statut = this.statut.NOT_SENT;
     await this.campaignService.create(campaign);
+    console.log('campaign = ', campaign);
     this.socketService.emitClientEvent(
       'updateListCampaign',
       'mise à jour de la liste des campagne dans le front car le statut de la campagne a changé',
     );
-   // console.log('campaign = ', campaign);
+    // console.log('campaign = ', campaign);
     if (!campaign) return;
     for (const group of campaign.groups) {
       const contactsGroup = await this.contactService.findAllByGroup(group.id);
@@ -97,9 +93,12 @@ export class SendingMessageService {
   }
 
   private async initBrowserPage(channelParam: string) {
-    console.log('initBrowserPage')
-    this.browser = await this.BROWSER_SELECT.launch(/*{ headless: true }*/);
-    console.log('lancement du navigateur')
+    console.log('initBrowserPage');
+    // this.browser = await this.BROWSER_SELECT.launch({ headless: false });
+    //this.browser = await firefox.launch({ headless: false });
+    this.browser = await chromium.launch({ headless: false });
+    console.log('this.browser ', this.browser);
+    console.log('lancement du navigateur');
     this.context = await this.browser.newContext();
     this.page = await this.context.newPage();
 
@@ -112,7 +111,7 @@ export class SendingMessageService {
         url = instagramUrl;
         break;
     }
-    console.log('url = ', url)
+    console.log('url = ', url);
     await this.page.goto(url);
   }
 }
