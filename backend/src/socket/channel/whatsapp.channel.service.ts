@@ -155,12 +155,12 @@ export class WhatsappChannelService implements ChannelService {
       await sleep(myTime.TIME_WAIT_ACTION);
       //clic sur le bouton envoyer avec image
       try {
-        /*await page
+        await page
                   .locator(
                     '#app > div > div.two._1jJ70 > div._2QgSC > div._2Ts6i._2xAQV > span > div > span > div > div > div.g0rxnol2.thghmljt.p357zi0d.rjo8vgbg.ggj6brxn.f8m0rgwh.gfz4du6o.r7fjleex.bs7a17vp > div > div.O2_ew > div._3wFFT > div',
                   )
                   .first()
-                  .click({ timeout: myTime.TIME_OUT });*/
+                  .click({ timeout: myTime.TIME_OUT });
         success = true;
       } catch (e) {
         //logger.error(contact, problem.select_button_send);
@@ -169,12 +169,12 @@ export class WhatsappChannelService implements ChannelService {
     } else {
       await sleep(myTime.TIME_WAIT_ACTION);
       try {
-        /*await page
+        await page
                   .locator(
                     'button.tvf2evcx.oq44ahr5.lb5m6g5c.svlsagor.p2rjqpw5.epia9gcq',
                   )
                   .first()
-                  .click({ timeout: myTime.TIME_OUT });*/
+                  .click({ timeout: myTime.TIME_OUT });
         success = true;
       } catch (e) {
         //logger.error(contact, problem.select_button_send);

@@ -1,63 +1,69 @@
 <template>
-  <Dialog v-model:visible="visible" :style="{ width: '50vw', height: '37rem'}" header="Authentification" modal @show="startCountdown" :closable="false">
-   
+  <Dialog v-model:visible="visible" :style="{ width: '50vw', height: '37rem' }" header="Authentification" modal
+    @show="startCountdown" :closable="false">
+
     <div class="grid" style="display: flex; justify-content: center; align-items: center;">
-      
+
       <div class="mr-3">
-          <Card style="width: 20rem;height: 27rem; overflow: hidden">
-            <template #header>
-              
-              <img v-if="campaign.canal==='WHATS_APP'" src="/layout/images/whatsapp.png" alt="user header" style="width: 20rem;height: 8rem;" />
-              <img v-if="campaign.canal==='INSTAGRAM'" src="/layout/images/instagram.jpg" alt="user header" style="width: 16rem;height: 8rem;"  />
-            </template>
-            <template #title><i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem; color: red" /> Authentification</template>
-            <template #content>
-                <p class="m-0 b">
-                    Vous devez vous authentifier afin de poursuivre l'envoi de la campagne
-                </p>
-                <p class="m-0">
-                    Vous disposez de 5 min pour cela risque de vous le non envoi de la campagne
-                </p>
-                <p class="m-0">
-                    Si vous finissez de vous authentifier Veuillez appuyer sur le bouton <span style="font-weight: bold; color: green;">OK</span>
-                </p>
-              
-            </template>
-            
-         </Card>
-        
+        <Card style="width: 20rem;height: 27rem; overflow: hidden">
+          <template #header>
+
+            <img v-if="campaign.canal === 'WHATS_APP'" src="/layout/images/whatsapp.png" alt="user header"
+              style="width: 20rem;height: 8rem;" />
+            <img v-if="campaign.canal === 'INSTAGRAM'" src="/layout/images/instagram.jpg" alt="user header"
+              style="width: 16rem;height: 8rem;" />
+          </template>
+          <template #title><i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem; color: red" />
+            Authentification</template>
+          <template #content>
+            <p class="m-0 b">
+              Vous devez vous authentifier afin de poursuivre l'envoi de la campagne
+            </p>
+            <p class="m-0">
+              Vous disposez de 5 min pour cela risque de vous le non envoi de la campagne
+            </p>
+            <p class="m-0">
+              Si vous finissez de vous authentifier Veuillez appuyer sur le bouton <span
+                style="font-weight: bold; color: green;">OK</span>
+            </p>
+
+          </template>
+
+        </Card>
+
       </div>
-      
+
       <div>
-        <Knob v-model="countdownValue" :value-template="`${countdownMinutes}:${countdownSeconds}`"  :max="300" :size="100" />
+        <Knob v-model="countdownValue" :value-template="`${countdownMinutes}:${countdownSeconds}`" :max="300"
+          :size="100" />
         <p class="m-0">
-                    Temps restant : {{ countdownMinutes }} min {{ countdownSeconds }} sec
+          Temps restant : {{ countdownMinutes }} min {{ countdownSeconds }} sec
         </p>
       </div>
-     
+
 
     </div>
-   
-    
+
+
     <template #footer>
       <Button label="Anuller" icon="pi pi-times" severity="danger" text @click="handleCancel" />
-      <Button label="OK" icon="pi pi-check" severity="success" texttext @click="handleSave"/>
-    
+      <Button label="OK" icon="pi pi-check" severity="success" texttext @click="handleSave" />
+
     </template>
   </Dialog>
 </template>
 
 <script setup lang="ts">
-import { computed, watch  } from 'vue';
+import { computed, watch } from 'vue';
 import { Campaign } from '@/modules/campaigns/types'
 
 defineProps<{
   message: string;
-  campaign:Campaign
+  campaign: Campaign
 }>()
 
 const emits = defineEmits<{
-  valider: [campaignId : number] // named tuple syntax
+  valider: [] // named tuple syntax
   cancel: [] // named tuple syntax
 }>()
 

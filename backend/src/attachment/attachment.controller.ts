@@ -10,7 +10,6 @@ import {
   ParseFilePipeBuilder,
   MaxFileSizeValidator,
   UseInterceptors,
-  HttpStatus,
   Body,
   Res,
   NotFoundException,

@@ -19,7 +19,7 @@ const visible = defineModel('visible', {
 })
 
 const emits = defineEmits<{
-  resend: [campaignid: number] // named tuple syntax
+  resend: [campaignid: number | undefined] // named tuple syntax
 }>()
 
 const totalRecordSendings = ref(0)
@@ -28,7 +28,7 @@ const pageableSending = ref(new Pageable<{ 'campaign.id': number }>())
 const pageableReject = ref(new Pageable<{ 'campaign.id': number }>())
 const dt = ref()
 const loading = ref(false)
-const tabActiveIndex= ref(0)
+const tabActiveIndex = ref(0)
 const campaignsSendings = ref(new Array<CampaignSending>())
 const campaignRejects = ref(new Array<CampaignReject>())
 const searchField = ref('')
@@ -81,41 +81,23 @@ const onSort = (event: DataTableSortEvent, int: number) => {
   loadLazyData()
 }
 
-const handleReSend = () => {
-  emits('resend')
+const handleReSend = (campaignId: number | undefined) => {
+  emits('resend', campaignId)
   visible.value = false
   tabActiveIndex.value = 0
 }
 </script>
 
 <template>
-  <Dialog
-    v-model:visible="visible"
-    :style="{ width: '70vw' }"
-    header="Campaigne  Details"
-    @show="showDialog"
-    maximizable
-    modal
-    :contentStyle="{ height: '300px' }"
-  >
+  <Dialog v-model:visible="visible" :style="{ width: '70vw' }" header="Campaigne  Details" @show="showDialog"
+    maximizable modal :contentStyle="{ height: '300px' }">
     <TabView v-model:active-index="tabActiveIndex">
       <TabPanel header="CAMPAGNES ENVOY&Eacute;ES">
-        <DataTable
-          :value="campaignsSendings"
-          :scrollable="true"
-          scrollHeight="flex"
-          lazy
-          paginator
-          :rows="10"
-          ref="dt"
+        <DataTable :value="campaignsSendings" :scrollable="true" scrollHeight="flex" lazy paginator :rows="10" ref="dt"
           dataKey="id"
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          :rowsPerPageOptions="[5, 10, 25]"
-          :totalRecords="totalRecordSendings"
-          :loading="loading"
-          @page="onPage($event, 1)"
-          @sort="onSort($event, 1)"
-        >
+          :rowsPerPageOptions="[5, 10, 25]" :totalRecords="totalRecordSendings" :loading="loading"
+          @page="onPage($event, 1)" @sort="onSort($event, 1)">
           <template #header>
             <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
               <h4 class="m-1">Recherche sur les messages envoyés</h4>
@@ -123,44 +105,21 @@ const handleReSend = () => {
                 <InputIcon>
                   <i class="pi pi-search" />
                 </InputIcon>
-                <InputText
-                  v-model="searchField"
-                  placeholder="Search..."
-                  @keydown.enter="globalSearch"
-                />
+                <InputText v-model="searchField" placeholder="Search..." @keydown.enter="globalSearch" />
               </IconField>
             </div>
           </template>
-          <Column
-            field="contact.lastName"
-            header="Nom"
-            style="min-width: 200px"
-          ></Column>
-          <Column
-            field="contact.firstName"
-            header="Prenom"
-            style="min-width: 200px"
-          ></Column>
+          <Column field="contact.lastName" header="Nom" style="min-width: 200px"></Column>
+          <Column field="contact.firstName" header="Prenom" style="min-width: 200px"></Column>
           <Column field="sendingDate" header="Date Envoie" style="min-width: 200px"></Column>
         </DataTable>
       </TabPanel>
       <TabPanel header="CAMPAGNES NON ENVOY&Eacute;ES">
-        <DataTable
-          :value="campaignRejects"
-          :scrollable="true"
-          scrollHeight="flex"
-          lazy
-          paginator
-          :rows="10"
-          ref="dt"
+        <DataTable :value="campaignRejects" :scrollable="true" scrollHeight="flex" lazy paginator :rows="10" ref="dt"
           dataKey="id"
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          :rowsPerPageOptions="[5, 10, 25]"
-          :totalRecords="totalRecordsRejects"
-          :loading="loading"
-          @page="onPage($event, 2)"
-          @sort="onSort($event, 2)"
-        >
+          :rowsPerPageOptions="[5, 10, 25]" :totalRecords="totalRecordsRejects" :loading="loading"
+          @page="onPage($event, 2)" @sort="onSort($event, 2)">
           <template #header>
             <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
               <h4 class="m-1">Recherche sur les messages Non envoyés</h4>
@@ -168,25 +127,13 @@ const handleReSend = () => {
                 <InputIcon>
                   <i class="pi pi-search" />
                 </InputIcon>
-                <InputText
-                  v-model="searchField"
-                  placeholder="Search..."
-                  @keydown.enter="globalSearch"
-                />
+                <InputText v-model="searchField" placeholder="Search..." @keydown.enter="globalSearch" />
               </IconField>
             </div>
           </template>
 
-          <Column
-            field="contact.lastName"
-            header="Nom"
-            style="min-width: 200px"
-          ></Column>
-          <Column
-            field="contact.firstName"
-            header="Prenom"
-            style="min-width: 200px"
-          ></Column>
+          <Column field="contact.lastName" header="Nom" style="min-width: 200px"></Column>
+          <Column field="contact.firstName" header="Prenom" style="min-width: 200px"></Column>
           <Column field="rejectDate" header="Date reject" style="min-width: 200px"></Column>
           <Column field="cause" header="cause" style="min-width: 200px"></Column>
         </DataTable>
@@ -194,8 +141,9 @@ const handleReSend = () => {
     </TabView>
 
     <template #footer>
-      <Button label="Quitter" icon="pi pi-check" @click="visible = false; tabActiveIndex = 0" severity="danger"/>
-      <Button v-if="tabActiveIndex===1 && campaignRejects.length > 0" label="Re-envoyer" icon="pi pi-send" @click="handleReSend"  />
+      <Button label="Quitter" icon="pi pi-check" @click="visible = false; tabActiveIndex = 0" severity="danger" />
+      <Button v-if="tabActiveIndex === 1 && campaignRejects.length > 0" label="Re-envoyer" icon="pi pi-send"
+        @click="handleReSend(campaignSelected.id)" />
     </template>
   </Dialog>
 </template>
