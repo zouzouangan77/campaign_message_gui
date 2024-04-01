@@ -45,19 +45,7 @@ const handleSave = () => {
 
     <div class="field">
       <label for="content">Contenu du message</label>
-      <Editor v-model="message.content" required="true" editorStyle="height: 250px">
-        <template v-slot:toolbar>
-          <span class="ql-formats">
-            <button v-tooltip.bottom="'Bold'" class="ql-bold"></button>
-            <button v-tooltip.bottom="'Italic'" class="ql-italic"></button>
-            <button v-tooltip.bottom="'Underline'" class="ql-underline"></button>
-          </span>
-          <span class="ql-formats">
-            <button v-tooltip.bottom="'ordered'" class="ql-list" value="ordered"></button>
-            <button v-tooltip.bottom="'list'" class="ql-list ql-active" value="bullet"></button>
-          </span>
-        </template>
-      </Editor>
+      <Textarea v-model="message.content" style="resize: none;" rows="10" cols="30" />
     </div>
 
     <template #footer>

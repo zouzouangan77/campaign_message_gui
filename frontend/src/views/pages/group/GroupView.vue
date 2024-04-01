@@ -25,15 +25,29 @@ const selectedGroup = ref(new Group())
 const visibleConfirmDeleteGroupDialog = ref(false)
 const allContacts = ref(new Array<Contact>())
 const contactsGroup = ref(new Array<Contact>())
+const filterContact = ref('');
 
-const privateContacts = computed(() => {
-  return allContacts.value.filter(
-    (contact) => !contactsGroup.value.some((groupContact) => groupContact.id === contact.id)
+const privateContacts = ref(new Array<Contact>())
+
+const keydowFilterContact = () => {
+  updatePrivateContacts()
+  picklistContacts.value = [privateContacts.value, picklistContacts.value[1]]
+
+}
+
+const updatePrivateContacts = () => {
+  const newContactsGroup = cannotBeValidateOrCancel? contactsGroup.value : picklistContacts.value[1]
+  privateContacts.value = allContacts.value.filter((contact) =>
+    contact.firstName.toLocaleLowerCase().includes(filterContact.value.toLocaleLowerCase()) ||
+    (contact.lastName!=undefined && contact.lastName.toLocaleLowerCase().includes(filterContact.value.toLocaleLowerCase())) ||
+    (contact.phoneNumber != undefined && contact.phoneNumber.toLocaleLowerCase().includes(filterContact.value.toLocaleLowerCase())) ||
+    (contact.idInsta != undefined && contact.idInsta.toLocaleLowerCase().includes(filterContact.value.toLocaleLowerCase()))
   )
-})
-
+    .filter(
+      (contact) => !newContactsGroup.some((groupContact) => groupContact.id === contact.id))
+}
 const picklistContacts = ref([new Array<Contact>(), new Array<Contact>()])
-const canBeValidateOrCancel = computed(() => {
+const cannotBeValidateOrCancel = computed(() => {
   const [_, targetContacts] = picklistContacts.value
   return (
     targetContacts.every((targetContact) =>
@@ -65,7 +79,9 @@ const groupChanged = async () => {
     selectedGroup.value != null &&
     selectedGroup.value != undefined
   ) {
+    filterContact.value = ''
     contactsGroup.value = await findAllContactsByGroup(selectedGroup.value.id!)
+    updatePrivateContacts()
     updateDataPickList()
   }
 }
@@ -178,47 +194,25 @@ const editGroup = (updateGroup: Group) => {
         <h5>LIST DES GROUPES</h5>
 
         <div class="card flex justify-content-center">
-          <Listbox
-            v-model="selectedGroup"
-            :options="groups"
-            filter
-            optionLabel="name"
-            class="w-full md:w-25rem"
-            @change="groupChanged"
-          >
+          <Listbox v-model="selectedGroup" :options="groups" filter optionLabel="name" class="w-full md:w-25rem"
+            @change="groupChanged">
             <template #option="slotProps">
               <div class="flex justify-content-between">
                 <div>{{ slotProps.option.name }}</div>
                 <div>
                   <!-- Bouton pour modifier le groupe -->
-                  <Button
-                    icon="pi pi-pencil"
-                    rounded
-                    class="mr-1"
-                    @click="editGroup(slotProps.option)"
-                  />
+                  <Button icon="pi pi-pencil" rounded class="mr-1" @click="editGroup(slotProps.option)" />
                   <!-- Bouton pour supprimer le groupe -->
-                  <Button
-                    icon="pi pi-trash"
-                    rounded
-                    severity="danger"
-                    @click="confirmDeleteGroup(slotProps.option)"
-                    raised
-                  />
+                  <Button icon="pi pi-trash" rounded severity="danger" @click="confirmDeleteGroup(slotProps.option)"
+                    raised />
                 </div>
               </div>
             </template>
           </Listbox>
         </div>
         <div>
-          <Button
-            label="ajouter"
-            icon="pi pi-times"
-            severity="success"
-            class="mr-2 mt-2 end"
-            @click="openNewGroup"
-            raised
-          />
+          <Button label="ajouter" icon="pi pi-times" severity="success" class="mr-2 mt-2 end" @click="openNewGroup"
+            raised />
         </div>
       </div>
     </div>
@@ -229,7 +223,22 @@ const editGroup = (updateGroup: Group) => {
         <h5 v-else>Groupe selectioné {{ selectedGroup.name }}</h5>
         <!-- PickList pour afficher les groupes sélectionnés -->
         <PickList v-model="picklistContacts" listStyle="height:250px, weight:250px" dataKey="id">
-          <template #sourceheader> contacts</template>
+          <template #sourceheader>
+            <div class="flex items-center justify-between">
+              <div class="flex-1 p-2">Contacts</div>
+              <div class="flex-1 ">
+
+                <IconField iconPosition="left">
+                  <InputIcon>
+                    <i class="pi pi-search"></i>
+                  </InputIcon>
+                  <InputText class="w-12" v-model.lazy="filterContact" placeholder="Search..."
+                    @keyup="keydowFilterContact" />
+                </IconField>
+              </div>
+
+            </div>
+          </template>
           <template #targetheader> contacts ajoutés</template>
           <template #item="slotProps">
             <div class="flex flex-wrap p-2 align-items-center gap-3">
@@ -245,39 +254,19 @@ const editGroup = (updateGroup: Group) => {
         </PickList>
         <!-- Boutons valider et Annuler -->
         <div>
-          <Button
-            label="valider"
-            icon="pi pi-times"
-            severity="success"
-            class="mr-2 mt-2 end"
-            :disabled="canBeValidateOrCancel"
-            @click="saveContactOnGroupe"
-            raised
-          />
-          <Button
-            label="Annuler"
-            icon="pi pi-check"
-            severity="danger"
-            @click="cancelAddContact"
-            :disabled="canBeValidateOrCancel"
-            raised
-          />
+          <Button label="valider" icon="pi pi-times" severity="success" class="mr-2 mt-2 end"
+            :disabled="cannotBeValidateOrCancel" @click="saveContactOnGroupe" raised />
+          <Button label="Annuler" icon="pi pi-check" severity="danger" @click="cancelAddContact"
+            :disabled="cannotBeValidateOrCancel" raised />
         </div>
       </div>
     </div>
   </div>
 
-  <DialogGroup
-    v-model:group="group"
-    v-model:visible="visibleGroupDialog"
-    @valider="updateCreateGroup"
-  />
+  <DialogGroup v-model:group="group" v-model:visible="visibleGroupDialog" @valider="updateCreateGroup" />
 
-  <DialogConfirmation
-    v-model:visible="visibleConfirmDeleteGroupDialog"
-    message="Voulez vous vraiment supprimer ce group ?"
-    @confirmation="deleteGroup"
-  />
+  <DialogConfirmation v-model:visible="visibleConfirmDeleteGroupDialog"
+    message="Voulez vous vraiment supprimer ce group ?" @confirmation="deleteGroup" />
 </template>
 
 <style></style>
