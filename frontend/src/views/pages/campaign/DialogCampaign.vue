@@ -77,13 +77,12 @@ const handleSave = () => {
     <div class="field">
       <label class="mb-3">Piece jointe</label>
 
-      <MultiSelect
+      <Dropdown
         v-model="campaign.attachments"
         :options="attachments"
         filter
         optionLabel="name"
         placeholder="Selectionné vos pièces jointes"
-        :maxSelectedLabels="3"
       />
     </div>
 
