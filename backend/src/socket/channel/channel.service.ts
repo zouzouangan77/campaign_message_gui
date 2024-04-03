@@ -12,7 +12,7 @@ export interface ChannelService {
 
 export class SendMessageResponse {
   constructor(
-  public statut: boolean,
-  public error_message: string,
-  ){}
+    public statut: boolean,
+    public error_message: string,
+  ) {}
 }

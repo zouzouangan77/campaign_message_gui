@@ -9,10 +9,6 @@ import * as csvParser from 'csv-parser';
 import { ChannelService, SendMessageResponse } from './channel.service';
 import { Contact } from '../../contact/entities/contact.entity';
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
 
 const BROWSER_SELECT = chromium;
 
@@ -27,17 +23,20 @@ export class WhatsappChannelService implements ChannelService {
     message: string,
     attachment?: string,
   ): Promise<SendMessageResponse> => {
+
     let success = false;
     try {
       await page
         .locator('div#side button.-Jnba')
         .click({ timeout: myTime.TIME_OUT }); //annuler la recherche
-    } catch (e) {}
+    } catch (e) {
+      
+    }
     await sleep(myTime.TIME_WAIT_ACTION);
     try {
       // ecriture du numero dans la bar de recherche de contact
       await page
-        .locator('div#side p.selectable-text.copyable-text.iq0m558w.g0rxnol2')
+        .locator('div._aigv._aigw p.selectable-text.copyable-text.x15bjb6t.x1n2onr6')
         .first()
         .fill(contact.phoneNumber, { timeout: myTime.TIME_OUT });
     } catch (e) {
@@ -49,7 +48,8 @@ export class WhatsappChannelService implements ChannelService {
     //clique sur le contact trouvé
     try {
       const zone_contact = await page
-        .locator('div#pane-side div._21S-L div.Mk0Bp')
+       // .locator('div#pane-side div._21S-L div.Mk0Bp')
+        .locator('div#pane-side div._ak8q div._aou8')
         .locator('../../../../..');
       await zone_contact.first().click({ timeout: myTime.TIME_OUT });
     } catch (e) {
@@ -62,7 +62,7 @@ export class WhatsappChannelService implements ChannelService {
     //clique sur le header pour avoir les information de l'utilisateur
     try {
       await page
-        .locator('#main header.AmmtE')
+        .locator('#main header._amid')
         .click({ timeout: myTime.TIME_OUT });
     } catch (e) {
       //logger.error(contact, problem.check_select_detail_contact);
@@ -75,7 +75,7 @@ export class WhatsappChannelService implements ChannelService {
       let spanLocator;
       try {
         spanLocator = await page.waitForSelector(
-          'div._2Ts6i._1xFRo  span.enbbiyaj.e1gr2w1z.hp667wtd',
+          'div._aigv._aig-  span.x1jchvi3.x1fcty0u.x40yjcy',
           { timeout: myTime.TIME_OUT },
         );
       } catch (e) {
@@ -85,7 +85,7 @@ export class WhatsappChannelService implements ChannelService {
       //Pour gérer le cas des comptes professionnels
       if (!spanLocator) {
         spanLocator = await page.waitForSelector(
-          'div._2Ts6i._1xFRo  span._11JPr > span.fe5nidar.fs7pz031.tl2vja3b.e1gr2w1z',
+          'div._aigv._aig-  span._ao3e > span.x1lkfr7t.xdbd6k5.x1fcty0u.xw2npq5',
           { timeout: myTime.TIME_OUT },
         );
       }
@@ -107,7 +107,7 @@ export class WhatsappChannelService implements ChannelService {
     //On ferme la fenetre d'information detaillé
     try {
       await page
-        .locator('div._2Ts6i._1xFRo header.cm280p3y div.kk3akd72.svlsagor')
+        .locator('div._aigv._aig- header.x9f619 div.x1okw0bk.x16dsc37')
         .click({ timeout: myTime.TIME_OUT });
     } catch (e) {
       return new SendMessageResponse(false, e.message);
@@ -116,7 +116,7 @@ export class WhatsappChannelService implements ChannelService {
     //selection de la zone de message
     try {
       const zone_message = await page.waitForSelector(
-        '#main > footer > div._2lSWV._3cjY2.copyable-area > div > span:nth-child(2) > div > div._1VZX7 > div._3Uu1_ > div > div.to2l77zo.gfz4du6o.ag5g9lrv.bze30y65.kao4egtt > p',
+        '#main > footer  p.selectable-text.copyable-text.x15bjb6t.x1n2onr6',
       );
       zone_message.fill(message);
     } catch (e) {
@@ -130,7 +130,7 @@ export class WhatsappChannelService implements ChannelService {
         // Sélectionner le bouton pour joindre un fichier
         await page
           .locator(
-            '#main > footer > div._2lSWV._3cjY2.copyable-area > div > span:nth-child(2) > div > div._2xy_p._1bAtO > div._1OT67 > div > div > div',
+            '#main > footer div._ak1o',
           )
           .first()
           .click({ timeout: myTime.TIME_OUT });
@@ -145,7 +145,7 @@ export class WhatsappChannelService implements ChannelService {
         // Chargement de l'image
         await page
           .locator(
-            '#main > footer > div._2lSWV._3cjY2.copyable-area > div > span:nth-child(2) > div > div._2xy_p._1bAtO > div._1OT67 > div > span > div > ul > div > div:nth-child(2) input[type=file]',
+            '#main > footer div._ak4w._al02 div.xyqdw3p.xg8j3zb > div:nth-child(2) input[type=file]',
           )
           .setInputFiles(attachment);
       } catch (e) {
@@ -157,7 +157,7 @@ export class WhatsappChannelService implements ChannelService {
       try {
         await page
                   .locator(
-                    '#app > div > div.two._1jJ70 > div._2QgSC > div._2Ts6i._2xAQV > span > div > span > div > div > div.g0rxnol2.thghmljt.p357zi0d.rjo8vgbg.ggj6brxn.f8m0rgwh.gfz4du6o.r7fjleex.bs7a17vp > div > div.O2_ew > div._3wFFT > div',
+                    '#app > div > div.two._aigs > div._aigu > div._aigv._aigz > span > div > span > div > div > div.x1n2onr6.xyw6214.x78zum5.x1r8uery.x1iyjqo2.xdt5ytf.x1hc1fzr.x6ikm8r.x10wlt62 > div > div._ajwz > div._ajx2 > div > div',
                   )
                   .first()
                   .click({ timeout: myTime.TIME_OUT });
@@ -171,7 +171,7 @@ export class WhatsappChannelService implements ChannelService {
       try {
         await page
                   .locator(
-                    'button.tvf2evcx.oq44ahr5.lb5m6g5c.svlsagor.p2rjqpw5.epia9gcq',
+                    '#main > footer button.x1c4vz4f.x2lah0s',
                   )
                   .first()
                   .click({ timeout: myTime.TIME_OUT });
