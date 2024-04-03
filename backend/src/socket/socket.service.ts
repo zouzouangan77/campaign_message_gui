@@ -29,7 +29,6 @@ export class SocketService {
     // StopListen  event from the server
     console.log('stoplistenEvent ', event);
     this.socket.off(event);
-    console.log('stoplistenEvent befor callback');
     callback();
   }
 

@@ -139,7 +139,6 @@ export class SendingMessageService {
 
     //On met un temps d'attente dans le quel si l'utilisateur ne repond pas on arrete d'attendre
     setTimeout(async () => {
-      console.log('setTimeout atteint');
       this.socketService.stoplistenEvent('connectionPageOK', async () => {
         console.log("annulation de l'envoi ", campaign.id);
         campaign.statut = this.statut.NOT_SENT;

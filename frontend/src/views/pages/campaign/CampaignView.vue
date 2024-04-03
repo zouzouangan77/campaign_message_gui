@@ -118,7 +118,6 @@ const isNewCampaign = ref(true)
 const socket = io()
 
 const confirmSendingCampaign = (campaignId: number | undefined) => {
-  console.log('confirmSendingCampaign = ', campaignId)
   socket.emit('connectionPageOK', campaignId)
 }
 
@@ -128,20 +127,17 @@ onMounted(async () => {
   await getAllList()
 
   socket.on('connectionPage', (campaignData) => {
-    console.log('Ouverture de confirmation denvoi campagne = ', campaignData.payload)
     campaign.value = campaignData.payload
     infoSendCampaignDialog.value = true
     countdownValue.value = 300
   })
 
   socket.on('cancelSendCampaignMessage', (data) => {
-    console.log('Fermeture de confirmation denvoi campagne = ', data.payload)
     infoSendCampaignDialog.value = false
   })
 
   socket.on('updateListCampaign', async (message) => {
     //le backend signal au frond de mettre à jour la liste des campagnes
-    console.log('updateListCampaign', message)
     await loadLazyData()
   })
 })
