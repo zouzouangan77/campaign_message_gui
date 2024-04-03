@@ -42,7 +42,7 @@
         ref="dt"
         dataKey="id"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-        :rowsPerPageOptions="[5, 10, 25]"
+        :rowsPerPageOptions="[5, 10, 25, 50, 100, 200]"
         :totalRecords="totalRecords"
         :loading="loading"
         @page="onPage"
@@ -54,7 +54,7 @@
       >
         <template #header>
           <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
-            <h4 class="m-1">Gestion des Contacts</h4>
+            <h4 class="m-1">Gestion des Contacts ({{ totalRecords }})</h4>
             <IconField iconPosition="left">
               <InputIcon>
                 <i class="pi pi-search" />

@@ -181,8 +181,9 @@ export class CampaignService {
     return this.campaignRepository.remove({ id: id } as Campaign);
   }
 
-  async removeManyReject(campaignRejects: Array<CampaignReject>): Promise<Array<CampaignReject>> {
+  async removeManyReject(
+    campaignRejects: Array<CampaignReject>,
+  ): Promise<Array<CampaignReject>> {
     return this.campaignRejectRepository.remove(campaignRejects);
   }
-
 }

@@ -45,13 +45,13 @@ const handleSave = () => {
     </div>
     <div class="field">
       <label for="lastName">Last Name</label>
-      <InputText id="lastName" v-model="contact.lastName" required="true" rows="3" cols="20" />
+      <InputText id="lastName" v-model.trim="contact.lastName" required="true" rows="3" cols="20" />
     </div>
     <div class="field">
       <label for="phoneNumber">Phone Number</label>
       <InputText
         id="phoneNumber"
-        v-model="contact.phoneNumber"
+        v-model.trim="contact.phoneNumber"
         required="true"
         rows="3"
         cols="20"
@@ -59,7 +59,7 @@ const handleSave = () => {
     </div>
     <div class="field">
       <label for="idInsta">Instagram ID</label>
-      <InputText id="idInsta" v-model="contact.idInsta" required="true" rows="3" cols="20" />
+      <InputText id="idInsta" v-model.trim="contact.idInsta" required="true" rows="3" cols="20" />
     </div>
 
     <template #footer>

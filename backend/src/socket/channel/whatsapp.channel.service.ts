@@ -27,7 +27,7 @@ export class WhatsappChannelService implements ChannelService {
     let success = false;
     try {
       await page
-        .locator('div#side button.-Jnba')
+        .locator('div._aigv._aigw button._ah_y')
         .click({ timeout: myTime.TIME_OUT }); //annuler la recherche
     } catch (e) {
       
@@ -79,7 +79,6 @@ export class WhatsappChannelService implements ChannelService {
           { timeout: myTime.TIME_OUT },
         );
       } catch (e) {
-        return new SendMessageResponse(false, e.message);
       }
 
       //Pour gérer le cas des comptes professionnels
@@ -94,7 +93,7 @@ export class WhatsappChannelService implements ChannelService {
       //on recupère le numero en enlevant le + et les espaces
       const numberChecked = span ? span.slice(1).replace(/\s/g, '') : '';
 
-      if (contact.phoneNumber !== numberChecked) {
+      if (contact.phoneNumber.trim() !== numberChecked) {
         //logger.error(contact, problem.check_detail_contact);
         return new SendMessageResponse(false, problem.check_detail_contact);
       }
@@ -123,6 +122,7 @@ export class WhatsappChannelService implements ChannelService {
       //logger.error(contact, problem.select_zone_message);
       return new SendMessageResponse(false, problem.select_zone_message);
     }
+    console.log('attachment = ', attachment)
     if (attachment != undefined) {
       await sleep(myTime.TIME_WAIT_ACTION);
 
@@ -130,7 +130,7 @@ export class WhatsappChannelService implements ChannelService {
         // Sélectionner le bouton pour joindre un fichier
         await page
           .locator(
-            '#main > footer div._ak1o',
+            '#main > footer div._ak1o > div._ajv7 > div._ajv6',
           )
           .first()
           .click({ timeout: myTime.TIME_OUT });
@@ -157,7 +157,7 @@ export class WhatsappChannelService implements ChannelService {
       try {
         await page
                   .locator(
-                    '#app > div > div.two._aigs > div._aigu > div._aigv._aigz > span > div > span > div > div > div.x1n2onr6.xyw6214.x78zum5.x1r8uery.x1iyjqo2.xdt5ytf.x1hc1fzr.x6ikm8r.x10wlt62 > div > div._ajwz > div._ajx2 > div > div',
+                    'div._aigv._aigz div._ajwz div._ajx2 > div > div',
                   )
                   .first()
                   .click({ timeout: myTime.TIME_OUT });

@@ -134,6 +134,11 @@ onMounted(async () => {
     countdownValue.value = 300
   })
 
+  socket.on('cancelSendCampaignMessage', (data) => {
+    console.log('Fermeture de confirmation denvoi campagne = ', data.payload)
+    infoSendCampaignDialog.value = false
+  })
+
   socket.on('updateListCampaign', async (message) => {
     //le backend signal au frond de mettre à jour la liste des campagnes
     console.log('updateListCampaign', message)
@@ -152,6 +157,7 @@ async function getAllList() {
   messages.value = await findAll()
   groups.value = await findAllGroup()
   attachments.value = await findAllAttachment()
+  attachments.value.unshift({ name: 'Aucune piece jointe'} as Attachment)
 }
 
 const globalSearch = async () => {

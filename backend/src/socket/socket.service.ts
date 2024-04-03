@@ -25,9 +25,12 @@ export class SocketService {
     });
   }
 
-  public stoplistenEvent(event: string) {
+  public stoplistenEvent(event: string, callback: () => void) {
     // StopListen  event from the server
+    console.log('stoplistenEvent ', event);
     this.socket.off(event);
+    console.log('stoplistenEvent befor callback');
+    callback();
   }
 
   // Emit 'messageToServer' event to the server

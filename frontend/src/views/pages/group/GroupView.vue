@@ -265,7 +265,7 @@ const editGroup = (updateGroup: Group) => {
     <div class="col-12 lg:col-8">
       <div class="card">
         <h5 v-if="!selectedGroup">Aucun groupe selectionné</h5>
-        <h5 v-else>Groupe selectioné {{ selectedGroup.name }}</h5>
+        <h5 v-else>Groupe selectioné <span class="font-bold italic">{{ selectedGroup.name }} ({{ targetContacts.length }})</span></h5>
         <!-- PickList pour afficher les groupes sélectionnés -->
         <PickList v-model="picklistContacts" listStyle="height:250px, weight:250px" dataKey="id"
           @move-all-to-source="moveAllToSource" @move-all-to-target="moveAllToTarget" @move-to-source="moveToSource"

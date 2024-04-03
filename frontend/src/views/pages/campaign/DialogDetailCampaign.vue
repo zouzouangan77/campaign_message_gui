@@ -100,7 +100,7 @@ const handleReSend = (campaignId: number | undefined) => {
           @page="onPage($event, 1)" @sort="onSort($event, 1)">
           <template #header>
             <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
-              <h4 class="m-1">Recherche sur les messages envoyés</h4>
+              <h4 class="m-1">Recherche sur les messages envoyés ({{ totalRecordSendings }})</h4>
               <IconField iconPosition="left">
                 <InputIcon>
                   <i class="pi pi-search" />
@@ -122,7 +122,7 @@ const handleReSend = (campaignId: number | undefined) => {
           @page="onPage($event, 2)" @sort="onSort($event, 2)">
           <template #header>
             <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
-              <h4 class="m-1">Recherche sur les messages Non envoyés</h4>
+              <h4 class="m-1">Recherche sur les messages Non envoyés ({{ totalRecordsRejects }})</h4>
               <IconField iconPosition="left">
                 <InputIcon>
                   <i class="pi pi-search" />

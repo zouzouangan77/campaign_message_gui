@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onBeforeMount, onMounted, ref, watch} from 'vue'
 import { Campaign } from '@/modules/campaigns/types'
 import { Message } from '@/modules/messages/types'
 import { Group } from '@/modules/groups/types'
@@ -9,6 +9,7 @@ const campaign = defineModel('campaign', {
   type: Campaign,
   default: new Campaign()
 })
+const attachment = ref(new Attachment())
 const emits = defineEmits<{
   valider: [] // named tuple syntax
 }>()
@@ -25,65 +26,53 @@ const visible = defineModel('visible', {
   default: false
 })
 
+watch(visible, (newValue) => {
+  if (newValue) {
+    if (campaign.value.attachments && campaign.value.attachments.length > 0) {
+      attachment.value = campaign.value.attachments[0] as Attachment
+    }
+  }
+})
+
 const handleSave = () => {
+  if (attachment.value.id) {
+    campaign.value.attachments = [{ ...attachment.value }]
+  } else {
+    campaign.value.attachments = []
+  }
   emits('valider')
   visible.value = false
 }
 </script>
 
 <template>
-  <Dialog
-    v-model:visible="visible"
-    :style="{ width: '450px' }"
-    header="Campaigne  Details"
-    :modal="true"
-    class="p-fluid"
-  >
+  <Dialog v-model:visible="visible" :style="{ width: '450px' }" header="Campaigne  Details" :modal="true"
+    class="p-fluid">
     <div class="field">
       <label for="name">Titre de la campaigne</label>
-      <InputText
-        id="name"
-        v-model.trim="campaign.name"
-        required="true"
-        autofocus
-        :class="{ 'p-invalid': submitted && !campaign.name }"
-      />
+      <InputText id="name" v-model.trim="campaign.name" required="true" autofocus
+        :class="{ 'p-invalid': submitted && !campaign.name }" />
       <small class="p-error" v-if="submitted && !campaign.name">le titre is required.</small>
     </div>
 
     <div class="field">
       <label class="mb-3">Message</label>
-      <Dropdown
-        v-model="campaign.message"
-        :options="messages"
-        optionLabel="name"
-        placeholder="Selectionné un message"
-      />
+      <Dropdown v-model="campaign.message" :options="messages" optionLabel="name"
+        placeholder="Selectionné un message" />
     </div>
 
     <div class="field">
       <label class="mb-3">Groupe</label>
 
-      <MultiSelect
-        v-model="campaign.groups"
-        :options="groups"
-        filter
-        optionLabel="name"
-        placeholder="Selectionné les groupes"
-        :maxSelectedLabels="3"
-      />
+      <MultiSelect v-model="campaign.groups" :options="groups" filter optionLabel="name"
+        placeholder="Selectionné les groupes" :maxSelectedLabels="3" />
     </div>
 
     <div class="field">
       <label class="mb-3">Piece jointe</label>
 
-      <Dropdown
-        v-model="campaign.attachments"
-        :options="attachments"
-        filter
-        optionLabel="name"
-        placeholder="Selectionné vos pièces jointes"
-      />
+      <Dropdown v-model="attachment" :options="attachments" filter optionLabel="name"
+        placeholder="Selectionné vos pièces jointes" />
     </div>
 
     <div class="field">

@@ -49,6 +49,7 @@ export class SendingMessageService {
 
   public async sendCampaignMessage(campaignId: number): Promise<void> {
     const campaign = await this.campaignService.findOne(campaignId);
+    console.log('campaign = ', campaign);
     if (!campaign) return;
 
     campaign.statut = this.statut.PENDING;
@@ -77,6 +78,7 @@ export class SendingMessageService {
         campaign.statut = this.statut.PROCESSING;
         await this.campaignService.create(campaign);
         this.socketService.emitClientEvent('updateListCampaign', 'OK');
+        await sleep(myTime.TIME_APP_LOADING);
 
         for (const [key, contact] of this.mapContacts) {
           // console.log('contact = ', contact);
@@ -137,13 +139,21 @@ export class SendingMessageService {
 
     //On met un temps d'attente dans le quel si l'utilisateur ne repond pas on arrete d'attendre
     setTimeout(async () => {
-      this.socketService.stoplistenEvent('connectionPageOK');
-      await this.closeBrowserPage();
+      console.log('setTimeout atteint');
+      this.socketService.stoplistenEvent('connectionPageOK', async () => {
+        console.log("annulation de l'envoi ", campaign.id);
+        campaign.statut = this.statut.NOT_SENT;
+        await this.campaignService.create(campaign);
+        this.socketService.emitClientEvent('updateListCampaign', 'OK');
+        this.socketService.emitClientEvent('cancelSendCampaignMessage', 'OK');
+        await this.closeBrowserPage();
+      });
     }, myTime.TIME_WAIT_CONNECTION);
   }
 
   public async sendCampaignRejectMessage(campaignId: number): Promise<void> {
     const campaign = await this.campaignService.findOne(campaignId);
+    console.log('campaign = ', campaign);
     if (!campaign) return;
 
     campaign.statut = this.statut.PENDING;
@@ -168,7 +178,7 @@ export class SendingMessageService {
         campaign.statut = this.statut.PROCESSING;
         await this.campaignService.create(campaign);
         this.socketService.emitClientEvent('updateListCampaign', 'OK');
-
+        await sleep(myTime.TIME_APP_LOADING);
         for (const lastCampaignReject of lastCampaignRejects) {
           const contact = lastCampaignReject.contact;
           const messageTransformed = campaign.message.content.replace(
@@ -223,8 +233,15 @@ export class SendingMessageService {
 
     //On met un temps d'attente dans le quel si l'utilisateur ne repond pas on arrete d'attendre
     setTimeout(async () => {
-      this.socketService.stoplistenEvent('connectionPageOK');
-      await this.closeBrowserPage();
+      console.log('setTimeout atteint');
+      this.socketService.stoplistenEvent('connectionPageOK', async () => {
+        console.log("annulation de l'envoi ", campaign.id);
+        campaign.statut = this.statut.SENT;
+        await this.campaignService.create(campaign);
+        this.socketService.emitClientEvent('updateListCampaign', 'OK');
+        this.socketService.emitClientEvent('cancelSendCampaignMessage', 'OK');
+        await this.closeBrowserPage();
+      });
     }, myTime.TIME_WAIT_CONNECTION);
   }
 
@@ -232,7 +249,7 @@ export class SendingMessageService {
     console.log('initBrowserPage');
     // this.browser = await this.BROWSER_SELECT.launch({ headless: false });
     // this.browser = await firefox.launch({ headless: false });
-    this.browser = await firefox.launch({ headless: false });
+    this.browser = await chromium.launch({ headless: false });
     console.log('lancement du navigateur');
     this.context = await this.browser.newContext();
     this.page = await this.context.newPage();

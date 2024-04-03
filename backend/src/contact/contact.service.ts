@@ -78,10 +78,14 @@ export class ContactService {
     const createContactDtos = new Array<CreateContactDto>();
     await this.csvService.readStringCsv(csvString, ';', async (contactData) => {
       const createContactDto = new CreateContactDto();
-      createContactDto.firstName = contactData['firstname'];
-      createContactDto.lastName = contactData['lastname'];
-      createContactDto.phoneNumber = contactData['phone'];
-      createContactDto.idInsta = contactData['idInsta'];
+      createContactDto.firstName =
+        contactData['firstname'] && contactData['firstname'].trim();
+      createContactDto.lastName =
+        contactData['lastname'] && contactData['lastname'].trim();
+      createContactDto.phoneNumber =
+        contactData['phone'] && contactData['phone'].trim();
+      createContactDto.idInsta =
+        contactData['idInsta'] && contactData['idInsta'].trim();
       if (
         createContactDto.phoneNumber !== undefined ||
         createContactDto.idInsta !== undefined
