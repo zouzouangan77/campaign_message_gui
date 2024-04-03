@@ -166,9 +166,9 @@ const searchField = ref('')
 const isNewAttachment = ref(true)
 const inputAttachment = ref()
 
-onMounted(() => {
+onMounted(async () => {
   loading.value = true
-  loadLazyData()
+  await loadLazyData()
 })
 
 async function updateDataTable() {
@@ -239,7 +239,8 @@ const updateCreateAttachment = async () => {
       })
     }
   }
-  await loadLazyData()
+  //await loadLazyData()
+  window.location.reload();
 }
 
 const confirmDeleteAttachment = (AttachmentData: Attachment) => {

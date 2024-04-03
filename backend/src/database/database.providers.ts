@@ -21,7 +21,7 @@ export const databaseProviders = [
     useFactory: async () => {
       const dataSource = new DataSource({
         type: 'sqlite',
-        database: '.db/data.sqlite3',
+        database: `${process.env.DATABASE_DIR}/data.sqlite3`,
         synchronize: true,
         logging: true,
         entities: [__dirname + '/../**/entities/*.entity{.ts,.js}'],

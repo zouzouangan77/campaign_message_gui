@@ -28,11 +28,19 @@ import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate';
 export class AttachmentController {
   constructor(private readonly attachmentService: AttachmentService) {}
 
+  private getDestination(req, file, callback) {
+    // Vous pouvez utiliser des conditions ou des variables pour déterminer le dossier de destination
+    const destination = process.env.UPLOAD_DIR || '.uploads';
+    callback(null, destination);
+  }
+
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './.uploads', // Dossier où les fichiers seront sauvegardés
+        destination: (req, file, cb) => {
+          cb(null, process.env.UPLOAD_DIR || '.uploads');
+        },
         filename: (req, file, cb) => {
           const filename = file.originalname.replace(/\s/g, '');
           const timestamp = Date.now();
@@ -72,7 +80,6 @@ export class AttachmentController {
   public findAllPage(
     @Paginate() query: PaginateQuery,
   ): Promise<Paginated<Attachment>> {
-    console.log('findAllPage = ', query);
     return this.attachmentService.findAllPage(query);
   }
 
@@ -107,7 +114,9 @@ export class AttachmentController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './.uploads', // Dossier où les fichiers seront sauvegardés
+        destination: (req, file, cb) => {
+          cb(null, process.env.UPLOAD_DIR || '.uploads');
+        },
         filename: (req, file, cb) => {
           const filename = file.originalname.replace(/\s/g, '');
           const timestamp = Date.now();

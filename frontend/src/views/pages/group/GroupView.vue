@@ -14,6 +14,7 @@ import { Group } from '@/modules/groups/types'
 import { useToast } from 'primevue/usetoast'
 import { Contact } from '@/modules/contacts/types'
 import type { ListboxChangeEvent } from 'primevue/listbox'
+import { PickListMoveAllToSourceEvent, PickListMoveAllToTargetEvent, PickListMoveToSourceEvent, type PickListMoveToTargetEvent } from 'primevue/picklist'
 
 const toast = useToast()
 const visibleGroupDialog = ref(false)
@@ -25,47 +26,86 @@ const selectedGroup = ref(new Group())
 const visibleConfirmDeleteGroupDialog = ref(false)
 const allContacts = ref(new Array<Contact>())
 const contactsGroup = ref(new Array<Contact>())
-const filterContact = ref('');
+const filterSourceContact = ref('');
+const filterTargetContact = ref('');
 
-const privateContacts = ref(new Array<Contact>())
+const sourceContacts = ref(new Array<Contact>())
+const targetContacts = ref(new Array<Contact>())
+const searchTargetContacts = ref(new Array<Contact>())
 
-const keydowFilterContact = () => {
-  updatePrivateContacts()
-  picklistContacts.value = [privateContacts.value, picklistContacts.value[1]]
-
+const keydowFilterSourceContact = () => {
+  updateSourceContacts()
+  picklistContacts.value = [sourceContacts.value, picklistContacts.value[1]]
 }
 
-const updatePrivateContacts = () => {
-  const newContactsGroup = cannotBeValidateOrCancel? contactsGroup.value : picklistContacts.value[1]
-  privateContacts.value = allContacts.value.filter((contact) =>
-    contact.firstName.toLocaleLowerCase().includes(filterContact.value.toLocaleLowerCase()) ||
-    (contact.lastName!=undefined && contact.lastName.toLocaleLowerCase().includes(filterContact.value.toLocaleLowerCase())) ||
-    (contact.phoneNumber != undefined && contact.phoneNumber.toLocaleLowerCase().includes(filterContact.value.toLocaleLowerCase())) ||
-    (contact.idInsta != undefined && contact.idInsta.toLocaleLowerCase().includes(filterContact.value.toLocaleLowerCase()))
+const keydowFilterTargetContact = () => {
+  updateTargetContacts()
+  picklistContacts.value = [picklistContacts.value[0], searchTargetContacts.value]
+}
+
+const updateSourceContacts = () => {
+  sourceContacts.value = allContacts.value.filter((contact) =>
+    contact.firstName.toLocaleLowerCase().includes(filterSourceContact.value.toLocaleLowerCase()) ||
+    (contact.lastName != undefined && contact.lastName.toLocaleLowerCase().includes(filterSourceContact.value.toLocaleLowerCase())) ||
+    (contact.phoneNumber != undefined && contact.phoneNumber.toLocaleLowerCase().includes(filterSourceContact.value.toLocaleLowerCase())) ||
+    (contact.idInsta != undefined && contact.idInsta.toLocaleLowerCase().includes(filterSourceContact.value.toLocaleLowerCase()))
   )
     .filter(
-      (contact) => !newContactsGroup.some((groupContact) => groupContact.id === contact.id))
+      (contact) => !targetContacts.value.some((groupContact) => groupContact.id === contact.id))
+}
+
+const updateTargetContacts = () => {
+  searchTargetContacts.value = targetContacts.value.filter((contact) =>
+    contact.firstName.toLocaleLowerCase().includes(filterTargetContact.value.toLocaleLowerCase()) ||
+    (contact.lastName != undefined && contact.lastName.toLocaleLowerCase().includes(filterTargetContact.value.toLocaleLowerCase())) ||
+    (contact.phoneNumber != undefined && contact.phoneNumber.toLocaleLowerCase().includes(filterTargetContact.value.toLocaleLowerCase())) ||
+    (contact.idInsta != undefined && contact.idInsta.toLocaleLowerCase().includes(filterTargetContact.value.toLocaleLowerCase()))
+  )
 }
 const picklistContacts = ref([new Array<Contact>(), new Array<Contact>()])
 const cannotBeValidateOrCancel = computed(() => {
-  const [_, targetContacts] = picklistContacts.value
+  console.log('targetContacts.value = ', targetContacts.value)
+  console.log('contactsGroup.value = ', contactsGroup.value)
   return (
-    targetContacts.every((targetContact) =>
+    targetContacts.value.every((targetContact) =>
       contactsGroup.value.some((contact) => contact.id === targetContact.id)
-    ) && targetContacts.length === contactsGroup.value.length
+    ) && targetContacts.value.length === contactsGroup.value.length
   )
 })
 onMounted(async () => {
   await updateDataList()
   await initDataPickList()
 })
+const moveAllToSource = (event: PickListMoveAllToSourceEvent) => {
+  targetContacts.value = targetContacts.value.filter((contact) => !event.items.some((item) => item.id === contact.id));
+  updateTargetContacts()
+  picklistContacts.value = [picklistContacts.value[0], searchTargetContacts.value]
+}
+const moveToSource = (event: PickListMoveToSourceEvent) => {
+  targetContacts.value = targetContacts.value.filter((contact) => !event.items.some((item) => item.id === contact.id));
+  updateTargetContacts()
+  picklistContacts.value = [picklistContacts.value[0], searchTargetContacts.value]
+}
+const moveAllToTarget = (event: PickListMoveAllToTargetEvent) => {
+  event.items.forEach((contact) => targetContacts.value.push(contact))
+  updateTargetContacts()
+  picklistContacts.value = [picklistContacts.value[0], searchTargetContacts.value]
+}
+const moveToTarget = (event: PickListMoveToTargetEvent) => {
+  event.items.forEach((contact) => targetContacts.value.push(contact))
+  updateTargetContacts()
+  picklistContacts.value = [picklistContacts.value[0], searchTargetContacts.value]
+}
+
+
+
 
 async function updateDataList() {
   groups.value = await findAllGroup()
 }
 
 async function updateDataPickList() {
-  picklistContacts.value = [privateContacts.value, contactsGroup.value]
+  picklistContacts.value = [sourceContacts.value, searchTargetContacts.value]
 }
 
 async function initDataPickList() {
@@ -74,19 +114,25 @@ async function initDataPickList() {
 
 const groupChanged = async () => {
   if (
-    selectedGroup != null &&
-    selectedGroup != undefined &&
+    selectedGroup.value != null &&
+    selectedGroup.value != undefined &&
     selectedGroup.value != null &&
     selectedGroup.value != undefined
   ) {
-    filterContact.value = ''
-    contactsGroup.value = await findAllContactsByGroup(selectedGroup.value.id!)
-    updatePrivateContacts()
+    filterSourceContact.value = ''
+    filterTargetContact.value = ''
+    const constacts = await findAllContactsByGroup(selectedGroup.value.id!)
+    contactsGroup.value = [ ...constacts ]
+    targetContacts.value = [ ...constacts ]
+    searchTargetContacts.value = [ ...constacts ]
+    updateSourceContacts()
     updateDataPickList()
   }
 }
 
 const cancelAddContact = async () => {
+  targetContacts.value = [ ...contactsGroup.value ]
+  updateTargetContacts()
   await updateDataPickList()
 }
 
@@ -136,14 +182,13 @@ const updateCreateGroup = async () => {
 }
 
 const saveContactOnGroupe = async () => {
-  const [sourceContacts, targetContacts] = picklistContacts.value
-  const addContacts = targetContacts
+  const addContacts = targetContacts.value
     .filter(
       (contact) => !contactsGroup.value.some((groupContact) => groupContact.id === contact.id)
     )
     .map((item) => ({ id: item.id }))
   const removeContacts = contactsGroup.value
-    .filter((contact) => sourceContacts.some((sourceContact) => sourceContact.id === contact.id))
+    .filter((contact) => !targetContacts.value.some((targetContact) => targetContact.id === contact.id))
     .map((item) => ({ id: item.id }))
   group.value = selectedGroup.value
   group.value.addContacts = addContacts
@@ -222,7 +267,9 @@ const editGroup = (updateGroup: Group) => {
         <h5 v-if="!selectedGroup">Aucun groupe selectionné</h5>
         <h5 v-else>Groupe selectioné {{ selectedGroup.name }}</h5>
         <!-- PickList pour afficher les groupes sélectionnés -->
-        <PickList v-model="picklistContacts" listStyle="height:250px, weight:250px" dataKey="id">
+        <PickList v-model="picklistContacts" listStyle="height:250px, weight:250px" dataKey="id"
+          @move-all-to-source="moveAllToSource" @move-all-to-target="moveAllToTarget" @move-to-source="moveToSource"
+          @move-to-target="moveToTarget">
           <template #sourceheader>
             <div class="flex items-center justify-between">
               <div class="flex-1 p-2">Contacts</div>
@@ -232,14 +279,29 @@ const editGroup = (updateGroup: Group) => {
                   <InputIcon>
                     <i class="pi pi-search"></i>
                   </InputIcon>
-                  <InputText class="w-12" v-model.lazy="filterContact" placeholder="Search..."
-                    @keyup="keydowFilterContact" />
+                  <InputText class="w-12" v-model="filterSourceContact" placeholder="Search..."
+                    @keyup="keydowFilterSourceContact" />
                 </IconField>
               </div>
 
             </div>
           </template>
-          <template #targetheader> contacts ajoutés</template>
+          <template #targetheader>
+            <div class="flex items-center justify-between">
+              <div class="flex-1 p-2">contacts ajoutés</div>
+              <div class="flex-1 ">
+
+                <IconField iconPosition="left">
+                  <InputIcon>
+                    <i class="pi pi-search"></i>
+                  </InputIcon>
+                  <InputText class="w-12" v-model="filterTargetContact" placeholder="Search..."
+                    @keyup="keydowFilterTargetContact" />
+                </IconField>
+              </div>
+
+            </div>
+          </template>
           <template #item="slotProps">
             <div class="flex flex-wrap p-2 align-items-center gap-3">
               <div class="flex-1 flex flex-column gap-2">

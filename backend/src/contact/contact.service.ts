@@ -82,14 +82,21 @@ export class ContactService {
       createContactDto.lastName = contactData['lastname'];
       createContactDto.phoneNumber = contactData['phone'];
       createContactDto.idInsta = contactData['idInsta'];
-      // const checkContact = false
-      const checkContact = await this.contactRepository.findOne({
-        where: [
-          { phoneNumber: createContactDto.phoneNumber },
-          { idInsta: createContactDto.idInsta ? createContactDto.idInsta : '' },
-        ],
-      });
-      if (!checkContact) createContactDtos.push(createContactDto);
+      if (
+        createContactDto.phoneNumber !== undefined ||
+        createContactDto.idInsta !== undefined
+      ) {
+        // const checkContact = false
+        const checkContact = await this.contactRepository.findOne({
+          where: [
+            { phoneNumber: createContactDto.phoneNumber },
+            {
+              idInsta: createContactDto.idInsta ? createContactDto.idInsta : '',
+            },
+          ],
+        });
+        if (!checkContact) createContactDtos.push(createContactDto);
+      }
     });
     await this.sleep(2000);
     try {
