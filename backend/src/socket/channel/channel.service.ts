@@ -8,6 +8,10 @@ export interface ChannelService {
     message: string,
     attachment?: string,
   ): Promise<SendMessageResponse>;
+
+  actionBeforeSendAllMessage(
+    page: Page
+  ): Promise<SendMessageResponse>;
 }
 
 export class SendMessageResponse {

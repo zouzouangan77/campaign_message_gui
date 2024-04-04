@@ -7,6 +7,10 @@ export function useVariable() {
     select_button_send: " probleme d'envoi selection du bouton d'envoi",
     select_button_attach:
       " probleme selection du bouton ajout d'une piece jointe",
+    select_button_sms:
+      " probleme selection du bouton de message avec l'icon de message",
+    select_button_sms_new:
+      " probleme selection du bouton nouveau message ",
     select_button_attach_image:
       " probleme selection du bouton ajout d'une piece jointe de type image",
     check_select_detail_contact:
@@ -15,6 +19,7 @@ export function useVariable() {
       'probleme pour récupérer le numéro du contact dans les informations détaillées',
     check_detail_contact: 'probleme mauvais contact',
     load_image: " probleme chargement de l'image",
+    check_select_button_discussion: " probleme de selection du bouton de discussion",
   };
 
   const message_info = {

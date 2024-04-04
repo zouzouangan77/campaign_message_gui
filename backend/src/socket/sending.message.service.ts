@@ -80,34 +80,43 @@ export class SendingMessageService {
         this.socketService.emitClientEvent('updateListCampaign', 'OK');
         await sleep(myTime.TIME_APP_LOADING);
 
-        for (const [key, contact] of this.mapContacts) {
-          // console.log('contact = ', contact);
-          const messageTransformed = campaign.message.content.replace(
-            new RegExp(balise_replace.FIRSTNAME, 'g'),
-            contact.firstName,
-          );
-          const [attachment] = campaign.attachments;
-          const location = attachment ? attachment.location : undefined;
+        const actionBeforeSendAllMessageResponse = await this.channelService.actionBeforeSendAllMessage(
+          this.page
+        );
 
-          const sendMessageResponse = await this.channelService.sendMessage(
-            this.page,
-            contact,
-            messageTransformed,
-            location,
-          );
-          if (sendMessageResponse.statut) {
-            campaignSendings.push({
-              contact: { id: contact.id },
-              campaign: { id: campaign.id },
-            } as CreateCampaignSendingDto);
-          } else {
-            campaignRejects.push({
-              contact: { id: contact.id },
-              campaign: { id: campaign.id },
-              cause: sendMessageResponse.error_message,
-            } as CreateCampaignRejectDto);
+        if(actionBeforeSendAllMessageResponse.statut){
+          for (const [key, contact] of this.mapContacts) {
+            // console.log('contact = ', contact);
+            const messageTransformed = campaign.message.content.replace(
+              new RegExp(balise_replace.FIRSTNAME, 'g'),
+              contact.firstName,
+            );
+            const [attachment] = campaign.attachments;
+            const location = attachment ? attachment.location : undefined;
+  
+            const sendMessageResponse = await this.channelService.sendMessage(
+              this.page,
+              contact,
+              messageTransformed,
+              location,
+            );
+            if (sendMessageResponse.statut) {
+              campaignSendings.push({
+                contact: { id: contact.id },
+                campaign: { id: campaign.id },
+              } as CreateCampaignSendingDto);
+            } else {
+              campaignRejects.push({
+                contact: { id: contact.id },
+                campaign: { id: campaign.id },
+                cause: sendMessageResponse.error_message,
+              } as CreateCampaignRejectDto);
+            }
           }
+
         }
+
+       
 
         //Tous les contacts on été traité, on sauvegarde maintenant les information d'envoi et de rejet
         if (campaignSendings.length > 0) {
@@ -116,7 +125,12 @@ export class SendingMessageService {
         if (campaignRejects.length > 0) {
           await this.campaignService.createRejects(campaignRejects);
         }
-        campaign.statut = this.statut.SENT;
+        if(actionBeforeSendAllMessageResponse.statut){
+          campaign.statut = this.statut.SENT;
+        }else{
+          campaign.statut = this.statut.NOT_SENT;
+        }
+        
         await this.campaignService.create(campaign);
         this.socketService.emitClientEvent('updateListCampaign', 'OK');
 
@@ -178,31 +192,39 @@ export class SendingMessageService {
         await this.campaignService.create(campaign);
         this.socketService.emitClientEvent('updateListCampaign', 'OK');
         await sleep(myTime.TIME_APP_LOADING);
-        for (const lastCampaignReject of lastCampaignRejects) {
-          const contact = lastCampaignReject.contact;
-          const messageTransformed = campaign.message.content.replace(
-            new RegExp(balise_replace.FIRSTNAME, 'g'),
-            contact.firstName,
-          );
-          const [attachment] = campaign.attachments;
-          const location = attachment ? attachment.location : undefined;
+        const actionBeforeSendAllMessageResponse = await this.channelService.actionBeforeSendAllMessage(
+          this.page
+        );
 
-          const sendMessageResponse = await this.channelService.sendMessage(
-            this.page,
-            contact,
-            messageTransformed,
-            location,
-          );
-          if (sendMessageResponse.statut) {
-            campaignSendings.push({
-              contact: { id: contact.id },
-              campaign: { id: campaign.id },
-            } as CreateCampaignSendingDto);
-
-            removeCampaignRejects.push(lastCampaignReject);
+        if(actionBeforeSendAllMessageResponse.statut){
+          for (const lastCampaignReject of lastCampaignRejects) {
+            const contact = lastCampaignReject.contact;
+            const messageTransformed = campaign.message.content.replace(
+              new RegExp(balise_replace.FIRSTNAME, 'g'),
+              contact.firstName,
+            );
+            const [attachment] = campaign.attachments;
+            const location = attachment ? attachment.location : undefined;
+  
+            const sendMessageResponse = await this.channelService.sendMessage(
+              this.page,
+              contact,
+              messageTransformed,
+              location,
+            );
+            if (sendMessageResponse.statut) {
+              campaignSendings.push({
+                contact: { id: contact.id },
+                campaign: { id: campaign.id },
+              } as CreateCampaignSendingDto);
+  
+              removeCampaignRejects.push(lastCampaignReject);
+            }
           }
-        }
+  
 
+        }
+       
         //Tous les contacts on été traité, on sauvegarde maintenant les information d'envoi et de rejet
         if (campaignSendings.length > 0) {
           await this.campaignService.createSendings(campaignSendings);

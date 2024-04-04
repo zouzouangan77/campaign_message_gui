@@ -17,6 +17,12 @@ const { message_info, myTime, whatsappUrl, balise_replace, problem } = useVariab
 
 @Injectable()
 export class WhatsappChannelService implements ChannelService {
+  public actionBeforeSendAllMessage = async (
+    page: Page
+  
+  ): Promise<SendMessageResponse> => {
+    return new SendMessageResponse(true, '');
+  }
   public sendMessage = async (
     page: Page,
     contact: Contact,
