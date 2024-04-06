@@ -14,7 +14,7 @@ import { Group } from '@/modules/groups/types'
 import { useToast } from 'primevue/usetoast'
 import { Contact } from '@/modules/contacts/types'
 import type { ListboxChangeEvent } from 'primevue/listbox'
-import { PickListMoveAllToSourceEvent, PickListMoveAllToTargetEvent, PickListMoveToSourceEvent, type PickListMoveToTargetEvent } from 'primevue/picklist'
+import type { PickListMoveAllToSourceEvent, PickListMoveAllToTargetEvent, PickListMoveToSourceEvent, PickListMoveToTargetEvent } from 'primevue/picklist'
 
 const toast = useToast()
 const visibleGroupDialog = ref(false)

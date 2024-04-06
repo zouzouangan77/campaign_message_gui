@@ -64,13 +64,21 @@ export class SendingMessageService {
       }
     }
 
-    await this.initBrowserPage(campaign.canal);
+    try {
+      await this.initBrowserPage(campaign.canal);
+    } catch (err) {
+      campaign.statut = this.statut.NOT_SENT;
+      await this.campaignService.create(campaign);
+      this.socketService.emitClientEvent('errorSendCampaignMessage', 'OK');
+    }
 
     // Demande d'authentification à la page à l'utilisateur
     this.socketService.emitClientEvent('connectionPage', campaign);
+    let responseOK = false;
 
     //Attente de retour de confirmation du client
     this.socketService.listenEvent('connectionPageOK', async (campaignId) => {
+      responseOK = true;
       const campaignSendings = new Array<CreateCampaignSendingDto>();
       const campaignRejects = new Array<CreateCampaignRejectDto>();
       if (campaign.id === campaignId) {
@@ -80,11 +88,10 @@ export class SendingMessageService {
         this.socketService.emitClientEvent('updateListCampaign', 'OK');
         await sleep(myTime.TIME_APP_LOADING);
 
-        const actionBeforeSendAllMessageResponse = await this.channelService.actionBeforeSendAllMessage(
-          this.page
-        );
+        const actionBeforeSendAllMessageResponse =
+          await this.channelService.actionBeforeSendAllMessage(this.page);
 
-        if(actionBeforeSendAllMessageResponse.statut){
+        if (actionBeforeSendAllMessageResponse.statut) {
           for (const [key, contact] of this.mapContacts) {
             // console.log('contact = ', contact);
             const messageTransformed = campaign.message.content.replace(
@@ -93,7 +100,7 @@ export class SendingMessageService {
             );
             const [attachment] = campaign.attachments;
             const location = attachment ? attachment.location : undefined;
-  
+
             const sendMessageResponse = await this.channelService.sendMessage(
               this.page,
               contact,
@@ -113,10 +120,7 @@ export class SendingMessageService {
               } as CreateCampaignRejectDto);
             }
           }
-
         }
-
-       
 
         //Tous les contacts on été traité, on sauvegarde maintenant les information d'envoi et de rejet
         if (campaignSendings.length > 0) {
@@ -125,12 +129,12 @@ export class SendingMessageService {
         if (campaignRejects.length > 0) {
           await this.campaignService.createRejects(campaignRejects);
         }
-        if(actionBeforeSendAllMessageResponse.statut){
+        if (actionBeforeSendAllMessageResponse.statut) {
           campaign.statut = this.statut.SENT;
-        }else{
+        } else {
           campaign.statut = this.statut.NOT_SENT;
         }
-        
+
         await this.campaignService.create(campaign);
         this.socketService.emitClientEvent('updateListCampaign', 'OK');
 
@@ -153,14 +157,15 @@ export class SendingMessageService {
 
     //On met un temps d'attente dans le quel si l'utilisateur ne repond pas on arrete d'attendre
     setTimeout(async () => {
-      this.socketService.stoplistenEvent('connectionPageOK', async () => {
-        console.log("annulation de l'envoi ", campaign.id);
-        campaign.statut = this.statut.NOT_SENT;
-        await this.campaignService.create(campaign);
-        this.socketService.emitClientEvent('updateListCampaign', 'OK');
-        this.socketService.emitClientEvent('cancelSendCampaignMessage', 'OK');
-        await this.closeBrowserPage();
-      });
+      if (!responseOK) {
+        this.socketService.stoplistenEvent('connectionPageOK', async () => {
+          console.log("annulation de l'envoi ", campaign.id);
+          campaign.statut = this.statut.NOT_SENT;
+          await this.campaignService.create(campaign);
+          this.socketService.emitClientEvent('updateListCampaign', 'OK');
+          this.socketService.emitClientEvent('cancelSendCampaignMessage', 'OK');
+        });
+      }
     }, myTime.TIME_WAIT_CONNECTION);
   }
 
@@ -176,14 +181,21 @@ export class SendingMessageService {
 
     const lastCampaignRejects =
       await this.campaignService.findAllRejectByCampaign(campaign.id);
-
-    await this.initBrowserPage(campaign.canal);
+    try {
+      await this.initBrowserPage(campaign.canal);
+    } catch (err) {
+      campaign.statut = this.statut.SENT;
+      await this.campaignService.create(campaign);
+      this.socketService.emitClientEvent('errorSendCampaignMessage', 'OK');
+    }
 
     // Demande d'authentification à la page à l'utilisateur
     this.socketService.emitClientEvent('connectionPage', campaign);
+    let responseOK = false;
 
     //Attente de retour de confirmation du client
     this.socketService.listenEvent('connectionPageOK', async (campaignId) => {
+      responseOK = true;
       const campaignSendings = new Array<CreateCampaignSendingDto>();
       const removeCampaignRejects = new Array<CampaignReject>();
       if (campaign.id === campaignId) {
@@ -192,11 +204,10 @@ export class SendingMessageService {
         await this.campaignService.create(campaign);
         this.socketService.emitClientEvent('updateListCampaign', 'OK');
         await sleep(myTime.TIME_APP_LOADING);
-        const actionBeforeSendAllMessageResponse = await this.channelService.actionBeforeSendAllMessage(
-          this.page
-        );
+        const actionBeforeSendAllMessageResponse =
+          await this.channelService.actionBeforeSendAllMessage(this.page);
 
-        if(actionBeforeSendAllMessageResponse.statut){
+        if (actionBeforeSendAllMessageResponse.statut) {
           for (const lastCampaignReject of lastCampaignRejects) {
             const contact = lastCampaignReject.contact;
             const messageTransformed = campaign.message.content.replace(
@@ -205,7 +216,7 @@ export class SendingMessageService {
             );
             const [attachment] = campaign.attachments;
             const location = attachment ? attachment.location : undefined;
-  
+
             const sendMessageResponse = await this.channelService.sendMessage(
               this.page,
               contact,
@@ -217,14 +228,12 @@ export class SendingMessageService {
                 contact: { id: contact.id },
                 campaign: { id: campaign.id },
               } as CreateCampaignSendingDto);
-  
+
               removeCampaignRejects.push(lastCampaignReject);
             }
           }
-  
-
         }
-       
+
         //Tous les contacts on été traité, on sauvegarde maintenant les information d'envoi et de rejet
         if (campaignSendings.length > 0) {
           await this.campaignService.createSendings(campaignSendings);
@@ -254,15 +263,15 @@ export class SendingMessageService {
 
     //On met un temps d'attente dans le quel si l'utilisateur ne repond pas on arrete d'attendre
     setTimeout(async () => {
-      console.log('setTimeout atteint');
-      this.socketService.stoplistenEvent('connectionPageOK', async () => {
-        console.log("annulation de l'envoi ", campaign.id);
-        campaign.statut = this.statut.SENT;
-        await this.campaignService.create(campaign);
-        this.socketService.emitClientEvent('updateListCampaign', 'OK');
-        this.socketService.emitClientEvent('cancelSendCampaignMessage', 'OK');
-        await this.closeBrowserPage();
-      });
+      if (!responseOK) {
+        this.socketService.stoplistenEvent('connectionPageOK', async () => {
+          console.log("annulation de l'envoi ", campaign.id);
+          campaign.statut = this.statut.SENT;
+          await this.campaignService.create(campaign);
+          this.socketService.emitClientEvent('updateListCampaign', 'OK');
+          this.socketService.emitClientEvent('cancelSendCampaignMessage', 'OK');
+        });
+      }
     }, myTime.TIME_WAIT_CONNECTION);
   }
 

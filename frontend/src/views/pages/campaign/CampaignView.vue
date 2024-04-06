@@ -127,13 +127,22 @@ onMounted(async () => {
   await getAllList()
 
   socket.on('connectionPage', (campaignData) => {
-    campaign.value = campaignData.payload
+    campaign.value = campaignData.payload as Campaign
     infoSendCampaignDialog.value = true
     countdownValue.value = 300
   })
 
   socket.on('cancelSendCampaignMessage', (data) => {
     infoSendCampaignDialog.value = false
+  })
+
+  socket.on('errorSendCampaignMessage', (data) => {
+    toast.add({
+      severity: 'error',
+      summary: 'Faillure',
+      detail: 'Error during sending campaign',
+      life: 3000
+    })
   })
 
   socket.on('updateListCampaign', async (message) => {
@@ -153,7 +162,7 @@ async function getAllList() {
   messages.value = await findAll()
   groups.value = await findAllGroup()
   attachments.value = await findAllAttachment()
-  attachments.value.unshift({ name: 'Aucune piece jointe'} as Attachment)
+  attachments.value.unshift({ name: 'Aucune piece jointe' } as Attachment)
 }
 
 const globalSearch = async () => {

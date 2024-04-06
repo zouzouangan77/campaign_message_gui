@@ -64,4 +64,9 @@ export class SocketGateway
   handleCancelSendCampaignMessage(client: Socket, payload: any): void {
     this.server.emit('cancelSendCampaignMessage', payload);
   }
+
+  @SubscribeMessage('errorSendCampaignMessage')
+  handleErrorSendCampaignMessage(client: Socket, payload: any): void {
+    this.server.emit('errorSendCampaignMessage', payload);
+  }
 }
