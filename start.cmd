@@ -16,8 +16,8 @@ rem Se placer dans le dossier courant
 cd /d %~dp0
 
 rem Lancer le fichier main.js s'il existe
-if exist main.js (
-    node main.js
+if exist dist\main.js (
+    node dist\main.js
 ) else (
-    echo Le fichier main.js n'existe pas dans ce répertoire.
+    echo Le fichier dist\main.js n'existe pas dans ce répertoire.
 )

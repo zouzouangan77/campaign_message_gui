@@ -33,3 +33,11 @@ Pour lancer le programme sur Linux, exécutez le fichier `start.sh`. Assurez-vou
 ```bash
 ./start.sh
 ```
+
+
+### packaging projet 
+
+```bash
+tar -czvf campaign_message_gui.tar.gz dist node_modules package.json pnpm-lock.yaml start.cmd start.sh README.md .env
+tar -xzvf campaign_message_gui.tar.gz -C campaign_message_gui
+```

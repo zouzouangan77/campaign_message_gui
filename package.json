@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/main.js",
-    "build": "rm -rf dist && mkdir -p dist/public && pnpm build-backend && pnpm copy-build-backend && pnpm build-frontend && pnpm copy-build-frontend",
+    "build": "rm -rf dist backend/dist frontend/dist && mkdir -p dist/public && pnpm build-backend && pnpm copy-build-backend && pnpm build-frontend && pnpm copy-build-frontend",
     "build-backend": "cd backend && nest build && cd ..",
     "build-frontend": "cd frontend && run-p type-check \"build-only {@}\" --  && cd ..",
-    "copy-build-backend": "cp -r backend/README.md backend/.db backend/.uploads backend/.env backend/start.cmd backend/start.sh backend/dist/* ./dist",
+    "copy-build-backend": "cp -r backend/README.md backend/dist/* ./dist",
     "copy-build-frontend": "cp -r frontend/dist/* ./dist/public",
     "format": "prettier --write \"backend/src/**/*.ts\" \"backend/test/**/*.ts\" && prettier --write frontend/src/"
   },
