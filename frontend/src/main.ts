@@ -40,11 +40,15 @@ import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import Knob from 'primevue/knob'
 import Card from 'primevue/card'
+import StepperPanel from 'primevue/stepperpanel'
+import Stepper from 'primevue/stepper'
 import App from './App.vue'
 import router from './router'
 
 const app = createApp(App)
 
+app.component('StepperPanel', StepperPanel)
+app.component('Stepper', Stepper)
 app.component('TabPanel', TabPanel)
 app.component('Card', Card)
 app.component('Knob', Knob)
