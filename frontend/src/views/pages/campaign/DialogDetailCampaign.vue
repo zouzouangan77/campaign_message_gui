@@ -89,7 +89,7 @@ const handleReSend = (campaignId: number | undefined) => {
 </script>
 
 <template>
-  <Dialog v-model:visible="visible" :style="{ width: '70vw' }" header="Campaigne  Details" @show="showDialog"
+  <Dialog v-model:visible="visible" :style="{ width: '70vw' }" header="Campagne  Details" @show="showDialog"
     maximizable modal :contentStyle="{ height: '300px' }">
     <TabView v-model:active-index="tabActiveIndex">
       <TabPanel header="CAMPAGNES ENVOY&Eacute;ES">
@@ -105,7 +105,7 @@ const handleReSend = (campaignId: number | undefined) => {
                 <InputIcon>
                   <i class="pi pi-search" />
                 </InputIcon>
-                <InputText v-model="searchField" placeholder="Search..." @keydown.enter="globalSearch" />
+                <InputText v-model="searchField" placeholder="Recherche ..." @keydown.enter="globalSearch" />
               </IconField>
             </div>
           </template>
@@ -127,7 +127,7 @@ const handleReSend = (campaignId: number | undefined) => {
                 <InputIcon>
                   <i class="pi pi-search" />
                 </InputIcon>
-                <InputText v-model="searchField" placeholder="Search..." @keydown.enter="globalSearch" />
+                <InputText v-model="searchField" placeholder="Recherche ..." @keydown.enter="globalSearch" />
               </IconField>
             </div>
           </template>
@@ -135,7 +135,7 @@ const handleReSend = (campaignId: number | undefined) => {
           <Column field="contact.lastName" header="Nom" style="min-width: 200px"></Column>
           <Column field="contact.firstName" header="Prenom" style="min-width: 200px"></Column>
           <Column field="rejectDate" header="Date reject" style="min-width: 200px"></Column>
-          <Column field="cause" header="cause" style="min-width: 200px"></Column>
+          <Column field="cause" header="Cause" style="min-width: 200px"></Column>
         </DataTable>
       </TabPanel>
     </TabView>

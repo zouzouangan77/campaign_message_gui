@@ -5,17 +5,17 @@ import AppMenuItem from './AppMenuItem.vue'
 
 const model = ref([
   {
-    label: 'Home',
-    items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
+    label: 'ACCUEIL',
+    items: [{ label: 'Accueil', icon: 'pi pi-fw pi-home', to: '/' }]
   },
   {
-    label: 'UI Components',
+    label: 'INFORMATIONS',
     items: [
-      { label: 'Contact', icon: 'pi pi-fw pi-comment', to: '/contact' },
-      { label: 'Groupe', icon: 'pi pi-fw pi-users', to: '/group' },
-      { label: 'Attachment', icon: 'pi pi-fw pi-link', to: '/attachment' },
-      { label: 'Message', icon: 'pi pi-fw pi-telegram', to: '/message' },
-      { label: 'Campaigne', icon: 'pi pi-fw pi-share-alt', to: '/campaign' }
+      { label: 'Mes Contacts', icon: 'pi pi-fw pi-comment', to: '/contact' },
+      { label: 'Mes Groupes', icon: 'pi pi-fw pi-users', to: '/group' },
+      { label: 'Mes Pièce-jointes', icon: 'pi pi-fw pi-link', to: '/attachment' },
+      { label: 'Mes Messages', icon: 'pi pi-fw pi-telegram', to: '/message' },
+      { label: 'Mes Campagnes', icon: 'pi pi-fw pi-share-alt', to: '/campaign' }
     ]
   }
 ])

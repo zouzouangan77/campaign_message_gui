@@ -4,7 +4,7 @@
       <Toolbar class="mb-4">
         <template #start>
           <Button
-            label="New"
+            label="Nouveau"
             icon="pi pi-plus"
             severity="success"
             class="mr-2"
@@ -12,7 +12,7 @@
             raised
           />
           <Button
-            label="Delete"
+            label="Supprimer"
             icon="pi pi-trash"
             severity="danger"
             @click="confirmDeleteSelected"
@@ -42,14 +42,14 @@
       >
         <template #header>
           <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
-            <h4 class="m-1">Gestion des Attachment</h4>
+            <h4 class="m-1">Gestion des Pièce-jointes</h4>
             <IconField iconPosition="left">
               <InputIcon>
                 <i class="pi pi-search" />
               </InputIcon>
               <InputText
                 v-model="searchField"
-                placeholder="Search..."
+                placeholder="Recherche ..."
                 @keydown.enter="globalSearch"
               />
             </IconField>
@@ -71,9 +71,9 @@
             </InputIcon>
           </template>
         </Column>
-        <Column field="name" header="Name" sortable style="min-width: 8rem"></Column>
-        <Column field="filename" header="File name" sortable style="min-width: 8rem"></Column>
-        <Column field="type" header="Type" sortable style="min-width: 8rem"></Column>
+        <Column field="name" header="Nom" sortable style="min-width: 8rem"></Column>
+        <Column field="filename" header="Nom du fichier" sortable style="min-width: 8rem"></Column>
+        <Column field="type" header="Type de fichier" sortable style="min-width: 8rem"></Column>
         <Column
           field="createDate"
           header="Date de création"
@@ -209,15 +209,15 @@ const updateCreateAttachment = async () => {
       await createNewAttachmentApi(formData)
       toast.add({
         severity: 'success',
-        summary: 'Successful',
-        detail: 'Attachment created',
+        summary: 'Réussie',
+        detail: 'Piece-jointe créé',
         life: 3000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Faillure',
-        detail: 'Attachment not created',
+        summary: 'Echec',
+        detail: 'Piece-jointe non créé',
         life: 3000
       })
     }
@@ -226,15 +226,15 @@ const updateCreateAttachment = async () => {
       await updateAttachmentApi(attachment.value.id!, formData)
       toast.add({
         severity: 'success',
-        summary: 'Successful',
-        detail: 'Attachment updated',
+        summary: 'Réussie',
+        detail: 'Attachment mis à jour',
         life: 3000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Faillure',
-        detail: 'Attachment not created',
+        summary: 'Echec',
+        detail: 'Piece-jointe non mis à jour',
         life: 3000
       })
     }
@@ -254,8 +254,8 @@ const deleteAttachment = async () => {
   selectedAttachments.value = selectedAttachments.value.filter((c) => c.id != attachment.value.id)
   toast.add({
     severity: 'success',
-    summary: 'Successful',
-    detail: 'Attachment Deleted',
+    summary: 'Réussie',
+    detail: 'Piece-jointe Supprimer',
     life: 3000
   })
   loadLazyData()
@@ -275,8 +275,8 @@ const deleteSelectedAttachments = async () => {
   selectAll.value = false
   toast.add({
     severity: 'success',
-    summary: 'Successful',
-    detail: 'Attachments Deleted',
+    summary: 'Réussie',
+    detail: 'Piece-jointe Supprimer',
     life: 3000
   })
   await loadLazyData()

@@ -148,15 +148,15 @@ const updateCreateGroup = async () => {
       await createNewGroupApi(group.value)
       toast.add({
         severity: 'success',
-        summary: 'Successful',
-        detail: 'Group created',
+        summary: 'Réussie',
+        detail: 'Groupe créé',
         life: 3000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Faillure',
-        detail: 'Group not created',
+        summary: 'Echec',
+        detail: 'Groupe non créé',
         life: 3000
       })
     }
@@ -165,15 +165,15 @@ const updateCreateGroup = async () => {
       await updateGroupApi(group.value.id!, group.value)
       toast.add({
         severity: 'success',
-        summary: 'Successful',
-        detail: 'Group updated',
+        summary: 'Réussie',
+        detail: 'Groupe mis à jour',
         life: 3000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Faillure',
-        detail: 'Group not created',
+        summary: 'Echec',
+        detail: 'Groupe non créé',
         life: 3000
       })
     }
@@ -199,15 +199,15 @@ const saveContactOnGroupe = async () => {
     await groupChanged()
     toast.add({
       severity: 'success',
-      summary: 'Successful',
-      detail: 'Group updated',
+      summary: 'Réussie',
+      detail: 'Groupe mis à jour',
       life: 3000
     })
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Faillure',
-      detail: 'Group not updated',
+      summary: 'Echec',
+      detail: 'Groupe non mis à jour',
       life: 3000
     })
   }
@@ -221,7 +221,7 @@ const confirmDeleteGroup = (groupData: Group) => {
 const deleteGroup = async () => {
   visibleConfirmDeleteGroupDialog.value = false
   await deleteGroupApi(group.value.id!)
-  toast.add({ severity: 'success', summary: 'Successful', detail: 'Group Deleted', life: 3000 })
+  toast.add({ severity: 'success', summary: 'Réussie', detail: 'Groupe Supprimer', life: 3000 })
   await updateDataList()
 }
 
@@ -236,7 +236,7 @@ const editGroup = (updateGroup: Group) => {
   <div class="grid">
     <div class="col-12 lg:col-4">
       <div class="card">
-        <h5>LIST DES GROUPES</h5>
+        <h5>LISTE DES GROUPES</h5>
 
         <div class="card flex justify-content-center">
           <Listbox v-model="selectedGroup" :options="groups" filter optionLabel="name" class="w-full md:w-25rem"
@@ -279,7 +279,7 @@ const editGroup = (updateGroup: Group) => {
                   <InputIcon>
                     <i class="pi pi-search"></i>
                   </InputIcon>
-                  <InputText class="w-12" v-model="filterSourceContact" placeholder="Search..."
+                  <InputText class="w-12" v-model="filterSourceContact" placeholder="Recherche ..."
                     @keyup="keydowFilterSourceContact" />
                 </IconField>
               </div>
@@ -295,7 +295,7 @@ const editGroup = (updateGroup: Group) => {
                   <InputIcon>
                     <i class="pi pi-search"></i>
                   </InputIcon>
-                  <InputText class="w-12" v-model="filterTargetContact" placeholder="Search..."
+                  <InputText class="w-12" v-model="filterTargetContact" placeholder="Recherche ..."
                     @keyup="keydowFilterTargetContact" />
                 </IconField>
               </div>
@@ -328,7 +328,7 @@ const editGroup = (updateGroup: Group) => {
   <DialogGroup v-model:group="group" v-model:visible="visibleGroupDialog" @valider="updateCreateGroup" />
 
   <DialogConfirmation v-model:visible="visibleConfirmDeleteGroupDialog"
-    message="Voulez vous vraiment supprimer ce group ?" @confirmation="deleteGroup" />
+    message="Voulez vous vraiment supprimer ce groupe ?" @confirmation="deleteGroup" />
 </template>
 
 <style></style>

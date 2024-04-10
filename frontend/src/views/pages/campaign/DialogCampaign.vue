@@ -46,13 +46,13 @@ const handleSave = () => {
 </script>
 
 <template>
-  <Dialog v-model:visible="visible" :style="{ width: '450px' }" header="Campaigne  Details" :modal="true"
+  <Dialog v-model:visible="visible" :style="{ width: '450px' }" header="Campagne  Details" :modal="true"
     class="p-fluid">
     <div class="field">
       <label for="name">Titre de la campaigne</label>
       <InputText id="name" v-model.trim="campaign.name" required="true" autofocus
         :class="{ 'p-invalid': submitted && !campaign.name }" />
-      <small class="p-error" v-if="submitted && !campaign.name">le titre is required.</small>
+      <small class="p-error" v-if="submitted && !campaign.name">le titre est exigé.</small>
     </div>
 
     <div class="field">

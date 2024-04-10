@@ -4,14 +4,14 @@
       <Toolbar class="mb-4">
         <template #start>
           <Button
-            label="New"
+            label="Nouveau"
             icon="pi pi-plus"
             severity="success"
             class="mr-2"
             @click="openNewContact"
           />
           <Button
-            label="Delete"
+            label="Supprimer"
             icon="pi pi-trash"
             severity="danger"
             @click="confirmDeleteSelected"
@@ -23,14 +23,14 @@
           <FileUpload
             mode="basic"
             :maxFileSize="1000000"
-            label="Import"
-            chooseLabel="Import"
+            label="Importer contacts"
+            chooseLabel="Importer contact"
             class="mr-2 inline-block"
             customUpload
             @uploader="uploadFileContact"
             @before-upload="() => {}"
           />
-          <Button label="Export" icon="pi pi-upload" severity="help" @click="exportCSV" />
+          <Button label="Exporter contacts" icon="pi pi-upload" severity="help" @click="exportCSV" />
         </template>
       </Toolbar>
 
@@ -61,17 +61,17 @@
               </InputIcon>
               <InputText
                 v-model="searchField"
-                placeholder="Search..."
+                placeholder="Recherche..."
                 @keydown.enter="globalSearch"
               />
             </IconField>
           </div>
         </template>
         <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-        <Column field="firstName" header="FirstName" sortable></Column>
-        <Column field="lastName" header="LastName" sortable></Column>
-        <Column field="phoneNumber" header="PhoneNumber" sortable></Column>
-        <Column field="idInsta" header="IdInsta" sortable></Column>
+        <Column field="firstName" header="Prenon" sortable></Column>
+        <Column field="lastName" header="Nom" sortable></Column>
+        <Column field="phoneNumber" header="Numero de tel" sortable></Column>
+        <Column field="idInsta" header="Speudo Instagram" sortable></Column>
         <Column :exportable="false" style="min-width: 3rem">
           <template #body="slotProps">
             <Button
@@ -122,7 +122,6 @@ import {
 } from '@/modules/contacts/contacts.api'
 import { Contact } from '@/modules/contacts/types'
 import type { IContact } from '@/modules/contacts/types'
-import { FilterMatchMode } from 'primevue/api'
 import { onMounted, ref } from 'vue'
 import { Pageable } from '@/modules/shared/types'
 import { useToast } from 'primevue/usetoast'
@@ -152,18 +151,6 @@ const contact = ref(new Contact())
 const searchField = ref('')
 const isNewContact = ref(true)
 
-const filters = ref({
-  firstName: { value: '', matchMode: 'contains' },
-  lastName: { value: '', matchMode: 'contains' },
-  phoneNumber: { value: '', matchMode: 'contains' },
-  idInsta: { value: '', matchMode: 'contains' }
-})
-const columns = ref([
-  { field: 'firstName', header: 'FirstName' },
-  { field: 'lastName', header: 'LastName' },
-  { field: 'phoneNumber', header: 'PhoneNumber' },
-  { field: 'idInsta', header: 'IdInsta' }
-])
 
 onMounted(() => {
   loading.value = true
@@ -200,15 +187,15 @@ const updateCreateContact = async () => {
       await createNewContactApi(contact.value)
       toast.add({
         severity: 'success',
-        summary: 'Successful',
-        detail: 'Conctact created',
+        summary: 'Réussie',
+        detail: 'Conctact créé',
         life: 3000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Faillure',
-        detail: 'Conctact not created',
+        summary: 'Echec',
+        detail: 'Conctact non créé',
         life: 3000
       })
     }
@@ -217,15 +204,15 @@ const updateCreateContact = async () => {
       await updateContactApi(contact.value.id!, contact.value)
       toast.add({
         severity: 'success',
-        summary: 'Successful',
-        detail: 'Conctact updated',
+        summary: 'Réussie',
+        detail: 'Conctact mis à jour',
         life: 3000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Faillure',
-        detail: 'Conctact not created',
+        summary: 'Echec',
+        detail: 'Conctact non mis à jour',
         life: 3000
       })
     }
@@ -242,7 +229,7 @@ const deleteContact = async () => {
   deleteContactDialog.value = false
   await deleteContactApi(contact.value.id!)
   selectedContacts.value = selectedContacts.value.filter((c) => c.id != contact.value.id)
-  toast.add({ severity: 'success', summary: 'Successful', detail: 'Conctact Deleted', life: 3000 })
+  toast.add({ severity: 'success', summary: 'Réussie', detail: 'Conctact Supprimé', life: 3000 })
   loadLazyData()
 }
 
@@ -261,7 +248,7 @@ const deleteSelectedContacts = async () => {
   deleteContactsDialog.value = false
   selectedContacts.value = new Array<Contact>()
   selectAll.value = false
-  toast.add({ severity: 'success', summary: 'Successful', detail: 'contacts Deleted', life: 3000 })
+  toast.add({ severity: 'success', summary: 'Réussie', detail: 'contacts Supprimés', life: 3000 })
   await loadLazyData()
 }
 
@@ -304,15 +291,15 @@ const uploadFileContact = async (event: FileUploadUploaderEvent) => {
     await importFileContactApi(formData)
     toast.add({
       severity: 'success',
-      summary: 'Successful',
-      detail: 'File uploaded, contact has been created',
+      summary: 'Réussie',
+      detail: 'Fichier uploadé, les contacts ont été créé',
       life: 3000
     })
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Faillure',
-      detail: 'Error during uploading file',
+      summary: 'Echec',
+      detail: "Ereur pendant l'uploade du fichier",
       life: 3000
     })
   }

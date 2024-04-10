@@ -4,14 +4,14 @@
       <Toolbar class="mb-4">
         <template #start>
           <Button
-            label="New"
+            label="Nouveau"
             icon="pi pi-plus"
             severity="success"
             class="mr-2"
             @click="openNewMessage"
           />
           <Button
-            label="Delete"
+            label="Supprimer"
             icon="pi pi-trash"
             severity="danger"
             @click="confirmDeleteSelected"
@@ -40,14 +40,14 @@
       >
         <template #header>
           <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
-            <h4 class="m-1">Gestion des Message</h4>
+            <h4 class="m-1">Gestion des Messages</h4>
             <IconField iconPosition="left">
               <InputIcon>
                 <i class="pi pi-search" />
               </InputIcon>
               <InputText
                 v-model="searchField"
-                placeholder="Search..."
+                placeholder="Recherche ..."
                 @keydown.enter="globalSearch"
               />
             </IconField>
@@ -179,15 +179,15 @@ const updateCreateMessage = async () => {
       await createNewMessageApi(message.value)
       toast.add({
         severity: 'success',
-        summary: 'Successful',
-        detail: 'Message created',
+        summary: 'Réussie',
+        detail: 'Message créé',
         life: 3000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Faillure',
-        detail: 'Message not created',
+        summary: 'Echec',
+        detail: 'Message non créé',
         life: 3000
       })
     }
@@ -196,15 +196,15 @@ const updateCreateMessage = async () => {
       await updateMessageApi(message.value.id!, message.value)
       toast.add({
         severity: 'success',
-        summary: 'Successful',
-        detail: 'Message updated',
+        summary: 'Réussie',
+        detail: 'Message mis à jour',
         life: 3000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Faillure',
-        detail: 'Message not created',
+        summary: 'Echec',
+        detail: 'Message non mis à jour',
         life: 3000
       })
     }
@@ -221,7 +221,7 @@ const deleteMessage = async () => {
   deleteMessageDialog.value = false
   await deleteMessageApi(message.value.id!)
   selectedMessages.value = selectedMessages.value.filter((c) => c.id != message.value.id)
-  toast.add({ severity: 'success', summary: 'Successful', detail: 'Message Deleted', life: 3000 })
+  toast.add({ severity: 'success', summary: 'Réussie', detail: 'Message Supprimer', life: 3000 })
   loadLazyData()
 }
 
@@ -237,7 +237,7 @@ const deleteSelectedMessages = async () => {
   deleteMessagesDialog.value = false
   selectedMessages.value = new Array<Message>()
   selectAll.value = false
-  toast.add({ severity: 'success', summary: 'Successful', detail: 'Messages Deleted', life: 3000 })
+  toast.add({ severity: 'success', summary: 'Réussie', detail: 'Messages Supprimer', life: 3000 })
   await loadLazyData()
 }
 

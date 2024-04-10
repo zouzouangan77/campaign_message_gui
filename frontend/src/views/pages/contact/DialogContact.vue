@@ -33,7 +33,7 @@ const handleSave = () => {
     class="p-fluid"
   >
     <div class="field">
-      <label for="firstName">First Name</label>
+      <label for="firstName">Prenom</label>
       <InputText
         id="firstName"
         v-model.trim="contact.firstName"
@@ -41,14 +41,14 @@ const handleSave = () => {
         autofocus
         :class="{ 'p-invalid': submitted && !contact.firstName }"
       />
-      <small class="p-error" v-if="submitted && !contact.firstName">First Name is required.</small>
+      <small class="p-error" v-if="submitted && !contact.firstName">Prenom exigé.</small>
     </div>
     <div class="field">
-      <label for="lastName">Last Name</label>
+      <label for="lastName">Nom</label>
       <InputText id="lastName" v-model.trim="contact.lastName" required="true" rows="3" cols="20" />
     </div>
     <div class="field">
-      <label for="phoneNumber">Phone Number</label>
+      <label for="phoneNumber">Numero de téléphone</label>
       <InputText
         id="phoneNumber"
         v-model.trim="contact.phoneNumber"
@@ -58,13 +58,13 @@ const handleSave = () => {
       />
     </div>
     <div class="field">
-      <label for="idInsta">Instagram ID</label>
+      <label for="idInsta">Speudo Instagram </label>
       <InputText id="idInsta" v-model.trim="contact.idInsta" required="true" rows="3" cols="20" />
     </div>
 
     <template #footer>
-      <Button label="Cancel" icon="pi pi-times" text @click="visible = false" />
-      <Button label="Save" icon="pi pi-check" text @click="handleSave" />
+      <Button label="Annuler" icon="pi pi-times" text @click="visible = false" />
+      <Button label="Enregistrer" icon="pi pi-check" text @click="handleSave" />
     </template>
   </Dialog>
 </template>

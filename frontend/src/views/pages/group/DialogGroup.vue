@@ -41,7 +41,7 @@ const handleSave = () => {
         autofocus
         :class="{ 'p-invalid': submitted && !group.name }"
       />
-      <small class="p-error" v-if="submitted && !group.name"> Name is required.</small>
+      <small class="p-error" v-if="submitted && !group.name"> Titre exigé.</small>
     </div>
 
     <div class="field">
@@ -51,8 +51,8 @@ const handleSave = () => {
     </div>
 
     <template #footer>
-      <Button label="Cancel" severity="danger" icon="pi pi-times" text @click="visible = false" />
-      <Button label="Save" severity="success" icon="pi pi-check" text @click="handleSave" />
+      <Button label="Annuler" severity="danger" icon="pi pi-times" text @click="visible = false" />
+      <Button label="Ajouter" severity="success" icon="pi pi-check" text @click="handleSave" />
     </template>
   </Dialog>
 </template>

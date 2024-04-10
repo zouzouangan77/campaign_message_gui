@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Attachment } from '@/modules/attachments/types'
-import type { FileUploadUploaderEvent } from 'primevue/fileupload'
-import { useToast } from 'primevue/usetoast'
 
-const toast = useToast()
+
 const attachment = defineModel('attachment', {
   type: Attachment,
   default: new Attachment()
@@ -31,12 +29,12 @@ const handleSave = () => {
   <Dialog
     v-model:visible="visible"
     :style="{ width: '450px' }"
-    header="Attachment  Details"
+    header="Piece-jointe  Details"
     :modal="true"
     class="p-fluid"
   >
     <div class="field">
-      <label for="name">Titre du Attachment</label>
+      <label for="name">Titre de la Piece-jointe</label>
       <InputText
         id="name"
         v-model.trim="attachment.name"
@@ -44,7 +42,7 @@ const handleSave = () => {
         autofocus
         :class="{ 'p-invalid': submitted && !attachment.name }"
       />
-      <small class="p-error" v-if="submitted && !attachment.name">le titre is required.</small>
+      <small class="p-error" v-if="submitted && !attachment.name">le titre est exigé.</small>
     </div>
 
     <div class="field">
@@ -67,8 +65,8 @@ const handleSave = () => {
     </div>
 
     <template #footer>
-      <Button label="Cancel" severity="danger" icon="pi pi-times" text @click="visible = false" />
-      <Button label="Save" severity="success" icon="pi pi-check" text @click="handleSave" />
+      <Button label="Annuler" severity="danger" icon="pi pi-times" text @click="visible = false" />
+      <Button label="Enregistrer" severity="success" icon="pi pi-check" text @click="handleSave" />
     </template>
   </Dialog>
 </template>

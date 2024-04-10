@@ -19,9 +19,9 @@ defineEmits<{
       <span>{{ message }}</span>
     </div>
     <template #footer>
-      <Button label="No" icon="pi pi-times" severity="danger" text @click="visible = false" />
+      <Button label="Annuler" icon="pi pi-times" severity="danger" text @click="visible = false" />
       <Button
-        label="Yes"
+        label="Valider"
         icon="pi pi-check"
         severity="success"
         text

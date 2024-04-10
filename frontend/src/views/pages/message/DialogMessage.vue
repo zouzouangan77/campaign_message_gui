@@ -40,7 +40,7 @@ const handleSave = () => {
         autofocus
         :class="{ 'p-invalid': submitted && !message.name }"
       />
-      <small class="p-error" v-if="submitted && !message.name">le titre is required.</small>
+      <small class="p-error" v-if="submitted && !message.name">le titre est exigé.</small>
     </div>
 
     <div class="field">

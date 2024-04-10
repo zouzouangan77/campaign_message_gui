@@ -3,7 +3,7 @@
     <div class="card">
       <Toolbar class="mb-4">
         <template #start>
-          <Button label="New" icon="pi pi-plus" severity="success" class="mr-2" @click="openNewCampaign" raised />
+          <Button label="Nouveau" icon="pi pi-plus" severity="success" class="mr-2" @click="openNewCampaign" raised />
         </template>
       </Toolbar>
 
@@ -18,7 +18,7 @@
               <InputIcon>
                 <i class="pi pi-search" />
               </InputIcon>
-              <InputText v-model="searchField" placeholder="Search..." @keydown.enter="globalSearch" />
+              <InputText v-model="searchField" placeholder="Recherche ..." @keydown.enter="globalSearch" />
             </IconField>
           </div>
         </template>
@@ -139,8 +139,8 @@ onMounted(async () => {
   socket.on('errorSendCampaignMessage', (data) => {
     toast.add({
       severity: 'error',
-      summary: 'Faillure',
-      detail: 'Error during sending campaign',
+      summary: 'Echec',
+      detail: "Erreur durant l'envoie de la campagne",
       life: 3000
     })
   })
@@ -204,15 +204,15 @@ const updateCreateCampaign = async () => {
       await createNewCampaignApi(campaign.value)
       toast.add({
         severity: 'success',
-        summary: 'Successful',
-        detail: 'Campaign created',
+        summary: 'Réussie',
+        detail: 'Campagne créé',
         life: 3000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Faillure',
-        detail: 'Campaign not created',
+        summary: 'Echec',
+        detail: 'Campagne non créé',
         life: 3000
       })
     }
@@ -221,15 +221,15 @@ const updateCreateCampaign = async () => {
       await updateCampaignApi(campaign.value.id!, campaign.value)
       toast.add({
         severity: 'success',
-        summary: 'Successful',
-        detail: 'Campaign updated',
+        summary: 'Réussie',
+        detail: 'Campagne mise à jour',
         life: 3000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Faillure',
-        detail: 'Campaign not created',
+        summary: 'Echec',
+        detail: 'Campagne non créé',
         life: 3000
       })
     }
@@ -246,7 +246,7 @@ const deleteCampaign = async () => {
   deleteCampaignDialog.value = false
   await deleteCampaignApi(campaign.value.id!)
   selectedCampaigns.value = selectedCampaigns.value.filter((c) => c.id != campaign.value.id)
-  toast.add({ severity: 'success', summary: 'Successful', detail: 'Campaign Deleted', life: 3000 })
+  toast.add({ severity: 'success', summary: 'Réussie', detail: 'Campagne Supprimé', life: 3000 })
   loadLazyData()
 }
 
