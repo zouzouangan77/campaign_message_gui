@@ -34,23 +34,45 @@ export const findOneCampaign = async (id: number): Promise<Campaign> => {
 }
 
 export const createNewCampaignApi = async (newCampaign: Campaign): Promise<void> => {
-  await fetch('/api/campaign', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(newCampaign)
-  })
+  try {
+    const response = await fetch('/api/campaign', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newCampaign)
+    })
+    if (!response.ok) {
+      throw new Error('Erreur lors de la création')
+    }
+
+  }catch (error) {
+    console.log('createNewCampaignApi =', error)
+    throw new Error(error as string)
+
+  }
+  
 }
 
 export const updateCampaignApi = async (id: number, updateCampaign: Campaign): Promise<void> => {
-  await fetch(`/api/campaign/${id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(updateCampaign)
-  })
+  
+  try {
+    const response =   await fetch(`/api/campaign/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updateCampaign)
+    })
+    if (!response.ok) {
+      throw new Error('Erreur lors de la mise à jour des données')
+    }
+  } catch (error) {
+    console.log('updateCampaignApi =', error)
+    throw new Error(error as string)
+  }
+  
+
 }
 
 export const deleteCampaignApi = async (id: number): Promise<void> => {

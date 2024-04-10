@@ -33,23 +33,43 @@ export const findAllContactsByGroup = async (id: number): Promise<Array<Contact>
 }
 
 export const createNewContactApi = async (newContact: Contact): Promise<void> => {
-  await fetch('/api/contact', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(newContact)
-  })
+  try {
+    const response =  await fetch('/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newContact)
+    })
+    if (!response.ok) {
+      throw new Error('Erreur lors de la création')
+    }
+
+  }catch (error) {
+    console.log('createNewContactApi =', error)
+    throw new Error(error as string)
+
+  }
+ 
 }
 
 export const updateContactApi = async (id: number, updateContact: Contact): Promise<void> => {
-  await fetch(`/api/contact/${id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(updateContact)
-  })
+  try {
+    const response =   await fetch(`/api/contact/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updateContact)
+    })
+    if (!response.ok) {
+      throw new Error('Erreur lors de la mise à jour des données')
+    }
+  } catch (error) {
+    console.log('updateContactApi =', error)
+    throw new Error(error as string)
+  }
+  
 }
 
 export const deleteContactApi = async (id: number): Promise<void> => {

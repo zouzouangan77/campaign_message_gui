@@ -27,23 +27,47 @@ export const findAll = async (): Promise<Array<Message>> => {
 }
 
 export const createNewMessageApi = async (newMessage: Message): Promise<void> => {
-  await fetch('/api/message', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(newMessage)
-  })
+  
+  try {
+    const response =  await fetch('/api/message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newMessage)
+    })
+    if (!response.ok) {
+      throw new Error('Erreur lors de la création')
+    }
+
+  }catch (error) {
+    console.log('createNewCampaignApi =', error)
+    throw new Error(error as string)
+
+  }
+ 
 }
 
 export const updateMessageApi = async (id: number, updateMessage: Message): Promise<void> => {
-  await fetch(`/api/message/${id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(updateMessage)
-  })
+  
+  try {
+    const response =   await fetch(`/api/message/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updateMessage)
+    })
+    if (!response.ok) {
+      throw new Error('Erreur lors de la mise à jour des données')
+    }
+  } catch (error) {
+    console.log('updateMessageApi =', error)
+    throw new Error(error as string)
+  }
+  
+  
+  
 }
 
 export const deleteMessageApi = async (id: number): Promise<void> => {
