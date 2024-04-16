@@ -5,14 +5,16 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/main.js",
-    "build": "rm -rf dist backend/dist frontend/dist && mkdir -p dist/public && pnpm build-backend && pnpm copy-build-backend && pnpm build-frontend && pnpm copy-build-frontend",
+    "clean": "rm -rf dist backend/dist frontend/dist",
+    "dir": "mkdir dist ",
     "build-backend": "cd backend && nest build && cd ..",
     "build-frontend": "cd frontend && run-p type-check \"build-only {@}\" --  && cd ..",
     "copy-build-backend": "cp -r backend/README.md backend/dist/* ./dist",
-    "copy-build-frontend": "cp -r frontend/dist/* ./dist/public",
+    "copy-build-frontend": "cp -r frontend/dist ./dist/public",
     "format": "prettier --write \"backend/src/**/*.ts\" \"backend/test/**/*.ts\" && prettier --write frontend/src/",
-    "package": "rm -rf campaign_message_gui.tar.gz && pnpm build && pnpm tar",
-    "tar": "tar -czvf campaign_message_gui.tar.gz dist node_modules package.json pnpm-lock.yaml start.cmd start.sh README.md .env"
+    "build": "pnpm clean && pnpm dir && pnpm build-backend && pnpm copy-build-backend && pnpm build-frontend && pnpm copy-build-frontend",
+    "tar": "tar -czvf campaign_message_gui.tar.gz dist node_modules package.json pnpm-lock.yaml start.cmd start.sh README.md .env",
+    "package": "rm -rf campaign_message_gui.tar.gz && pnpm build && pnpm tar"
 
   },
   "dependencies": {
