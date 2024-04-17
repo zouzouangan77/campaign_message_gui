@@ -22,11 +22,16 @@ const emits = defineEmits<{
   resend: [campaignid: number | undefined] // named tuple syntax
 }>()
 
+const exportCSV = () => {
+  dtCampaignSendings.value.exportCSV()
+}
+
 const totalRecordSendings = ref(0)
 const totalRecordsRejects = ref(0)
 const pageableSending = ref(new Pageable<{ 'campaign.id': number }>())
 const pageableReject = ref(new Pageable<{ 'campaign.id': number }>())
-const dt = ref()
+const dtCampaignSendings = ref()
+const dtCampaignRejects = ref()
 const loading = ref(false)
 const tabActiveIndex = ref(0)
 const campaignsSendings = ref(new Array<CampaignSending>())
@@ -93,10 +98,10 @@ const handleReSend = (campaignId: number | undefined) => {
     maximizable modal :contentStyle="{ height: '300px' }">
     <TabView v-model:active-index="tabActiveIndex">
       <TabPanel header="CAMPAGNES ENVOY&Eacute;ES">
-        <DataTable :value="campaignsSendings" :scrollable="true" scrollHeight="flex" lazy paginator :rows="10" ref="dt"
+        <DataTable :value="campaignsSendings" :scrollable="true" scrollHeight="flex" lazy paginator :rows="10" ref="dtCampaignSendings"
           dataKey="id"
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          :rowsPerPageOptions="[5, 10, 25]" :totalRecords="totalRecordSendings" :loading="loading"
+          :rowsPerPageOptions="[5, 10, 25, 50, 100, 200, 500, 1000]" :totalRecords="totalRecordSendings" :loading="loading"
           @page="onPage($event, 1)" @sort="onSort($event, 1)">
           <template #header>
             <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
@@ -115,7 +120,7 @@ const handleReSend = (campaignId: number | undefined) => {
         </DataTable>
       </TabPanel>
       <TabPanel header="CAMPAGNES NON ENVOY&Eacute;ES">
-        <DataTable :value="campaignRejects" :scrollable="true" scrollHeight="flex" lazy paginator :rows="10" ref="dt"
+        <DataTable :value="campaignRejects" :scrollable="true" scrollHeight="flex" lazy paginator :rows="10" ref="dtCampaignRejects"
           dataKey="id"
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
           :rowsPerPageOptions="[5, 10, 25]" :totalRecords="totalRecordsRejects" :loading="loading"
@@ -141,9 +146,11 @@ const handleReSend = (campaignId: number | undefined) => {
     </TabView>
 
     <template #footer>
+      <Button v-if="tabActiveIndex === 0 && campaignsSendings.length > 0" label="Exporter contacts" icon="pi pi-upload" severity="help" @click="exportCSV" />
       <Button label="Quitter" icon="pi pi-check" @click="visible = false; tabActiveIndex = 0" severity="danger" />
       <Button v-if="tabActiveIndex === 1 && campaignRejects.length > 0" label="Re-envoyer" icon="pi pi-send"
         @click="handleReSend(campaignSelected.id)" />
     </template>
+
   </Dialog>
 </template>

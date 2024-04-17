@@ -42,7 +42,7 @@
         ref="dt"
         dataKey="id"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-        :rowsPerPageOptions="[5, 10, 25, 50, 100, 200]"
+        :rowsPerPageOptions="[5, 10, 25, 50, 100, 200, 500, 1000]"
         :totalRecords="totalRecords"
         :loading="loading"
         @page="onPage"
