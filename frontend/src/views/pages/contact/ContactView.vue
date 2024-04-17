@@ -62,7 +62,7 @@
               <InputText
                 v-model="searchField"
                 placeholder="Recherche..."
-                @keydown.enter="globalSearch"
+                @keyup="globalSearch"
               />
             </IconField>
           </div>
