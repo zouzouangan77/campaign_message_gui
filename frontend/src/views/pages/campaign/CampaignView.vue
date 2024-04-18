@@ -3,14 +3,33 @@
     <div class="card">
       <Toolbar class="mb-4">
         <template #start>
-          <Button label="Nouveau" icon="pi pi-plus" severity="success" class="mr-2" @click="openNewCampaign" raised />
+          <Button
+            label="Nouveau"
+            icon="pi pi-plus"
+            severity="success"
+            class="mr-2"
+            @click="openNewCampaign"
+            raised
+          />
         </template>
       </Toolbar>
 
-      <DataTable :value="campaigns" lazy paginator :rows="10" ref="dt" dataKey="id"
+      <DataTable
+        :value="campaigns"
+        lazy
+        paginator
+        :rows="10"
+        ref="dt"
+        dataKey="id"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-        :rowsPerPageOptions="[5, 10, 25]" :totalRecords="totalRecords" :loading="loading" @page="onPage($event)"
-        @sort="onSort($event)" v-model:selection="selectedCampaigns" :tableStyle="{ 'min-width': '75rem' }">
+        :rowsPerPageOptions="[5, 10, 25]"
+        :totalRecords="totalRecords"
+        :loading="loading"
+        @page="onPage($event)"
+        @sort="onSort($event)"
+        v-model:selection="selectedCampaigns"
+        :tableStyle="{ 'min-width': '75rem' }"
+      >
         <template #header>
           <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
             <h4 class="m-1">Gestion des Campaignes</h4>
@@ -18,54 +37,116 @@
               <InputIcon>
                 <i class="pi pi-search" />
               </InputIcon>
-              <InputText v-model="searchField" placeholder="Recherche ..." @keydown.enter="globalSearch" />
+              <InputText
+                v-model="searchField"
+                placeholder="Recherche ..."
+                @keydown.enter="globalSearch"
+              />
             </IconField>
           </div>
         </template>
         <Column field="name" header="Titre" sortable style="min-width: 8rem"></Column>
         <Column field="canal" header="Canal" sortable style="min-width: 8rem"></Column>
-        <Column field="createDate" header="Date de création" sortable style="min-width: 8rem"></Column>
-        <Column field="updateDate" header="Date de Modification" sortable style="min-width: 8rem"></Column>
+        <Column
+          field="createDate"
+          header="Date de création"
+          sortable
+          style="min-width: 8rem"
+        ></Column>
+        <Column
+          field="updateDate"
+          header="Date de Modification"
+          sortable
+          style="min-width: 8rem"
+        ></Column>
         <Column field="statut" header="Statut" sortable style="min-width: 4rem">
           <template #body="slotProps">
-            <Tag :value="slotProps.data.statut" :severity="getStatusLabel(slotProps.data.statut)" raised />
+            <Tag
+              :value="slotProps.data.statut"
+              :severity="getStatusLabel(slotProps.data.statut)"
+              raised
+            />
           </template>
         </Column>
         <Column :exportable="false" style="min-width: 3rem">
           <template #body="slotProps">
             <div class="flex justify-content-left flex-wrap gap-3">
-              <SplitButton v-if="slotProps.data.statut === 'NOT_SENT'" label="Action" icon="pi pi-check"
-                severity="secondary" menuButtonIcon="pi pi-cog" :model="items(slotProps.data)">
+              <SplitButton
+                v-if="slotProps.data.statut === 'NOT_SENT'"
+                label="Action"
+                icon="pi pi-check"
+                severity="secondary"
+                menuButtonIcon="pi pi-cog"
+                :model="items(slotProps.data)"
+              >
                 <template #item="option">
                   <span>{{ option.label }}</span>
                 </template>
               </SplitButton>
 
-              <Button v-if="slotProps.data.statut === 'SENT'" icon="pi pi-bars" label="Details" severity="secondary"
-                @click="detailCampaign(slotProps.data)" />
-              <Button v-if="slotProps.data.statut === 'SENT'" icon="pi pi-clone" label="Dupliquer" severity="info"
-                @click="duplicateCampaign(slotProps.data)" />
-              <Button v-if="slotProps.data.statut === 'NOT_SENT'" icon="pi pi-send" label="Envoyer"
-                @click="sendCampaign(slotProps.data.id)" />
-              <Button v-if="slotProps.data.statut === 'PROCESSING' || slotProps.data.statut === 'PENDING'"
-                icon="pi pi-stop-circle" severity="danger" label="Stop" @click="stopCampaign(slotProps.data.id)" />
+              <Button
+                v-if="slotProps.data.statut === 'SENT'"
+                icon="pi pi-bars"
+                label="Details"
+                severity="secondary"
+                @click="detailCampaign(slotProps.data)"
+              />
+              <Button
+                v-if="slotProps.data.statut === 'SENT'"
+                icon="pi pi-clone"
+                label="Dupliquer"
+                severity="info"
+                @click="duplicateCampaign(slotProps.data)"
+              />
+              <Button
+                v-if="slotProps.data.statut === 'NOT_SENT'"
+                icon="pi pi-send"
+                label="Envoyer"
+                @click="sendCampaign(slotProps.data.id)"
+                :disabled="buttonSendDisabled"
+              />
+              <Button
+                v-if="slotProps.data.statut === 'PROCESSING' || slotProps.data.statut === 'PENDING'"
+                icon="pi pi-stop-circle"
+                severity="danger"
+                label="Stop"
+                @click="stopCampaign(slotProps.data.id)"
+              />
             </div>
             <Toast />
           </template>
         </Column>
       </DataTable>
     </div>
-    <DialogCampaign v-model:campaign="campaign" :messages="messages" :groups="groups" :attachments="attachments"
-      v-model:visible="campaignDialog" @valider="updateCreateCampaign" />
+    <DialogCampaign
+      v-model:campaign="campaign"
+      :messages="messages"
+      :groups="groups"
+      :attachments="attachments"
+      v-model:visible="campaignDialog"
+      @valider="updateCreateCampaign"
+    />
 
-    <DialogDetailCampaign :campaignSelected="campaign" v-model:visible="campaignDetailDialog"
-      @resend="sendCampaignReject(campaign.id)" />
+    <DialogDetailCampaign
+      :campaignSelected="campaign"
+      v-model:visible="campaignDetailDialog"
+      @resend="sendCampaignReject(campaign.id)"
+      :disabled="buttonSendDisabled"
+    />
 
-    <DialogConfirmation v-model:visible="deleteCampaignDialog" message="Voulez vous vraiment supprimer ce Campaign à?"
-      @confirmation="deleteCampaign" />
-    <DialogInfoCampaign :campaign="campaign" v-model:countdownValue="countdownValue"
-      v-model:visible="infoSendCampaignDialog" message="Veuillez-vous authentifier"
-      @valider="confirmSendingCampaign(campaign.id)" @cancel="stopCampaign(campaign.id)" />
+    <DialogConfirmation
+      v-model:visible="deleteCampaignDialog"
+      message="Voulez vous vraiment supprimer ce Campaign à?"
+      @confirmation="deleteCampaign"
+    />
+    <DialogInfoCampaign
+      :campaign="campaign"
+      v-model:countdownValue="countdownValue"
+      v-model:visible="infoSendCampaignDialog"
+      message="Veuillez-vous authentifier"
+      @valider="confirmSendingCampaign(campaign.id)"
+      @cancel="stopCampaign(campaign.id)"
+    />
   </div>
 </template>
 
@@ -115,10 +196,18 @@ const countdownValue = ref(0)
 const campaign = ref(new Campaign())
 const searchField = ref('')
 const isNewCampaign = ref(true)
+const buttonSendDisabled = ref(false)
 const socket = io()
+const isRejectCampaign = ref(false)
 
 const confirmSendingCampaign = (campaignId: number | undefined) => {
-  socket.emit('connectionPageOK', campaignId)
+  if (isRejectCampaign.value) {
+    console.log('connectionPageOK_SendingRejectMessage')
+    socket.emit('connectionPageOK_SendingRejectMessage', campaignId)
+  } else {
+    console.log('connectionPageOK_SendingMessage')
+    socket.emit('connectionPageOK_SendingMessage', campaignId)
+  }
 }
 
 onMounted(async () => {
@@ -311,13 +400,28 @@ const items = (rowData: Campaign) => {
 
 const sendCampaign = (campaignId: number) => {
   socket.emit('sendCampaignMessage', campaignId)
+  isRejectCampaign.value = false
+  buttonSendDisabled.value = true
+
+  //on degrise le bouton après 5 seconde, c'est juste pour éviter plusieurs clique à la fois
+  setTimeout(() => {
+    buttonSendDisabled.value = false
+  }, 5000)
 }
 
 const sendCampaignReject = (campaignId: number | undefined) => {
   socket.emit('sendCampaignRejectMessage', campaignId)
+  isRejectCampaign.value = true
+  buttonSendDisabled.value = true
+
+  //on degrise le bouton après 5 seconde, c'est juste pour éviter plusieurs clique à la fois
+  setTimeout(() => {
+    buttonSendDisabled.value = false
+  }, 5000)
 }
 
 const stopCampaign = (campaignId: number | undefined) => {
   socket.emit('cancelSendCampaignMessage', campaignId)
+  buttonSendDisabled.value = false
 }
 </script>

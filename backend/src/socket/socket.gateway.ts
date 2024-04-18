@@ -55,9 +55,14 @@ export class SocketGateway
     this.server.emit('connectionPage', payload);
   }
 
-  @SubscribeMessage('connectionPageOK')
-  handleConnectionPageOK(client: Socket, payload: any): void {
-    this.server.emit('connectionPageOK', payload);
+  @SubscribeMessage('connectionPageOK_SendingMessage')
+  handleConnectionPageOKSending(client: Socket, payload: any): void {
+    this.server.emit('connectionPageOK_SendingMessage', payload);
+  }
+
+  @SubscribeMessage('connectionPageOK_SendingRejectMessage')
+  handleConnectionPageOKSendingReject(client: Socket, payload: any): void {
+    this.server.emit('connectionPageOK_SendingRejectMessage', payload);
   }
 
   @SubscribeMessage('cancelSendCampaignMessage')
