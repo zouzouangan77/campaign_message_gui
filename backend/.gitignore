@@ -4,8 +4,8 @@
 /build
 
 #database local
-.db 
-.uploads
+/.db 
+/.uploads
 
 # Logs
 logs
