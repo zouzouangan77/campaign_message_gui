@@ -95,21 +95,6 @@ export class InstagramChannelService implements ChannelService {
       await sleep(myTime.TIME_WAIT_ACTION);
 
       try {
-        // Sélectionner le bouton pour joindre un fichier
-        await page
-          .locator(
-            'div.x9f619.x1n2onr6.x1ja2u2z.x78zum5.xdt5ytf.x1iyjqo2.x2lwn1j div.x6s0dn4.x78zum5.x1gg8mnh.x1pi30zi.xlu9dua>div:nth-child(4)>div:nth-child(3)',
-          )
-          .first()
-          .click({ timeout: myTime.TIME_OUT });
-      } catch (e) {
-        //logger.error(contact, problem.select_button_attach);
-        return new SendMessageResponse(false, problem.select_button_attach);
-      }
-
-      await sleep(myTime.TIME_WAIT_ACTION);
-
-      try {
         // Chargement de l'image
         await page
           .locator(

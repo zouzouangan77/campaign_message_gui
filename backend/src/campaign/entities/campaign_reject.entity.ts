@@ -1,8 +1,16 @@
 import { Contact } from 'src/contact/entities/contact.entity';
 import { Campaign } from './campaign.entity';
-import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 
 @Entity({ name: 'campaign_reject' })
+@Unique(['contact', 'campaign']) // Définir une contrainte d'unicité
 export class CampaignReject {
   @PrimaryGeneratedColumn()
   id: number;
