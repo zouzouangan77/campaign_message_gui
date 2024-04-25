@@ -12,9 +12,9 @@
     "copy-build-backend": "cp -r backend/README.md backend/dist/* ./dist",
     "copy-build-frontend": "cp -r frontend/dist ./dist/public",
     "format": "prettier --write \"backend/src/**/*.ts\" \"backend/test/**/*.ts\" && prettier --write frontend/src/",
-    "build": "pnpm clean && pnpm dir && pnpm build-backend && pnpm copy-build-backend && pnpm build-frontend && pnpm copy-build-frontend",
-    "tar": "tar -czvf campaign_message_gui.tar.gz dist node_modules package.json pnpm-lock.yaml start.cmd start.sh README.md .env",
-    "package": "rm -rf campaign_message_gui.tar.gz && pnpm build && pnpm tar"
+    "build": "npm run clean && npm run dir && npm run build-backend && npm run copy-build-backend && npm run build-frontend && npm run copy-build-frontend",
+    "tar": "tar -czvf campaign_message_gui.tar.gz dist node_modules package.json start.cmd start.sh README.md .env",
+    "package": "rm -rf campaign_message_gui.tar.gz && npm run build && npm run tar"
 
   },
   "dependencies": {
