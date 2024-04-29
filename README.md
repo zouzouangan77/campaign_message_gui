@@ -18,6 +18,17 @@ Cette commande téléchargera et installera les navigateurs nécessaires pour Pl
 
 ## Lancement du Programme
 
+### Configuration
+les variable d'environnement du projet se trouve dans le fichier **.env**
+voici sont contenu
+```bash
+PROTOCOLE=http ##Protocol pas besoin de modifier
+HOST=localhost ## hostname, on peut aussi mettre l'adrese IP
+PORT=3000  ##Port de l'application
+DATABASE_DIR=.db ##Nom du repertoire ou va se trouver le fichier de bdd : veuillez le créer
+UPLOAD_DIR=.uploads ##Nom du repertoire ou va se trouver les piece jointe: veuillez le créer
+```
+
 ### Sur Windows
 
 Pour lancer le programme sur Windows, exécutez le fichier `start.cmd`. Assurez-vous que Node.js est installé sur votre système et que les navigateurs pour Playwright ont été installés à l'étape précédente.
@@ -33,6 +44,13 @@ Pour lancer le programme sur Linux, exécutez le fichier `start.sh`. Assurez-vou
 ```bash
 ./start.sh
 ```
+
+### Connexion
+
+Une fois l'aplication demarrer vous pouvez aller sur votre navigateur et  cet url. [http://localhost:3000](http://localhost:3000).
+
+
+
 
 
 ### packaging projet 
