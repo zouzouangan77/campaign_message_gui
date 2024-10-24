@@ -53,11 +53,23 @@ export class WhatsappChannelService implements ChannelService {
 
     //clique sur le contact trouvé
     try {
-      const zone_contact = await page
-       // .locator('div#pane-side div._21S-L div.Mk0Bp')
-        .locator('div#pane-side div._ak8q div._aou8')
-        .locator('../../../../..');
-      await zone_contact.first().click({ timeout: myTime.TIME_OUT });
+      const zone_contacts = await page.$$('#pane-side > div:nth-child(1) > div > div > div.x10l6tqk')
+        
+      for (let zone_contact of zone_contacts) {
+        const transformValue = await zone_contact.evaluate(el => window.getComputedStyle(el).transform);
+        // Vérifier si la transformation est 'translateY(72px)'
+        if (transformValue.startsWith('matrix')) {
+          // Extraire la dernière valeur de la matrice, qui est la translation Y
+          const matrixValues = transformValue.match(/matrix\((.*)\)/)[1].split(', ');
+          const translateY = parseFloat(matrixValues[5]); // 5ème valeur est la translation Y
+
+          // Vérifier si la translation Y est de 72 pixels
+          if (translateY === 72) {
+            await zone_contact.click({ timeout: myTime.TIME_OUT });
+          }
+        }
+      }
+      
     } catch (e) {
       //logger.error(contact, problem.select_contact);
       return new SendMessageResponse(false, problem.select_contact);
@@ -136,7 +148,7 @@ export class WhatsappChannelService implements ChannelService {
         // Sélectionner le bouton pour joindre un fichier
         await page
           .locator(
-            '#main > footer div._ak1o > div._ajv7 > div._ajv6',
+            '#main > footer div._ak1q div._ajv7 > div._ajv6',
           )
           .first()
           .click({ timeout: myTime.TIME_OUT });
@@ -151,7 +163,7 @@ export class WhatsappChannelService implements ChannelService {
         // Chargement de l'image
         await page
           .locator(
-            '#main > footer div._ak4w._al02 div.xyqdw3p.xg8j3zb > div:nth-child(2) input[type=file]',
+            '#main > footer div._ak4w div.xyqdw3p > div:nth-child(2) input[type=file]',
           )
           .setInputFiles(attachment);
       } catch (e) {
@@ -163,7 +175,7 @@ export class WhatsappChannelService implements ChannelService {
       try {
         await page
                   .locator(
-                    'div._aigv._aigz div._ajwz div._ajx2 > div > div',
+                    'div._aigv._aigz div.x1247r65 > div',
                   )
                   .first()
                   .click({ timeout: myTime.TIME_OUT });
