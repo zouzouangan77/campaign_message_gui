@@ -53,7 +53,7 @@ export function useVariable() {
     TIME_APP_LOADING: 10000,
     TIME_WAIT_CONNECTION: 330000,
     TIME_OUT: 1000,
-    TIME_WAIT_ACTION: 2000,
+    TIME_WAIT_ACTION: 1000,
   };
 
   const balise_replace = {

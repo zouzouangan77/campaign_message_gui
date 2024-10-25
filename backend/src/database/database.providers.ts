@@ -23,7 +23,7 @@ export const databaseProviders = [
         type: 'sqlite',
         database: `${process.env.DATABASE_DIR}/data.sqlite3`,
         synchronize: true,
-        logging: true,
+        logging: false,
         entities: [__dirname + '/../**/entities/*.entity{.ts,.js}'],
       });
 
