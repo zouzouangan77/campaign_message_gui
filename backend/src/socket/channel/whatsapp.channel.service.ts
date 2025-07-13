@@ -1,200 +1,332 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
-import { useFunction } from '../../shared/function.util';
-import { useVariable } from '../../shared/channel.config';
-import { Page } from 'playwright';
-import { ChannelService, SendMessageResponse } from './channel.service';
-import { Contact } from '../../contact/entities/contact.entity';
-import { selectors } from './config/whatsapp.selectors';
+import {Injectable, Logger} from '@nestjs/common';
+import {useFunction} from '../../shared/function.util';
+import {useVariable} from '../../shared/channel.config';
+import {Page} from 'playwright';
+import {ChannelService, SendMessageResponse} from './channel.service';
+import {Contact} from '../../contact/entities/contact.entity';
+import {
+    selectors,
+    findElementWithFallback,
+    timeouts,
+} from './config/whatsapp.selectors';
 
-const { sleep } = useFunction();
-const { message_info, myTime, problem } = useVariable();
+const {sleep} = useFunction();
+const {message_info, myTime, problem} = useVariable();
 
 @Injectable()
 export class WhatsappChannelService implements ChannelService {
-  public actionBeforeSendAllMessage = async (
-    page: Page,
-  ): Promise<SendMessageResponse> => {
-    return new SendMessageResponse(true, '');
-  };
+    private readonly logger = new Logger(WhatsappChannelService.name);
+    private lastActionTime = 0;
+    private readonly language = 'fr'; // Configurable selon la langue de l'interface
 
-  public sendMessage = async (
-    page: Page,
-    contact: Contact,
-    message: string,
-    attachment?: string,
-  ): Promise<SendMessageResponse> => {
-    console.log('try to send ', contact.phoneNumber);
-    let success = false;
-    let lastActionTime = 0;
-
-    const cancelSearch = async () => {
-      const currentTime = Date.now();
-      if (currentTime - lastActionTime < 1000) {
-        return; // ignore if less than 1 second since last action
-      }
-      lastActionTime = currentTime;
-
-      try {
-        const cancelButton = await page.locator(selectors.cancelButton);
-
-        if (await cancelButton.isVisible()) {
-          await cancelButton.click({ timeout: myTime.TIME_OUT });
-        }
-      } catch (e) {
-        // Logique si l'annulation n'était pas nécessaire
-      }
+    public actionBeforeSendAllMessage = async (
+        page: Page,
+    ): Promise<SendMessageResponse> => {
+        return new SendMessageResponse(true, '');
     };
 
-    await cancelSearch();
+    public sendMessage = async (
+        page: Page,
+        contact: Contact,
+        message: string,
+        attachment?: string,
+    ): Promise<SendMessageResponse> => {
+        this.logger.log(`Tentative d'envoi vers ${contact.phoneNumber}`);
 
-    await sleep(myTime.TIME_WAIT_ACTION);
+        try {
+            // Étape 1: Vérifier que WhatsApp est chargé
+            await this.waitForWhatsAppToLoad(page);
 
-    // Tentative d'annulation de la recherche en cliquant sur un bouton
-    //await cancelSearch();
-    await sleep(myTime.TIME_WAIT_ACTION);
+            // Étape 2: Préparation
+            await this.cancelSearch(page);
+            await sleep(myTime.TIME_WAIT_ACTION);
 
-    // Saisie du numéro de téléphone dans la barre de recherche de contact
-    try {
-      const searchField = await page.locator(selectors.searchField).first();
-      await searchField.fill('', { timeout: myTime.TIME_OUT });
-      await searchField.fill(contact.phoneNumber, {
-        timeout: myTime.TIME_OUT,
-      });
-    } catch (e) {
-      return new SendMessageResponse(false, problem.search_contact);
-    }
+            // Étape 3: Recherche du contact
+            const searchResult = await this.searchContact(page, contact.phoneNumber);
+            if (!searchResult.statut) {
+                return searchResult;
+            }
 
-    await sleep(5000);
+            // Étape 4: Sélection du contact
+            const selectResult = await this.selectContact(page);
+            if (!selectResult.statut) {
+                return selectResult;
+            }
 
-    // Clique sur le contact trouvé
-    try {
-      const zoneContacts = await page.$$(selectors.zoneContacts);
-      for (const zoneContact of zoneContacts) {
-        const styleAttribute = await zoneContact.getAttribute('style');
+            // Étape 5: Vérification de l'identité
+            const verifyResult = await this.verifyContactIdentity(page, contact);
+            if (!verifyResult.statut) {
+                return verifyResult;
+            }
 
-        const styleMap = Object.fromEntries(
-          styleAttribute
-            .split('; ')
-            .filter((item) => item)
-            .map((item) => item.split(': ').map((str) => str.trim())),
-        );
+            // Étape 6: Envoi du message
+            const sendResult = await this.sendMessageWithAttachment(page, message, attachment);
+            if (sendResult.statut) {
+                this.logger.log(`Message envoyé avec succès vers ${contact.phoneNumber}`);
+            }
 
-        if (styleMap['transform'] == 'translateY(72px);') {
-          await zoneContact.click({ timeout: myTime.TIME_OUT });
+            return sendResult;
+
+        } catch (error) {
+            this.logger.error(`Erreur lors de l'envoi vers ${contact.phoneNumber}:`, error);
+            return new SendMessageResponse(false, `Erreur inattendue: ${error.message}`);
         }
-      }
-    } catch (e) {
-      return new SendMessageResponse(false, problem.select_contact);
+    };
+
+    private async waitForWhatsAppToLoad(page: Page): Promise<void> {
+        try {
+            await findElementWithFallback(page, 'testWhatsAppOK', timeouts.network);
+            this.logger.debug('WhatsApp chargé avec succès');
+        } catch (error) {
+            throw new Error('WhatsApp n\'a pas pu être chargé');
+        }
     }
 
-    await sleep(myTime.TIME_WAIT_ACTION);
+    private async cancelSearch(page: Page): Promise<void> {
+        const currentTime = Date.now();
+        if (currentTime - this.lastActionTime < 1000) {
+            return;
+        }
+        this.lastActionTime = currentTime;
 
-    // Vérification de la personne à qui on envoie le message en cliquant sur le header pour obtenir les infos
-    try {
-      await page
-        .locator(selectors.headerInfo)
-        .click({ timeout: myTime.TIME_OUT });
-    } catch (e) {
-      return new SendMessageResponse(
-        false,
-        problem.check_select_detail_contact,
-      );
-    }
-    console.log('Verification identité OK')
+        try {
 
-    await sleep(myTime.TIME_WAIT_ACTION);
+            // Fallback vers les sélecteurs génériques
+            const cancelButton = await findElementWithFallback(page, 'cancelButton', timeouts.fast);
 
-    // Récupération du numéro de téléphone dans les détails du contact
-    try {
-      let spanLocator = await page.waitForSelector(selectors.spanUserNumber, {
-        timeout: myTime.TIME_OUT,
-      });
-      if (!spanLocator) {
-        spanLocator = await page.waitForSelector(selectors.spanBusinessNumber, {
-          timeout: myTime.TIME_OUT,
-        });
-      }
-      const span = await spanLocator.innerText();
-      const numberChecked = span ? span.slice(1).replace(/\s/g, '') : '';
-      if (contact.phoneNumber.trim() !== numberChecked) {
-        return new SendMessageResponse(false, problem.check_detail_contact);
-      }
-    } catch (e) {
-      return new SendMessageResponse(
-        false,
-        problem.check_select_detail_contact_get,
-      );
+
+            if (cancelButton && await cancelButton.isVisible()) {
+                await cancelButton.click({timeout: timeouts.fast});
+                this.logger.debug('Bouton d\'annulation cliqué');
+            }
+        } catch (error) {
+            this.logger.debug('Aucun bouton d\'annulation trouvé ou nécessaire');
+        }
     }
 
-    await sleep(myTime.TIME_WAIT_ACTION);
+    private async searchContact(page: Page, phoneNumber: string): Promise<SendMessageResponse> {
+        try {
+            const searchField = await findElementWithFallback(page, 'searchField', timeouts.normal);
 
-    // Fermeture de la fenêtre d'information détaillée
-    try {
-      await page
-        .locator(selectors.closeDetailsButton)
-        .click({ timeout: myTime.TIME_OUT });
+            // Vider le champ et saisir le numéro
+            await searchField.fill('');
+            await sleep(500);
+            await searchField.fill(phoneNumber);
 
-    } catch (e) {
-      return new SendMessageResponse(false, e.message);
+            // Attendre que les résultats de recherche apparaissent
+            await sleep(timeouts.slow);
+
+            this.logger.debug(`Recherche effectuée pour ${phoneNumber}`);
+            return new SendMessageResponse(true, '');
+        } catch (error) {
+            this.logger.error('Erreur lors de la recherche du contact:', error);
+            return new SendMessageResponse(false, problem.search_contact);
+        }
     }
 
-    // Sélection de la zone de message
-    try {
-      const messageZone = await page.waitForSelector(selectors.messageZone);
-      messageZone.fill(message);
-    } catch (e) {
-      return new SendMessageResponse(false, problem.select_zone_message);
+    private async selectContact(page: Page): Promise<SendMessageResponse> {
+        try {
+            // Attendre que les contacts apparaissent
+            await page.waitForSelector(selectors.zoneContacts.primary, {
+                timeout: timeouts.slow
+            }).catch(() => {
+                return page.waitForSelector(selectors.zoneContacts.fallback, {
+                    timeout: timeouts.slow
+                });
+            });
+
+            // Méthode améliorée pour sélectionner le contact
+            const contactItems = await page.$$(selectors.contactItem.primary);
+
+            if (contactItems.length === 0) {
+                // Fallback vers l'ancienne méthode
+                return await this.selectContactFallback(page);
+            }
+
+            // Cliquer sur le premier contact trouvé
+            await contactItems[0].click({timeout: timeouts.normal});
+            this.logger.debug('Contact sélectionné');
+
+            return new SendMessageResponse(true, '');
+        } catch (error) {
+            this.logger.error('Erreur lors de la sélection du contact:', error);
+            return new SendMessageResponse(false, problem.select_contact);
+        }
     }
 
-    // Si une pièce jointe est présente, gestion de l'envoi
-    if (attachment != undefined) {
-      await sleep(myTime.TIME_WAIT_ACTION);
+    private async selectContactFallback(page: Page): Promise<SendMessageResponse> {
+        try {
+            const zoneContacts = await page.$$(selectors.zoneContacts.fallback);
 
-      try {
-        await page
-          .locator(selectors.attachButton)
-          .first()
-          .click({ timeout: myTime.TIME_OUT });
-      } catch (e) {
-        return new SendMessageResponse(false, problem.select_button_attach);
-      }
+            for (const zoneContact of zoneContacts) {
+                const styleAttribute = await zoneContact.getAttribute('style');
+                if (!styleAttribute) continue;
 
-      await sleep(myTime.TIME_WAIT_ACTION);
+                const styleMap = this.parseStyleAttribute(styleAttribute);
 
-      try {
-        await page.locator(selectors.fileInput).setInputFiles(attachment);
-      } catch (e) {
-        return new SendMessageResponse(false, problem.load_image);
-      }
+                if (styleMap['transform'] === 'translateY(72px);') {
+                    await zoneContact.click({timeout: timeouts.normal});
+                    this.logger.debug('Contact sélectionné (méthode fallback)');
+                    return new SendMessageResponse(true, '');
+                }
+            }
 
-      await sleep(myTime.TIME_WAIT_ACTION);
-
-      try {
-        await page
-          .locator(selectors.sendButtonWithImage)
-          .first()
-          .click({ timeout: myTime.TIME_OUT });
-        success = true;
-      } catch (e) {
-        return new SendMessageResponse(false, problem.select_button_send);
-      }
-    } else {
-      await sleep(myTime.TIME_WAIT_ACTION);
-
-      try {
-        await page
-          .locator(selectors.sendButtonWithoutImage)
-          .first()
-          .click({ timeout: myTime.TIME_OUT });
-        success = true;
-      } catch (e) {
-        return new SendMessageResponse(false, problem.select_button_send);
-      }
+            throw new Error('Aucun contact trouvé avec le style attendu');
+        } catch (error) {
+            throw error;
+        }
     }
 
-    console.log('Sending OK')
-    await sleep(myTime.TIME_WAIT_ACTION);
-    return new SendMessageResponse(success, '');
-  };
+    private async verifyContactIdentity(page: Page, contact: Contact): Promise<SendMessageResponse> {
+        try {
+            // Ouvrir les détails du contact
+            const headerInfo = await findElementWithFallback(page, 'headerInfo', timeouts.normal);
+            await headerInfo.click();
+            await sleep(timeouts.normal);
+
+            // Récupérer le numéro de téléphone
+            const phoneNumber = await this.getContactPhoneNumber(page);
+
+            // Vérifier la correspondance
+            const normalizedContactNumber = contact.phoneNumber.trim();
+            if (normalizedContactNumber !== phoneNumber) {
+                this.logger.warn(`Numéro ne correspond pas: attendu ${normalizedContactNumber}, trouvé ${phoneNumber}`);
+                return new SendMessageResponse(false, problem.check_detail_contact);
+            }
+
+            // Fermer les détails
+            await this.closeContactDetails(page);
+
+            this.logger.debug('Identité du contact vérifiée');
+            return new SendMessageResponse(true, '');
+        } catch (error) {
+            this.logger.error('Erreur lors de la vérification de l\'identité:', error);
+            return new SendMessageResponse(false, problem.check_select_detail_contact);
+        }
+    }
+
+    private async getContactPhoneNumber(page: Page): Promise<string> {
+        try {
+            let phoneElement;
+
+            // Essayer d'abord les sélecteurs pour utilisateurs normaux
+            try {
+                phoneElement = await findElementWithFallback(page, 'spanUserNumber', timeouts.normal);
+            } catch {
+                // Si pas trouvé, essayer les sélecteurs pour comptes business
+                phoneElement = await findElementWithFallback(page, 'spanBusinessNumber', timeouts.normal);
+            }
+
+            if (!phoneElement) {
+                throw new Error('Numéro de téléphone non trouvé');
+            }
+
+            const phoneText = await phoneElement.innerText();
+            return phoneText ? phoneText.slice(1).replace(/\s/g, '') : '';
+        } catch (error) {
+            throw new Error(`Impossible de récupérer le numéro: ${error.message}`);
+        }
+    }
+
+    private async closeContactDetails(page: Page): Promise<void> {
+        try {
+            // Essayer d'abord avec le sélecteur localisé
+            const closeButton = await findElementWithFallback(page, 'closeDetailsButton', timeouts.normal);
+
+            await closeButton.click();
+            await sleep(timeouts.normal);
+        } catch (error) {
+            throw new Error(`Impossible de fermer les détails: ${error.message}`);
+        }
+    }
+
+    private async sendMessageWithAttachment(
+        page: Page,
+        message: string,
+        attachment?: string
+    ): Promise<SendMessageResponse> {
+        try {
+            // Saisir le message
+            const messageZone = await findElementWithFallback(page, 'messageZone', timeouts.normal);
+            await messageZone.fill(message);
+            await sleep(timeouts.fast);
+
+            if (attachment) {
+                return await this.sendWithAttachment(page, attachment);
+            } else {
+                return await this.sendWithoutAttachment(page);
+            }
+        } catch (error) {
+            this.logger.error('Erreur lors de l\'envoi du message:', error);
+            return new SendMessageResponse(false, problem.select_zone_message);
+        }
+    }
+
+    private async sendWithAttachment(page: Page, attachment: string): Promise<SendMessageResponse> {
+        try {
+            // Cliquer sur le bouton d'attachement
+            const attachButton = await findElementWithFallback(page, 'attachButton', timeouts.normal);
+            await attachButton.click();
+            await sleep(timeouts.normal);
+
+            // Sélectionner le fichier
+            const fileInput = await findElementWithFallback(page, 'fileInput', timeouts.normal);
+            await fileInput.setInputFiles(attachment);
+            await sleep(timeouts.normal);
+
+            // Envoyer
+            const sendButton = await findElementWithFallback(page, 'sendButtonWithImage', timeouts.normal);
+            await sendButton.click();
+
+            // Attendre la confirmation d'envoi
+            await this.waitForMessageSent(page);
+
+            this.logger.debug('Message avec pièce jointe envoyé');
+            return new SendMessageResponse(true, '');
+        } catch (error) {
+            this.logger.error('Erreur lors de l\'envoi avec pièce jointe:', error);
+            return new SendMessageResponse(false, problem.select_button_send);
+        }
+    }
+
+    private async sendWithoutAttachment(page: Page): Promise<SendMessageResponse> {
+        try {
+            const sendButton = await findElementWithFallback(page, 'sendButtonWithoutImage', timeouts.normal);
+            await sendButton.click();
+
+            // Attendre la confirmation d'envoi
+            await this.waitForMessageSent(page);
+
+            this.logger.debug('Message sans pièce jointe envoyé');
+            return new SendMessageResponse(true, '');
+        } catch (error) {
+            this.logger.error('Erreur lors de l\'envoi sans pièce jointe:', error);
+            return new SendMessageResponse(false, problem.select_button_send);
+        }
+    }
+
+    private async waitForMessageSent(page: Page): Promise<void> {
+        try {
+            // Attendre que le message soit marqué comme envoyé
+            await page.waitForSelector(selectors.messageStatus.sent, {
+                timeout: timeouts.network
+            });
+            this.logger.debug('Message confirmé comme envoyé');
+        } catch (error) {
+            this.logger.warn('Impossible de confirmer l\'envoi du message');
+        }
+    }
+
+    private parseStyleAttribute(styleAttribute: string): Record<string, string> {
+        return Object.fromEntries(
+            styleAttribute
+                .split(';')
+                .filter(item => item.trim())
+                .map(item => {
+                    const [key, value] = item.split(':').map(str => str.trim());
+                    return [key, value];
+                })
+        );
+    }
 }
