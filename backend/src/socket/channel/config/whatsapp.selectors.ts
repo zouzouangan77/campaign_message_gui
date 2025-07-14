@@ -265,7 +265,7 @@ export async function findHiddenFileInput(page: any, timeout: number = 5000): Pr
 
             // Si aucun avec accept spécifique, prendre le premier
             console.log('⚠️  Aucun input avec accept spécifique, prise du premier disponible');
-            return fileInputs[0];
+            return fileInputs[1];
         }
 
         throw new Error('❌ Aucun input file trouvé');
