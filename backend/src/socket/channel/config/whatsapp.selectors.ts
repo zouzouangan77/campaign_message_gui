@@ -113,12 +113,22 @@ export const selectors = {
     },
 
     // Input de fichier - Structure moderne
-    fileInput: {
+    /*fileInput: {
         primary: 'input[type="file"][accept*="image"]',
         fallback: '#main > footer input[type="file"]',
         alternatives: [
             'input[type="file"]',
             'input[accept*="*"]',
+
+        ]
+    },*/
+    fileInput: {
+        primary: '#main > footer._ak1i.x1wiwyrm input[type="file"] ',
+        fallback: '#main > footer input[type="file"]',
+        alternatives: [
+            'input[type="file"]',
+            'input[accept*="*"]',
+            '#main > footer div._ak4w div.xyqdw3p > div:nth-child(2) input[type=file]'
 
         ]
     },
@@ -226,20 +236,73 @@ export function getSelector(selectorKey: string): string[] {
     ];
 }
 
+export async function findHiddenFileInput(page: any, timeout: number = 5000): Promise<any> {
+    try {
+        console.log('🔍 Recherche des inputs file (incluant cachés)...');
+
+        // Rechercher tous les inputs file (même cachés)
+        const fileInputs = await page.$$('input[type="file"]');
+
+        if (fileInputs.length > 0) {
+            console.log(`📁 ${fileInputs.length} input(s) file trouvé(s)`);
+
+            // Debug: afficher les propriétés de chaque input
+            for (let i = 0; i < fileInputs.length; i++) {
+                const input = fileInputs[i];
+                const accept = await input.getAttribute('accept');
+                const style = await input.getAttribute('style');
+                console.log(`📄 Input ${i}: accept="${accept}", style="${style}"`);
+            }
+
+            // Prioriser les inputs avec accept="image/*" ou similaire
+            for (const input of fileInputs) {
+                const accept = await input.getAttribute('accept');
+
+                if (accept && (accept.includes('image') || accept.includes('*'))) {
+                    console.log(`✅ Input file sélectionné avec accept: ${accept}`);
+                    return input;
+                }
+            }
+
+            // Si aucun avec accept spécifique, prendre le premier
+            console.log('⚠️  Aucun input avec accept spécifique, prise du premier disponible');
+            return fileInputs[0];
+        }
+
+        throw new Error('❌ Aucun input file trouvé');
+
+    } catch (error) {
+        throw new Error(`Erreur lors de la recherche d'input file: ${error.message}`);
+    }
+}
+
 // Fonction pour tester la validité d'un sélecteur
 export async function findElementWithFallback(
     page: any,
     selectorKey: string,
-    timeout: number = 5000
+    timeout: number = 5000,
+    includeHidden: boolean = false // Nouveau paramètre pour inclure les éléments cachés
 ): Promise<any> {
     const selectors = getSelector(selectorKey);
 
     for (const selector of selectors) {
         try {
-            const element = await page.waitForSelector(selector, { timeout: timeout / selectors.length });
-            if (element) {
-                console.log(`Élément trouvé avec le sélecteur: ${selector}`);
-                return element;
+            let element;
+
+            if (includeHidden) {
+                // Pour les éléments cachés, utiliser $() au lieu de waitForSelector()
+                element = await page.$(selector);
+                if (element) {
+                    console.log(`Élément trouvé (incluant cachés) avec le sélecteur: ${selector}`);
+                    return element;
+                }
+            } else {
+                // Comportement normal pour les éléments visibles
+                element = await page.waitForSelector(selector, { timeout: timeout / selectors.length });
+                if (element) {
+                    console.log(`Élément trouvé avec le sélecteur: ${selector}`);
+                    return element;
+                }
             }
         } catch (error) {
             console.warn(`Sélecteur échoué: ${selector}`);

@@ -8,6 +8,7 @@ import {Contact} from '../../contact/entities/contact.entity';
 import {
     selectors,
     findElementWithFallback,
+    findHiddenFileInput, // Nouvelle fonction importée
     timeouts,
 } from './config/whatsapp.selectors';
 
@@ -91,10 +92,8 @@ export class WhatsappChannelService implements ChannelService {
         this.lastActionTime = currentTime;
 
         try {
-
             // Fallback vers les sélecteurs génériques
             const cancelButton = await findElementWithFallback(page, 'cancelButton', timeouts.fast);
-
 
             if (cancelButton && await cancelButton.isVisible()) {
                 await cancelButton.click({timeout: timeouts.fast});
@@ -185,47 +184,216 @@ export class WhatsappChannelService implements ChannelService {
             await headerInfo.click();
             await sleep(timeouts.normal);
 
-            // Récupérer le numéro de téléphone
-            const phoneNumber = await this.getContactPhoneNumber(page);
+            // Récupérer le numéro de téléphone avec retry
+            let phoneNumber: string = '';
+            let attempts = 0;
+            const maxAttempts = 3;
+
+            while (attempts < maxAttempts && !phoneNumber) {
+                try {
+                    phoneNumber = await this.getContactPhoneNumber(page);
+                } catch (error) {
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        this.logger.warn(`Tentative ${attempts} échouée, retry dans 2s...`);
+                        await sleep(2000);
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+
+            // Normaliser les numéros pour la comparaison
+            const normalizedContactNumber = contact.phoneNumber.replace(/^\+/, '').replace(/\s+/g, '');
+            const normalizedFoundNumber = phoneNumber.replace(/^\+/, '').replace(/\s+/g, '');
 
             // Vérifier la correspondance
-            const normalizedContactNumber = contact.phoneNumber.trim();
-            if (normalizedContactNumber !== phoneNumber) {
-                this.logger.warn(`Numéro ne correspond pas: attendu ${normalizedContactNumber}, trouvé ${phoneNumber}`);
+            if (normalizedContactNumber !== normalizedFoundNumber) {
+                this.logger.warn(`Numéro ne correspond pas: attendu ${normalizedContactNumber}, trouvé ${normalizedFoundNumber}`);
+
+                // Fermer les détails avant de retourner l'erreur
+                await this.closeContactDetails(page);
                 return new SendMessageResponse(false, problem.check_detail_contact);
             }
 
             // Fermer les détails
             await this.closeContactDetails(page);
 
-            this.logger.debug('Identité du contact vérifiée');
+            this.logger.debug('Identité du contact vérifiée avec succès');
             return new SendMessageResponse(true, '');
+
         } catch (error) {
             this.logger.error('Erreur lors de la vérification de l\'identité:', error);
+
+            // Essayer de fermer les détails même en cas d'erreur
+            try {
+                await this.closeContactDetails(page);
+            } catch (closeError) {
+                this.logger.warn('Impossible de fermer les détails après erreur');
+            }
+
             return new SendMessageResponse(false, problem.check_select_detail_contact);
         }
     }
 
     private async getContactPhoneNumber(page: Page): Promise<string> {
         try {
-            let phoneElement;
+            this.logger.debug('=== Recherche du numéro de téléphone ===');
 
-            // Essayer d'abord les sélecteurs pour utilisateurs normaux
+            let phoneNumber: string = '';
+
+            // Méthode 1: Essayer d'abord les sélecteurs pour comptes business (plus spécifique)
             try {
-                phoneElement = await findElementWithFallback(page, 'spanBusinessNumber', timeouts.normal);
-            } catch {
-                // Si pas trouvé, essayer les sélecteurs pour comptes business
-                phoneElement = await findElementWithFallback(page, 'spanUserNumber', timeouts.normal);
+                this.logger.debug('Tentative sélecteur business...');
+                const phoneElement = await findElementWithFallback(page, 'spanBusinessNumber', timeouts.fast);
+                const phoneText = await phoneElement.innerText();
+                this.logger.debug(`Texte trouvé (business): "${phoneText}"`);
+
+                if (phoneText && phoneText.startsWith('+') && /^\+\d{10,15}$/.test(phoneText.replace(/\s+/g, ''))) {
+                    phoneNumber = phoneText.replace(/\s+/g, '');
+                    this.logger.debug(`✅ Numéro business trouvé: ${phoneNumber}`);
+                } else {
+                    this.logger.debug(`❌ Texte business ne correspond pas au format attendu: "${phoneText}"`);
+                }
+            } catch (error) {
+                this.logger.debug('Sélecteur business échoué:', error.message);
             }
 
-            if (!phoneElement) {
-                throw new Error('Numéro de téléphone non trouvé');
+            // Méthode 2: Si pas trouvé en business, essayer utilisateur normal
+            if (!phoneNumber) {
+                try {
+                    this.logger.debug('Tentative sélecteur utilisateur normal...');
+                    const phoneElement = await findElementWithFallback(page, 'spanUserNumber', timeouts.fast);
+                    const phoneText = await phoneElement.innerText();
+                    this.logger.debug(`Texte trouvé (utilisateur normal): "${phoneText}"`);
+
+                    if (phoneText && phoneText.startsWith('+') && /^\+\d{10,15}$/.test(phoneText.replace(/\s+/g, ''))) {
+                        phoneNumber = phoneText.replace(/\s+/g, '');
+                        this.logger.debug(`✅ Numéro utilisateur normal trouvé: ${phoneNumber}`);
+                    } else {
+                        this.logger.debug(`❌ Texte utilisateur normal ne correspond pas au format attendu: "${phoneText}"`);
+                    }
+                } catch (error) {
+                    this.logger.debug('Sélecteur utilisateur normal échoué:', error.message);
+                }
             }
 
-            const phoneText = await phoneElement.innerText();
-            return phoneText ? phoneText.slice(1).replace(/\s/g, '') : '';
+            // Méthode 3: Recherche générale avec has-text
+            if (!phoneNumber) {
+                try {
+                    this.logger.debug('Tentative recherche générale...');
+                    const phoneElements = await page.$$('span:has-text(/^\\+\\d+/), div:has-text(/^\\+\\d+/)');
+
+                    for (const element of phoneElements) {
+                        const text = await element.innerText();
+                        this.logger.debug(`Élément analysé: "${text}"`);
+
+                        if (text && text.startsWith('+') && /^\+\d{10,15}$/.test(text.replace(/\s+/g, ''))) {
+                            phoneNumber = text.replace(/\s+/g, '');
+                            this.logger.debug(`Numéro trouvé par recherche générale: ${phoneNumber}`);
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    this.logger.debug('Recherche générale échouée:', error.message);
+                }
+            }
+
+            // Méthode 4: Recherche dans tous les spans avec classes spécifiques
+            if (!phoneNumber) {
+                try {
+                    this.logger.debug('Tentative recherche dans spans spécifiques...');
+                    const spanElements = await page.$$('span._ao3e, span.selectable-text, span[dir="auto"]');
+
+                    for (const element of spanElements) {
+                        const text = await element.innerText();
+
+                        if (text && text.startsWith('+') && /^\+\d{10,15}$/.test(text.replace(/\s+/g, ''))) {
+                            phoneNumber = text.replace(/\s+/g, '');
+                            this.logger.debug(`Numéro trouvé dans span spécifique: ${phoneNumber}`);
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    this.logger.debug('Recherche spans spécifiques échouée:', error.message);
+                }
+            }
+
+            // Méthode 5: Recherche par évaluation JavaScript directe
+            if (!phoneNumber) {
+                try {
+                    this.logger.debug('Tentative recherche par évaluation JS...');
+                    phoneNumber = await page.evaluate(() => {
+                        const phoneRegex = /^\+\d{10,15}$/;
+
+                        // Rechercher dans tous les éléments de texte
+                        const allElements = document.querySelectorAll('*');
+
+                        for (const element of allElements) {
+                            const text = element.textContent?.trim();
+                            if (text && text.startsWith('+') && phoneRegex.test(text.replace(/\s+/g, ''))) {
+                                return text.replace(/\s+/g, '');
+                            }
+                        }
+                        return '';
+                    });
+
+                    if (phoneNumber) {
+                        this.logger.debug(`Numéro trouvé par évaluation JS: ${phoneNumber}`);
+                    }
+                } catch (error) {
+                    this.logger.debug('Évaluation JS échouée:', error.message);
+                }
+            }
+
+            if (!phoneNumber) {
+                // Debug: afficher tous les éléments dans la zone des détails
+                await this.debugContactDetailsElements(page);
+                throw new Error('Numéro de téléphone non trouvé avec toutes les méthodes');
+            }
+
+            // Normaliser le numéro (supprimer le + initial pour la comparaison)
+            const normalizedNumber = phoneNumber.startsWith('+') ? phoneNumber.slice(1) : phoneNumber;
+
+            this.logger.debug(`Numéro final trouvé: ${phoneNumber} (normalisé: ${normalizedNumber})`);
+            return normalizedNumber;
+
         } catch (error) {
+            this.logger.error('Erreur lors de la récupération du numéro:', error);
             throw new Error(`Impossible de récupérer le numéro: ${error.message}`);
+        }
+    }
+
+    // Méthode de debug pour analyser tous les éléments
+    private async debugContactDetailsElements(page: Page): Promise<void> {
+        try {
+            this.logger.debug('=== DEBUG: Analyse complète des éléments ===');
+
+            const allElementsInfo = await page.evaluate(() => {
+                const results: any[] = [];
+                const allElements = document.querySelectorAll('*');
+
+                allElements.forEach((element, index) => {
+                    const text = element.textContent?.trim();
+                    if (text && (text.includes('+') || /\d{8,}/.test(text))) {
+                        results.push({
+                            index,
+                            tag: element.tagName,
+                            text: text.substring(0, 100), // Limiter la longueur
+                            className: element.className,
+                            id: element.id,
+                            hasPhonePattern: /\+\d{10,15}/.test(text.replace(/\s+/g, ''))
+                        });
+                    }
+                });
+
+                return results;
+            });
+
+            this.logger.debug('Éléments avec numéros potentiels:', JSON.stringify(allElementsInfo, null, 2));
+
+        } catch (error) {
+            this.logger.debug('Erreur lors du debug des éléments:', error);
         }
     }
 
@@ -265,28 +433,73 @@ export class WhatsappChannelService implements ChannelService {
 
     private async sendWithAttachment(page: Page, attachment: string): Promise<SendMessageResponse> {
         try {
+            this.logger.debug('=== ENVOI AVEC ATTACHMENT ===');
+            this.logger.debug(`Fichier à envoyer: ${attachment}`);
+
             // Cliquer sur le bouton d'attachement
             const attachButton = await findElementWithFallback(page, 'attachButton', timeouts.normal);
             await attachButton.click();
+            this.logger.debug('✅ Bouton attach cliqué');
+
+            // Attendre que le menu s'ouvre complètement
             await sleep(timeouts.normal);
+
+            // Utiliser la nouvelle fonction pour trouver l'input file (même caché)
+            this.logger.debug('🔍 Recherche de l\'input file (incluant les éléments cachés)...');
+
+            let fileInput;
+            try {
+                fileInput = await findHiddenFileInput(page, timeouts.normal);
+                this.logger.debug('✅ Input file trouvé avec la fonction spécialisée');
+            } catch (error) {
+                this.logger.debug('❌ Fonction spécialisée échouée, tentative avec sélecteurs configurés...');
+
+                // Fallback vers les sélecteurs configurés mais en incluant les éléments cachés
+                try {
+                    fileInput = await findElementWithFallback(page, 'fileInput', timeouts.normal, true);
+                    this.logger.debug('✅ Input file trouvé avec sélecteurs configurés (cachés inclus)');
+                } catch (error2) {
+                    this.logger.error('❌ Toutes les méthodes de recherche ont échoué');
+
+                    // Debug final : lister tous les inputs
+                    const allInputs = await page.$$eval('input', inputs => {
+                        return inputs.map((input, i) => ({
+                            index: i,
+                            type: input.type,
+                            accept: input.accept,
+                            style: input.style.cssText,
+                            className: input.className,
+                            display: window.getComputedStyle(input).display
+                        }));
+                    });
+
+                    this.logger.debug('Tous les inputs sur la page:', JSON.stringify(allInputs, null, 2));
+
+                    return new SendMessageResponse(false, 'Input file non trouvé');
+                }
+            }
 
             // Sélectionner le fichier
-            const fileInput = await findElementWithFallback(page, 'fileInput', timeouts.normal);
+            this.logger.debug('📎 Sélection du fichier...');
             await fileInput.setInputFiles(attachment);
             await sleep(timeouts.normal);
+            this.logger.debug('✅ Fichier sélectionné');
 
-            // Envoyer
+            // Chercher et cliquer sur le bouton d'envoi
+            this.logger.debug('🚀 Recherche du bouton d\'envoi...');
             const sendButton = await findElementWithFallback(page, 'sendButtonWithImage', timeouts.normal);
             await sendButton.click();
+            this.logger.debug('✅ Bouton d\'envoi cliqué');
 
             // Attendre la confirmation d'envoi
             await this.waitForMessageSent(page);
 
-            this.logger.debug('Message avec pièce jointe envoyé');
+            this.logger.debug('🎉 Message avec pièce jointe envoyé avec succès');
             return new SendMessageResponse(true, '');
+
         } catch (error) {
-            this.logger.error('Erreur lors de l\'envoi avec pièce jointe:', error);
-            return new SendMessageResponse(false, problem.select_button_send);
+            this.logger.error('💥 Erreur lors de l\'envoi avec pièce jointe:', error);
+            return new SendMessageResponse(false, `Erreur envoi attachment: ${error.message}`);
         }
     }
 
