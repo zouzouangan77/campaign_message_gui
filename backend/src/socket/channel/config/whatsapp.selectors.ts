@@ -123,12 +123,11 @@ export const selectors = {
         ]
     },*/
     fileInput: {
-        primary: '#main > footer._ak1i.x1wiwyrm input[type="file"] ',
-        fallback: '#main > footer input[type="file"]',
+        primary: '#main > footer._ak1i.x1wiwyrm input[type="file"][accept="image/*"] ',
+        fallback: '#main > footer input[type="file"][accept="image/*"]',
         alternatives: [
-            'input[type="file"]',
-            'input[accept*="*"]',
-            '#main > footer div._ak4w div.xyqdw3p > div:nth-child(2) input[type=file]'
+            'input[type="file"][accept*="image/*"]',
+            '[accept*="image/*"]',
 
         ]
     },
@@ -258,7 +257,7 @@ export async function findHiddenFileInput(page: any, timeout: number = 5000): Pr
             for (const input of fileInputs) {
                 const accept = await input.getAttribute('accept');
 
-                if (accept && (accept.includes('image') || accept.includes('*'))) {
+                if (accept && (accept.includes('image/*') || accept.includes('/*'))) {
                     console.log(`✅ Input file sélectionné avec accept: ${accept}`);
                     return input;
                 }

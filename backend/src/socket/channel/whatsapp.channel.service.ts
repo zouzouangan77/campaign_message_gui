@@ -12,6 +12,10 @@ import {
     timeouts,
 } from './config/whatsapp.selectors';
 
+import * as path from 'path';
+import { existsSync } from 'fs';
+
+
 const {sleep} = useFunction();
 const {message_info, myTime, problem} = useVariable();
 
@@ -436,6 +440,13 @@ export class WhatsappChannelService implements ChannelService {
             this.logger.debug('=== ENVOI AVEC ATTACHMENT ===');
             this.logger.debug(`Fichier à envoyer: ${attachment}`);
 
+            // Vérification que le fichier existe
+            const absolutePath = path.resolve(attachment);
+            if (!existsSync(absolutePath)) {
+                this.logger.error('❌ Le fichier n\'existe pas :', absolutePath);
+                return new SendMessageResponse(false, 'Fichier non trouvé');
+            }
+
             // Cliquer sur le bouton d'attachement
             const attachButton = await findElementWithFallback(page, 'attachButton', timeouts.normal);
             await attachButton.click();
@@ -444,7 +455,7 @@ export class WhatsappChannelService implements ChannelService {
             // Attendre que le menu s'ouvre complètement
             await sleep(timeouts.normal);
 
-            // Utiliser la nouvelle fonction pour trouver l'input file (même caché)
+            // Recherche de l'input file (même caché)
             this.logger.debug('🔍 Recherche de l\'input file (incluant les éléments cachés)...');
 
             let fileInput;
@@ -454,7 +465,6 @@ export class WhatsappChannelService implements ChannelService {
             } catch (error) {
                 this.logger.debug('❌ Fonction spécialisée échouée, tentative avec sélecteurs configurés...');
 
-                // Fallback vers les sélecteurs configurés mais en incluant les éléments cachés
                 try {
                     fileInput = await findElementWithFallback(page, 'fileInput', timeouts.normal, true);
                     this.logger.debug('✅ Input file trouvé avec sélecteurs configurés (cachés inclus)');
@@ -479,19 +489,23 @@ export class WhatsappChannelService implements ChannelService {
                 }
             }
 
-            // Sélectionner le fichier
+            // Log du champ accept
+            const acceptAttr = await fileInput.getAttribute('accept');
+            this.logger.debug(`📋 Attribut "accept" de l'input : ${acceptAttr}`);
+
+            // Sélection du fichier
             this.logger.debug('📎 Sélection du fichier...');
-            await fileInput.setInputFiles(attachment);
-            await sleep(timeouts.normal);
+            await fileInput.setInputFiles(absolutePath);
+            await sleep(5000); // Attente pour laisser WhatsApp générer la preview
             this.logger.debug('✅ Fichier sélectionné');
 
-            // Chercher et cliquer sur le bouton d'envoi
+            // Cliquer sur le bouton d’envoi (icône en bas à droite du média)
             this.logger.debug('🚀 Recherche du bouton d\'envoi...');
             const sendButton = await findElementWithFallback(page, 'sendButtonWithImage', timeouts.normal);
             await sendButton.click();
             this.logger.debug('✅ Bouton d\'envoi cliqué');
 
-            // Attendre la confirmation d'envoi
+            // Attente de confirmation d’envoi
             await this.waitForMessageSent(page);
 
             this.logger.debug('🎉 Message avec pièce jointe envoyé avec succès');
