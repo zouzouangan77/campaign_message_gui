@@ -1,4 +1,4 @@
-// whatsapp.selectors.ts
+// whatsapp.selectors_tony.ts
 export const selectors = {
   cancelButton: '#side button._ah_y',
   searchField: '#side p.selectable-text.copyable-text.x15bjb6t.x1n2onr6',

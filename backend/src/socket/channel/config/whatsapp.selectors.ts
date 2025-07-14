@@ -6,166 +6,206 @@ export const selectors = {
         primary: 'h1:has-text("WhatsApp Web")',
     },
 
-
-    // Navigation et recherche
+    // Navigation et recherche - Basé sur l'analyse du HTML actuel ***ok
     cancelButton: {
         primary: '#side button[aria-label="Annuler la recherche"]',
         fallback: '#side button._ah_y',
-        alternatives: ['#side button[title="Annuler la recherche"]', 'button[data-testid="cancel-search"]']
+        alternatives: [
+            'button span[data-icon="close-refreshed"]',
+            'button:has-text(/cancel|annuler|cancelar/i)' // has-text comme fallback
+        ]
     },
-
+    // ***ok
     searchField: {
-        primary: '#side div[contenteditable="true"][aria-label="Champ de recherche"]',
+        primary: '#side div[aria-label="Champ de recherche"]',
         fallback: '#side p.selectable-text.copyable-text.x15bjb6t.x1n2onr6',
         alternatives: [
             '#side div[contenteditable="true"]',
-            'div[aria-label="Champ de recherche"]',
-            'p[data-testid="search-input"]'
+            '#side div[contenteditable="true"][role="textbox"]',
+            '#side div.x1hx0egp.x6ikm8r.x1odjw0f.x6prxxf.x1k6rcq7.x1whj5v',
+
         ]
     },
 
-    // Contacts et conversations
+    // Contacts et conversations - avec support has-text **ok
     zoneContacts: {
-        primary: '#pane-side > div:nth-child(1) > div > div > div:nth-child(2)',
-        fallback: '#pane-side div[role="listitem"]:nth-child(2)',
+        primary: '#pane-side div[aria-label="Résultats de la recherche"]', // Le conteneur principal de la liste
+        fallback: '#pane-side.x1n2onr6._ak9y',
         alternatives: [
-            '#pane-side div[role="listitem"]:nth-child(2)',
-            'div[data-testid="conversation-list-item"]',
-            'div[data-testid="contact-result"]'
+            '#pane-side', // La sidebar complète
+            '#pane-side div.x1y332i5.x1n2onr6.x6ikm8r.x10wlt62.xjwt4uw',
         ]
     },
+
+    // Fonction pour sélectionner un contact par nom **ok
+    contactByName: (name: string) => `#pane-side div[role="listitem"]:has-text("${name}")`,
 
     contactItem: {
-        primary: '#pane-side > div:nth-child(1) > div > div > div:nth-child(2)',
+        primary: '#pane-side > div:nth-child(1) > div > div >div:nth-child(2)', // Un élément de contact individuel
         fallback: '#pane-side div[role="listitem"]:nth-child(2)',
         alternatives: [
-            '#pane-side div[role="listitem"]:nth-child(2)',
-            'div[data-testid="conversation-list-item"]',
-            'div[data-testid="contact-result"]'
+            '#pane-side div[role="listitem"] div.x1n2onr6',
         ]
     },
 
-    // Header et informations de contact
+    // Header et informations de contact - Structure actuelle span[data-icon="close-refreshed"] **ok
     headerInfo: {
         primary: 'header div[title="Détails du profil"]',
         fallback: '#main header.x1n2onr6',
         alternatives: [
             '#main header',
-            'header div[title="Détails du profil"]',
-            'div[data-testid="conversation-info-header"]'
+            '#main header div[role="button"]',
+            '#main header div.x1c4vz4f',
+            '#main header div span[data-icon="default-contact-refreshed"]',
+            'header:has-text(/profile|profil|perfil/i)' // has-text pour les détails du profil
         ]
     },
 
-    // Numéros de téléphone dans les détails
+    // Numéros de téléphone dans les détails - Classes CSS actuelles **ok
     spanUserNumber: {
-        primary: 'span[data-testid="phone-number"]',
-        fallback: 'span.x1jchvi3.x1fcty0u.x40yjcy',
+        primary: 'span div.x1fcty0u.xhslqc4.x6prxxf.x1o2sk6j',
+        fallback: 'span._ao3e.selectable-text.copyable-text div',
         alternatives: [
-            'span[title*="+"]',
-            'span[data-testid="contact-phone"]',
-            'div[data-testid="contact-details"] span'
+            'span[dir="auto"]._ao3e div',                              // Avec attribut dir
+            'span.selectable-text div',                                // Plus générique
+            'span._ao3e div',
+            'span:has-text(/^\+\d+/)' // has-text pour les numéros qui commencent par +
         ]
     },
-
+    // **ok
     spanBusinessNumber: {
-        primary: 'span[data-testid="business-phone"]',
-        fallback: 'span._ao3e > span.x1lkfr7t.xdbd6k5.x1fcty0u.xw2npq5',
+        primary: 'span._ao3e > span.x1lkfr7t.xdbd6k5.x1fcty0u.xw2npq5',
+        fallback: 'span[dir="auto"]._ao3e >span.x1lkfr7t.xdbd6k5.x1fcty0u.xw2npq5 ',
         alternatives: [
-            'span[data-testid="business-contact-phone"]',
-            'div[data-testid="business-info"] span[title*="+"]'
+            'span:has-text(/^\+\d+/)' // has-text pour les numéros business
         ]
     },
 
-    // Boutons de fermeture
+    // Boutons de fermeture - Structure moderne avec has-text **ok
     closeDetailsButton: {
-        primary: 'button[data-testid="close-profile"]',
-        fallback: 'header.x9f619 div.x1okw0bk.x16dsc37',
+        primary: 'header.x14bqcqg > div.x78zum5.x1okw0bk > div:nth-child(1) > div[role="button"]',
+        fallback: 'header.x14bqcqg div.x1okw0bk.x1fxk84t',
         alternatives: [
-            'button[aria-label="Fermer"]',
-            'button[aria-label="Close"]',
-            'div[data-testid="close-button"]'
+            'button:has-text(/close|fermer|cerrar/i)' // has-text pour "fermer"
         ]
     },
 
-    // Zone de message
+    // Zone de message - Structure actuelle WhatsApp **ok
     messageZone: {
-        primary: 'div[data-testid="conversation-compose-box-input"]',
+        primary: '#main footer div[contenteditable="true"][role="textbox"]',
         fallback: '#main > footer p.selectable-text.copyable-text.x15bjb6t.x1n2onr6',
         alternatives: [
-            'div[contenteditable="true"][data-testid="message-input"]',
-            'div[role="textbox"]',
-            'p[contenteditable="true"]'
+            '#main footer div[contenteditable="true"]',
+
         ]
     },
 
-    // Boutons d'attachement
+    // Boutons d'attachement - Icône clip moderne avec has-text **ok
     attachButton: {
-        primary: 'button[data-testid="attach-button"]',
-        fallback: '#main > footer div._ak1q div._ajv7 > div._ajv6',
+        primary: '#main > footer div._ak1q div._ak1r > div >div:nth-child(1)',
+        fallback: '#main > footer div._ak1q div.x100vrsf',
         alternatives: [
-            'button[aria-label="Joindre"]',
-            'button[aria-label="Attach"]',
-            'div[data-testid="clip-button"]'
+            'button[title="Attach"]',
+            'button[title="Joindre"]',
+            'span[data-icon="plus-rounded]',
+            'button:has-text(/attach|joindre|adjuntar/i)' // has-text pour "joindre"
         ]
     },
 
-    // Input de fichier
+    // Input de fichier - Structure moderne
     fileInput: {
-        primary: 'input[type="file"][data-testid="file-input"]',
-        fallback: '#main > footer div._ak4w div.xyqdw3p > div:nth-child(2) input[type=file]',
+        primary: 'input[type="file"][accept*="image"]',
+        fallback: '#main > footer input[type="file"]',
         alternatives: [
             'input[type="file"]',
-            'input[accept*="image"]',
-            'input[data-testid="media-input"]'
+            'input[accept*="*"]',
+
         ]
     },
 
-    // Boutons d'envoi
+    // Boutons d'envoi - Icône send moderne avec has-text
     sendButtonWithImage: {
-        primary: 'button[data-testid="send-button"]',
+        primary: 'span[data-icon="wds-ic-send-filled"]',
         fallback: 'div.x1247r65 > div',
         alternatives: [
-            'button[aria-label="Envoyer"]',
-            'button[aria-label="Send"]',
-            'div[data-testid="media-send-button"]'
+            'div[aria-label="Envoyer"]',
+            'div[aria-label="Send"]',
+            'span[data-icon="wds-ic-send-filled"]',
+            'button:has-text(/send|envoyer|enviar/i)' // has-text pour "envoyer"
         ]
     },
 
     sendButtonWithoutImage: {
-        primary: 'button[data-testid="compose-btn-send"]',
+        primary: 'button span[data-icon="wds-ic-send-filled"]',
         fallback: '#main > footer button.x1c4vz4f.x2lah0s',
         alternatives: [
             'button[aria-label="Envoyer"]',
             'button[aria-label="Send"]',
-            'span[data-testid="send"]'
+            'button:has-text(/send|envoyer|enviar/i)' // has-text pour "envoyer"
         ]
     },
 
     // Sélecteurs additionnels pour une meilleure robustesse
     chatWindow: {
-        primary: 'div[data-testid="conversation-panel"]',
-        fallback: '#main',
-        alternatives: ['div[data-testid="chat-window"]']
+        primary: '#main',
+        fallback: 'div[data-testid="conversation-panel"]',
+        alternatives: ['div[data-testid="chat-window"]', '#app div[role="main"]']
     },
 
+    // Indicateurs de chargement et d'erreur
     loadingIndicator: {
-        primary: 'div[data-testid="loading"]',
-        fallback: 'div[role="progressbar"]',
-        alternatives: ['div.spinner', 'div[data-testid="spinner"]']
+        primary: 'div[role="progressbar"]',
+        fallback: 'div[data-testid="loading"]',
+        alternatives: ['div.spinner', 'div[data-testid="spinner"]', 'progress']
     },
 
     errorMessage: {
-        primary: 'div[data-testid="error-message"]',
-        fallback: 'div[role="alert"]',
+        primary: 'div[role="alert"]',
+        fallback: 'div[data-testid="error-message"]',
         alternatives: ['div.error', 'div[data-testid="alert"]']
     },
 
-    // Indicateurs de statut de message
+    // Indicateurs de statut de message - Structure actuelle
     messageStatus: {
-        sent: 'span[data-testid="msg-check"]',
-        delivered: 'span[data-testid="msg-dblcheck"]',
-        read: 'span[data-testid="msg-dblcheck-ack"]'
+        sent: 'span[data-icon="msg-check"]',
+        delivered: 'span[data-icon="msg-dblcheck"]',
+        read: 'span[data-icon="msg-dblcheck-ack"]'
+    },
+
+    // Sélecteurs spécifiques pour la sidebar
+    sidebar: {
+        primary: '#side',
+        fallback: 'div[data-testid="sidebar"]',
+        alternatives: ['aside', 'nav[role="navigation"]']
+    },
+
+    // App container principal
+    appContainer: {
+        primary: '#app',
+        fallback: 'div[data-testid="app"]',
+        alternatives: ['body > div:first-child', '[role="application"]']
     }
+};
+
+// Fonctions utilitaires avec has-text
+export const hasTextSelectors = {
+    // Sélectionner un contact par nom
+    contactByName: (name: string) => `#pane-side div[role="listitem"]:has-text("${name}")`,
+
+    // Sélectionner un message par contenu
+    messageByText: (text: string) => `#main div:has-text("${text}")`,
+
+    // Boutons par texte (multilingue)
+    buttonByText: (text: string) => `button:has-text("${text}")`,
+
+    // Menu/option par texte
+    menuOptionByText: (text: string) => `div[role="menuitem"]:has-text("${text}")`,
+
+    // Chat non lu
+    unreadChat: 'div[role="listitem"]:has(span[data-icon="unread"])',
+
+    // Indicateur de frappe
+    typingIndicator: 'div:has-text(/typing|en train|escribiendo/i)'
 };
 
 // Fonction utilitaire pour obtenir un sélecteur avec fallbacks
@@ -196,7 +236,7 @@ export async function findElementWithFallback(
 
     for (const selector of selectors) {
         try {
-            const element = await page.waitForSelector(selector, {timeout: timeout});
+            const element = await page.waitForSelector(selector, { timeout: timeout / selectors.length });
             if (element) {
                 console.log(`Élément trouvé avec le sélecteur: ${selector}`);
                 return element;

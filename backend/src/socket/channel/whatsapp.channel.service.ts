@@ -36,7 +36,7 @@ export class WhatsappChannelService implements ChannelService {
 
         try {
             // Étape 1: Vérifier que WhatsApp est chargé
-            await this.waitForWhatsAppToLoad(page);
+            //await this.waitForWhatsAppToLoad(page);
 
             // Étape 2: Préparation
             await this.cancelSearch(page);
@@ -212,10 +212,10 @@ export class WhatsappChannelService implements ChannelService {
 
             // Essayer d'abord les sélecteurs pour utilisateurs normaux
             try {
-                phoneElement = await findElementWithFallback(page, 'spanUserNumber', timeouts.normal);
+                phoneElement = await findElementWithFallback(page, 'spanBusinessNumber', timeouts.normal);
             } catch {
                 // Si pas trouvé, essayer les sélecteurs pour comptes business
-                phoneElement = await findElementWithFallback(page, 'spanBusinessNumber', timeouts.normal);
+                phoneElement = await findElementWithFallback(page, 'spanUserNumber', timeouts.normal);
             }
 
             if (!phoneElement) {

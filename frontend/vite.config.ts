@@ -19,4 +19,21 @@ export default defineConfig({
       '/socket.io': 'http://localhost:3000'
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        quietDeps: true, // Supprime les avertissements des dépendances
+        silenceDeprecations: [
+          'legacy-js-api',
+          'import',
+          'global-builtin'
+        ],
+        // Alternative : masquer tous les avertissements
+        logger: {
+          warn: () => {},
+          debug: () => {}
+        }
+      }
+    }
+  }
 })
