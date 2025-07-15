@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {Inject, Injectable, Logger} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Campaign } from '../campaign/entities/campaign.entity';
 import { Contact } from '../contact/entities/contact.entity';
@@ -22,6 +22,7 @@ const { sleep } = useFunction();
 
 @Injectable()
 export class SendingMessageService {
+  private readonly logger = new Logger(SendingMessageService.name);
   private mapContacts: Map<number, Contact> = new Map();
   private channelService: ChannelService;
   private statut = {
@@ -55,7 +56,7 @@ export class SendingMessageService {
       campaign.statut == this.statut.PENDING ||
       campaign.statut == this.statut.PROCESSING
     ) {
-      console.log('campagne encours de traitement');
+      this.logger.log('campagne encours de traitement');
       return;
     }
 
@@ -90,7 +91,7 @@ export class SendingMessageService {
       const campaignSendings = new Array<CreateCampaignSendingDto>();
       const campaignRejects = new Array<CreateCampaignRejectDto>();
       if (campaign.id === campaignId) {
-        console.log('connectionPageOK_SendingMessage traitement lancé');
+        this.logger.debug('connectionPageOK_SendingMessage traitement lancé');
         campaign.statut = this.statut.PROCESSING;
         await this.campaignService.create(campaign);
         this.socketService.emitClientEvent('updateListCampaign', 'OK');
@@ -99,6 +100,7 @@ export class SendingMessageService {
         const actionBeforeSendAllMessageResponse =
           await this.channelService.actionBeforeSendAllMessage(this.page);
 
+        const startTime = Date.now();
         if (actionBeforeSendAllMessageResponse.statut) {
           for (const [key, contact] of this.mapContacts) {
             if (stopProcessing) {
@@ -138,6 +140,8 @@ export class SendingMessageService {
             }
           }
         }
+        const totalTime = Date.now() - startTime;
+        this.logger.log(`Camapgne envoyée en ${totalTime}ms`);
 
         //Tous les contacts on été traité, on sauvegarde maintenant les information d'envoi et de rejet
         if (campaignSendings.length > 0) {
@@ -163,7 +167,7 @@ export class SendingMessageService {
       'cancelSendCampaignMessage',
       async (campaignId) => {
         if (campaign.id === campaignId) {
-          console.log("annulation de l'envoi ", campaignId);
+          this.logger.log("annulation de l'envoi ", campaignId);
           campaign.statut = this.statut.NOT_SENT;
           await this.campaignService.create(campaign);
           this.socketService.emitClientEvent('updateListCampaign', 'OK');
@@ -187,7 +191,7 @@ export class SendingMessageService {
   }
 
   public async sendCampaignRejectMessage(campaignId: number): Promise<void> {
-    console.log('sendCampaignRejectMessage')
+    this.logger.debug('sendCampaignRejectMessage')
     const campaign = await this.campaignService.findOne(campaignId);
     if (!campaign) return;
 
@@ -195,7 +199,7 @@ export class SendingMessageService {
       campaign.statut == this.statut.PENDING ||
       campaign.statut == this.statut.PROCESSING
     ) {
-      console.log('campagne encours de traitement');
+      this.logger.debug('campagne encours de traitement');
       return;
     }
 
@@ -226,7 +230,7 @@ export class SendingMessageService {
       const campaignSendings = new Array<CreateCampaignSendingDto>();
       const removeCampaignRejects = new Array<CampaignReject>();
       if (campaign.id === campaignId) {
-        console.log('connectionPageOK_SendingRejectMessage traitement lancé');
+        this.logger.debug('connectionPageOK_SendingRejectMessage traitement lancé');
         campaign.statut = this.statut.PROCESSING;
         await this.campaignService.create(campaign);
         this.socketService.emitClientEvent('updateListCampaign', 'OK');
@@ -285,7 +289,7 @@ export class SendingMessageService {
       'cancelSendCampaignMessage',
       async (campaignId) => {
         if (campaign.id === campaignId) {
-          console.log("annulation de l'envoi ", campaignId);
+          this.logger.debug("annulation de l'envoi ", campaignId);
           campaign.statut = this.statut.SENT;
           await this.campaignService.create(campaign);
           this.socketService.emitClientEvent('updateListCampaign', 'OK');
@@ -308,11 +312,11 @@ export class SendingMessageService {
   }
 
   private async initBrowserPage(channelParam: string) {
-    console.log('initBrowserPage');
+    this.logger.log('initBrowserPage');
     // this.browser = await this.BROWSER_SELECT.launch({ headless: false });
     // this.browser = await firefox.launch({ headless: false });
     this.browser = await chromium.launch({ headless: false });
-    console.log('lancement du navigateur');
+    this.logger.debug('lancement du navigateur');
     this.context = await this.browser.newContext();
     this.page = await this.context.newPage();
 

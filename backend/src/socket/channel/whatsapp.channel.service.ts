@@ -13,7 +13,7 @@ import {
 } from './config/whatsapp.selectors';
 
 import * as path from 'path';
-import { existsSync } from 'fs';
+import {existsSync} from 'fs';
 
 
 const {sleep} = useFunction();
@@ -38,6 +38,7 @@ export class WhatsappChannelService implements ChannelService {
         attachment?: string,
     ): Promise<SendMessageResponse> => {
         this.logger.log(`Tentative d'envoi vers ${contact.phoneNumber}`);
+        const startTime = Date.now();
 
         try {
             // Étape 1: Vérifier que WhatsApp est chargé
@@ -45,7 +46,7 @@ export class WhatsappChannelService implements ChannelService {
 
             // Étape 2: Préparation
             await this.cancelSearch(page);
-            await sleep(myTime.TIME_WAIT_ACTION);
+            //await sleep(myTime.TIME_WAIT_ACTION);
 
             // Étape 3: Recherche du contact
             const searchResult = await this.searchContact(page, contact.phoneNumber);
@@ -66,9 +67,13 @@ export class WhatsappChannelService implements ChannelService {
             }
 
             // Étape 6: Envoi du message
-            const sendResult = await this.sendMessageWithAttachment(page, message, attachment);
+            const sendResult = await this.sendMessageReally(page, message, attachment);
+
+
+            const totalTime = Date.now() - startTime;
+
             if (sendResult.statut) {
-                this.logger.log(`Message envoyé avec succès vers ${contact.phoneNumber}`);
+                this.logger.log(`Message envoyé en ${totalTime}ms vers ${contact.phoneNumber}`);
             }
 
             return sendResult;
@@ -118,7 +123,7 @@ export class WhatsappChannelService implements ChannelService {
             await searchField.fill(phoneNumber);
 
             // Attendre que les résultats de recherche apparaissent
-            await sleep(timeouts.slow);
+            await this.waitChangeInterface(page, selectors.searchField.primary, timeouts.normal);
 
             this.logger.debug(`Recherche effectuée pour ${phoneNumber}`);
             return new SendMessageResponse(true, '');
@@ -184,28 +189,14 @@ export class WhatsappChannelService implements ChannelService {
     private async verifyContactIdentity(page: Page, contact: Contact): Promise<SendMessageResponse> {
         try {
             // Ouvrir les détails du contact
-            const headerInfo = await findElementWithFallback(page, 'headerInfo', timeouts.normal);
+            const headerInfo = await findElementWithFallback(page, 'headerInfo', timeouts.fast);
             await headerInfo.click();
-            await sleep(timeouts.normal);
+            await this.waitChangeInterface(page, selectors.headerInfoContact.primary, timeouts.fast)
 
             // Récupérer le numéro de téléphone avec retry
             let phoneNumber: string = '';
-            let attempts = 0;
-            const maxAttempts = 3;
+            phoneNumber = await this.getContactPhoneNumber(page);
 
-            while (attempts < maxAttempts && !phoneNumber) {
-                try {
-                    phoneNumber = await this.getContactPhoneNumber(page);
-                } catch (error) {
-                    attempts++;
-                    if (attempts < maxAttempts) {
-                        this.logger.warn(`Tentative ${attempts} échouée, retry dans 2s...`);
-                        await sleep(2000);
-                    } else {
-                        throw error;
-                    }
-                }
-            }
 
             // Normaliser les numéros pour la comparaison
             const normalizedContactNumber = contact.phoneNumber.replace(/^\+/, '').replace(/\s+/g, '');
@@ -246,39 +237,41 @@ export class WhatsappChannelService implements ChannelService {
 
             let phoneNumber: string = '';
 
-            // Méthode 1: Essayer d'abord les sélecteurs pour comptes business (plus spécifique)
+            // Méthode 1: Si pas trouvé en business, essayer utilisateur normal
+
             try {
-                this.logger.debug('Tentative sélecteur business...');
-                const phoneElement = await findElementWithFallback(page, 'spanBusinessNumber', timeouts.fast);
+                this.logger.debug('Tentative sélecteur utilisateur normal...');
+                const phoneElement = await findElementWithFallback(page, 'spanUserNumber', timeouts.fast);
                 const phoneText = await phoneElement.innerText();
-                this.logger.debug(`Texte trouvé (business): "${phoneText}"`);
+                this.logger.debug(`Texte trouvé (utilisateur normal): "${phoneText}"`);
 
                 if (phoneText && phoneText.startsWith('+') && /^\+\d{10,15}$/.test(phoneText.replace(/\s+/g, ''))) {
                     phoneNumber = phoneText.replace(/\s+/g, '');
-                    this.logger.debug(`✅ Numéro business trouvé: ${phoneNumber}`);
+                    this.logger.debug(`✅ Numéro utilisateur normal trouvé: ${phoneNumber}`);
                 } else {
-                    this.logger.debug(`❌ Texte business ne correspond pas au format attendu: "${phoneText}"`);
+                    this.logger.debug(`❌ Texte utilisateur normal ne correspond pas au format attendu: "${phoneText}"`);
                 }
             } catch (error) {
-                this.logger.debug('Sélecteur business échoué:', error.message);
+                this.logger.debug('Sélecteur utilisateur normal échoué:', error.message);
             }
 
-            // Méthode 2: Si pas trouvé en business, essayer utilisateur normal
+
+            // Méthode 2: Essayer d'abord les sélecteurs pour comptes business (plus spécifique)
             if (!phoneNumber) {
                 try {
-                    this.logger.debug('Tentative sélecteur utilisateur normal...');
-                    const phoneElement = await findElementWithFallback(page, 'spanUserNumber', timeouts.fast);
+                    this.logger.debug('Tentative sélecteur business...');
+                    const phoneElement = await findElementWithFallback(page, 'spanBusinessNumber', timeouts.fast);
                     const phoneText = await phoneElement.innerText();
-                    this.logger.debug(`Texte trouvé (utilisateur normal): "${phoneText}"`);
+                    this.logger.debug(`Texte trouvé (business): "${phoneText}"`);
 
                     if (phoneText && phoneText.startsWith('+') && /^\+\d{10,15}$/.test(phoneText.replace(/\s+/g, ''))) {
                         phoneNumber = phoneText.replace(/\s+/g, '');
-                        this.logger.debug(`✅ Numéro utilisateur normal trouvé: ${phoneNumber}`);
+                        this.logger.debug(`✅ Numéro business trouvé: ${phoneNumber}`);
                     } else {
-                        this.logger.debug(`❌ Texte utilisateur normal ne correspond pas au format attendu: "${phoneText}"`);
+                        this.logger.debug(`❌ Texte business ne correspond pas au format attendu: "${phoneText}"`);
                     }
                 } catch (error) {
-                    this.logger.debug('Sélecteur utilisateur normal échoué:', error.message);
+                    this.logger.debug('Sélecteur business échoué:', error.message);
                 }
             }
 
@@ -352,7 +345,7 @@ export class WhatsappChannelService implements ChannelService {
 
             if (!phoneNumber) {
                 // Debug: afficher tous les éléments dans la zone des détails
-                await this.debugContactDetailsElements(page);
+                //await this.debugContactDetailsElements(page);
                 throw new Error('Numéro de téléphone non trouvé avec toutes les méthodes');
             }
 
@@ -407,13 +400,13 @@ export class WhatsappChannelService implements ChannelService {
             const closeButton = await findElementWithFallback(page, 'closeDetailsButton', timeouts.normal);
 
             await closeButton.click();
-            await sleep(timeouts.normal);
+            //await sleep(timeouts.normal);
         } catch (error) {
             throw new Error(`Impossible de fermer les détails: ${error.message}`);
         }
     }
 
-    private async sendMessageWithAttachment(
+    private async sendMessageReally(
         page: Page,
         message: string,
         attachment?: string
@@ -496,7 +489,7 @@ export class WhatsappChannelService implements ChannelService {
             // Sélection du fichier
             this.logger.debug('📎 Sélection du fichier...');
             await fileInput.setInputFiles(absolutePath);
-            await sleep(5000); // Attente pour laisser WhatsApp générer la preview
+            await sleep(5000); // Attente pour laisser WhatsApp générer la preview, On devrait pouvoir ameliorer
             this.logger.debug('✅ Fichier sélectionné');
 
             // Cliquer sur le bouton d’envoi (icône en bas à droite du média)
@@ -555,5 +548,15 @@ export class WhatsappChannelService implements ChannelService {
                     return [key, value];
                 })
         );
+    }
+
+    private async waitChangeInterface(page: Page, selector: string, timeout: number) {
+        await Promise.race([
+            page.waitForSelector(selector, {
+                timeout: timeouts.normal,
+                state: 'visible'
+            }),
+            sleep(timeouts.fast) // Fallback après timeout réduit
+        ]);
     }
 }
