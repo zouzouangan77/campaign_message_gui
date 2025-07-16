@@ -76,41 +76,238 @@ export class ContactService {
 
   async bulkCsvCreateContacts(csvString: string) {
     const createContactDtos = new Array<CreateContactDto>();
-    await this.csvService.readStringCsv(csvString, ';', async (contactData) => {
-      const createContactDto = new CreateContactDto();
-      createContactDto.firstName =
-        contactData['firstname'] && contactData['firstname'].trim();
-      createContactDto.lastName =
-        contactData['lastname'] && contactData['lastname'].trim();
-      createContactDto.phoneNumber =
-        contactData['phone'] && contactData['phone'].trim();
-      createContactDto.idInsta =
-        contactData['idInsta'] && contactData['idInsta'].trim();
-      if (
-        createContactDto.phoneNumber !== undefined ||
-        createContactDto.idInsta !== undefined
-      ) {
-        // const checkContact = false
-        const checkContact = await this.contactRepository.findOne({
-          where: [
-            { phoneNumber: createContactDto.phoneNumber },
-            {
-              idInsta: createContactDto.idInsta ? createContactDto.idInsta : '',
-            },
-          ],
-        });
-        if (!checkContact) createContactDtos.push(createContactDto);
-      }
-    });
-    await this.sleep(2000);
+    const errors = new Array<string>();
+    const stats = {
+      totalProcessed: 0,
+      validContacts: 0,
+      duplicatesSkipped: 0,
+      invalidContacts: 0,
+      errorsCount: 0,
+      contactsCreated: 0
+    };
+
     try {
-      return await this.contactRepository.save(createContactDtos);
+      // Validation initiale
+      if (!csvString || csvString.trim().length === 0) {
+        throw new Error('Le fichier CSV est vide ou invalide');
+      }
+
+      console.log('📄 Début du traitement du fichier CSV...');
+
+      await this.csvService.readStringCsv(csvString, ';', async (contactData, lineNumber) => {
+        stats.totalProcessed++;
+
+        try {
+          // Nettoyer et valider les données
+          const cleanedData = this.cleanContactData(contactData);
+
+          // Validation des données obligatoires
+/*          if (!this.isValidContact(cleanedData)) {
+            stats.invalidContacts++;
+            errors.push(`Ligne ${lineNumber}: Contact invalide - phoneNumber et idInsta sont tous les deux vides`);
+            return;
+          }*/
+
+          const createContactDto = new CreateContactDto();
+          createContactDto.firstName = cleanedData.firstName;
+          createContactDto.lastName = cleanedData.lastName;
+          createContactDto.phoneNumber = cleanedData.phoneNumber;
+          createContactDto.idInsta = cleanedData.idInsta;
+
+          // Vérifier les doublons avec une requête plus robuste
+          const isDuplicate = await this.checkForDuplicate(createContactDto);
+
+          if (isDuplicate) {
+            stats.duplicatesSkipped++;
+            console.log(`⚠️  Doublon détecté (ligne ${lineNumber}): ${createContactDto.phoneNumber || createContactDto.idInsta}`);
+            return;
+          }
+
+          createContactDtos.push(createContactDto);
+          stats.validContacts++;
+
+        } catch (error) {
+          stats.errorsCount++;
+          const errorMessage = `Ligne ${lineNumber}: Erreur lors du traitement - ${error.message}`;
+          errors.push(errorMessage);
+          console.error('❌', errorMessage);
+        }
+      });
+
+      console.log('📊 Statistiques de traitement:', stats);
+
+      // Validation avant sauvegarde
+      if (createContactDtos.length === 0) {
+        const message = 'Aucun contact valide à créer';
+        console.warn('⚠️ ', message);
+        return {
+          success: false,
+          message,
+          stats,
+          errors,
+          contactsCreated: []
+        };
+      }
+
+      // Délai pour éviter la surcharge
+      await this.sleep(1000);
+
+      // Sauvegarde par lots pour éviter les timeouts
+      const batchSize = 100;
+      const savedContacts = [];
+
+      for (let i = 0; i < createContactDtos.length; i += batchSize) {
+        const batch = createContactDtos.slice(i, i + batchSize);
+
+        try {
+          console.log(`💾 Sauvegarde du lot ${Math.floor(i / batchSize) + 1}/${Math.ceil(createContactDtos.length / batchSize)} (${batch.length} contacts)`);
+
+          const batchResult = await this.contactRepository.save(batch);
+          savedContacts.push(...batchResult);
+          stats.contactsCreated += batchResult.length;
+
+          // Petit délai entre les lots
+          if (i + batchSize < createContactDtos.length) {
+            await this.sleep(500);
+          }
+
+        } catch (batchError) {
+          const errorMessage = `Erreur lors de la sauvegarde du lot ${Math.floor(i / batchSize) + 1}: ${batchError.message}`;
+          errors.push(errorMessage);
+          console.error('❌', errorMessage);
+
+          // Essayer de sauvegarder les contacts un par un pour identifier le problématique
+          for (const contact of batch) {
+            try {
+              const singleResult = await this.contactRepository.save([contact]);
+              savedContacts.push(...singleResult);
+              stats.contactsCreated++;
+            } catch (singleError) {
+              const singleErrorMessage = `Erreur contact individuel (${contact.phoneNumber || contact.idInsta}): ${singleError.message}`;
+              errors.push(singleErrorMessage);
+              console.error('❌', singleErrorMessage);
+            }
+          }
+        }
+      }
+
+      // Résultat final
+      const finalResult = {
+        success: stats.contactsCreated > 0,
+        message: `Traitement terminé: ${stats.contactsCreated} contacts créés sur ${stats.totalProcessed} traités`,
+        stats,
+        errors,
+        contactsCreated: savedContacts
+      };
+
+      console.log('✅ Résultat final:', finalResult.message);
+
+      if (errors.length > 0) {
+        console.warn(`⚠️  ${errors.length} erreurs détectées:`, errors);
+      }
+
+      return finalResult;
+
     } catch (error) {
-      return error.errors;
+      const errorMessage = `Erreur critique lors du traitement CSV: ${error.message}`;
+      console.error('💥', errorMessage);
+
+      return {
+        success: false,
+        message: errorMessage,
+        stats,
+        errors: [...errors, errorMessage],
+        contactsCreated: []
+      };
     }
   }
 
-  sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  /**
+   * Nettoie et standardise les données de contact
+   */
+  private cleanContactData(contactData: any): any {
+    return {
+      firstName: this.cleanString(contactData['firstname']),
+      lastName: this.cleanString(contactData['lastname']),
+      phoneNumber: this.cleanPhoneNumber(contactData['phone']),
+      idInsta: this.cleanString(contactData['idInsta'])
+    };
+  }
+
+  /**
+   * Nettoie une chaîne de caractères
+   */
+  private cleanString(value: any): string | undefined {
+    if (!value || typeof value !== 'string') return undefined;
+
+    const cleaned = value.trim();
+    return cleaned.length > 0 ? cleaned : undefined;
+  }
+
+  /**
+   * Nettoie et valide un numéro de téléphone
+   */
+  private cleanPhoneNumber(value: any): string | undefined {
+    if (!value || typeof value !== 'string') return undefined;
+
+    const cleaned = value.trim().replace(/\s+/g, '');
+
+    // Validation basique du numéro de téléphone
+    if (cleaned.length < 6 || !/^\d+$/.test(cleaned)) {
+      return undefined;
+    }
+
+    return cleaned;
+  }
+
+  /**
+   * Valide qu'un contact a au moins un moyen de contact
+   */
+  private isValidContact(contactData: any): boolean {
+    const hasPhone = contactData.phoneNumber && contactData.phoneNumber.length > 0;
+    const hasInsta = contactData.idInsta && contactData.idInsta.length > 0;
+
+    return hasPhone || hasInsta;
+  }
+
+  /**
+   * Vérifie les doublons de manière plus robuste
+   */
+  private async checkForDuplicate(createContactDto: CreateContactDto): Promise<boolean> {
+    try {
+      const whereConditions = [];
+
+      // Ajouter les conditions seulement si les valeurs existent
+      if (createContactDto.phoneNumber) {
+        whereConditions.push({ phoneNumber: createContactDto.phoneNumber });
+      }
+
+      if (createContactDto.idInsta) {
+        whereConditions.push({ idInsta: createContactDto.idInsta });
+      }
+
+      // Si aucune condition, pas de doublon possible
+      if (whereConditions.length === 0) {
+        return false;
+      }
+
+      const existingContact = await this.contactRepository.findOne({
+        where: whereConditions
+      });
+
+      return !!existingContact;
+
+    } catch (error) {
+      console.error('Erreur lors de la vérification des doublons:', error.message);
+      // En cas d'erreur, on considère qu'il n'y a pas de doublon pour ne pas bloquer l'insertion
+      return false;
+    }
+  }
+
+  /**
+   * Fonction sleep améliorée
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

@@ -154,6 +154,7 @@ export class WhatsappChannelService implements ChannelService {
 
             // Cliquer sur le premier contact trouvé
             await contactItems[0].click({timeout: timeouts.normal});
+            await sleep(3000)
             this.logger.debug('Contact sélectionné');
 
             return new SendMessageResponse(true, '');

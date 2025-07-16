@@ -84,7 +84,7 @@ export class ContactController {
     file: Express.Multer.File,
   ) {
     // Traiter le fichier téléchargé ici
-    //console.log(file.buffer.toString());
+    // console.log(file.buffer.toString());
     return await this.contactService.bulkCsvCreateContacts(
       file.buffer.toString(),
     );
