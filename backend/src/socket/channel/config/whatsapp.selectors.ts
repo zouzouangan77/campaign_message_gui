@@ -33,7 +33,11 @@ export const selectors = {
         ]
     },
 
-    contactByName: (name: string) => `#pane-side div[role="listitem"]:has-text("${name}")`,
+
+
+    contactGetName: {
+        primary: '#pane-side > div:nth-child(1) > div > div >div:nth-child(2) span[dir="auto"]'
+    },
 
     contactItem: {
         primary: '#pane-side > div:nth-child(1) > div > div >div:nth-child(2)',
@@ -43,6 +47,7 @@ export const selectors = {
         ]
     },
 
+    contactHeaderByName: (name: string) => `header div[role="button"] span[dir="auto"]:has-text("${name}")`,
     headerInfo: {
         primary: 'header div[title="Détails du profil"]',
         fallback: '#main header.x1n2onr6',

@@ -146,18 +146,23 @@ export class WhatsappChannelService implements ChannelService {
 
             // Méthode améliorée pour sélectionner le contact
             const contactItems = await page.$$(selectors.contactItem.primary);
+            const contactName = await findElementWithFallback(page, 'contactGetName');
+            const name =  await contactName.innerText();
+            this.logger.log(`selection du contact : ${name}`);
 
-            if (contactItems.length === 0) {
-                // Fallback vers l'ancienne méthode
-                return await this.selectContactFallback(page);
-            }
+            // if (contactItems.length === 0) {
+            //     // Fallback vers l'ancienne méthode
+            //     return await this.selectContactFallback(page);
+            // }
 
             // Cliquer sur le premier contact trouvé
-            await contactItems[0].click({timeout: timeouts.normal});
-            await sleep(3000)
-            this.logger.debug('Contact sélectionné');
-
-            return new SendMessageResponse(true, '');
+            if (contactItems.length > 0) {
+                await contactItems[0].click({timeout: timeouts.normal});
+                await this.waitChangeInterface(page, selectors.contactHeaderByName(name), 60_000)
+                this.logger.debug('Contact sélectionné et chargé');
+                return new SendMessageResponse(true, '');
+            }
+            return new SendMessageResponse(false, '');
         } catch (error) {
             this.logger.error('Erreur lors de la sélection du contact:', error);
             return new SendMessageResponse(false, problem.select_contact);
@@ -552,12 +557,13 @@ export class WhatsappChannelService implements ChannelService {
     }
 
     private async waitChangeInterface(page: Page, selector: string, timeout: number) {
+        this.logger.debug(`wait element : ${selector}`)
         await Promise.race([
             page.waitForSelector(selector, {
-                timeout: timeouts.normal,
+                timeout: timeout,
                 state: 'visible'
             }),
-            sleep(timeouts.fast) // Fallback après timeout réduit
+            sleep(timeout) // Fallback après timeout réduit
         ]);
     }
 }
