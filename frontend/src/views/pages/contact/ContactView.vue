@@ -71,7 +71,7 @@
         <Column field="firstName" header="Prenon" sortable></Column>
         <Column field="lastName" header="Nom" sortable></Column>
         <Column field="phoneNumber" header="Numero de tel" sortable></Column>
-        <Column field="idInsta" header="Speudo Instagram" sortable></Column>
+        <Column field="idInsta" header="Pseudo Instagram" sortable></Column>
         <Column :exportable="false" style="min-width: 3rem">
           <template #body="slotProps">
             <Button

@@ -58,7 +58,7 @@ const handleSave = () => {
       />
     </div>
     <div class="field">
-      <label for="idInsta">Speudo Instagram </label>
+      <label for="idInsta">Pseudo Instagram </label>
       <InputText id="idInsta" v-model.trim="contact.idInsta" required="true" rows="3" cols="20" />
     </div>
 
