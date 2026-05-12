@@ -14,16 +14,23 @@ import { DataSource } from 'typeorm';
 //     },
 //   },
 // ];
-
 export const databaseProviders = [
   {
     provide: 'DATA_SOURCE',
     useFactory: async () => {
       const dataSource = new DataSource({
-        type: 'sqlite',
-        database: `${process.env.DATABASE_DIR}/data.sqlite3`,
+        type: 'postgres',
+        extra: {
+          options: '-c timezone=Europe/Paris',
+        },
+        host: 'localhost',
+        port: 25432,
+        username: 'postgres',
+        password: 'postgres',
+        database: 'campaign_message_db',
+
         synchronize: true,
-        logging: false,
+        logging: true,
         entities: [__dirname + '/../**/entities/*.entity{.ts,.js}'],
       });
 
