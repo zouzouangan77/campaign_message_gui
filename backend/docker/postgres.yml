@@ -16,7 +16,7 @@ services:
       - "25432:5432"
     volumes:
       # Persistance des données
-      - postgres_campaign_message_data:/var/lib/postgresql/data
+      - postgres_campaign_message_data:/var/lib/postgresql
       # Optionnel : scripts d'initialisation
       #- ./init-scripts:/docker-entrypoint-initdb.d
     networks:

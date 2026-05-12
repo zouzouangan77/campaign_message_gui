@@ -113,17 +113,30 @@ export class WhatsappChannelService implements ChannelService {
         }
     }
 
+    private async debugSearchField(page: Page): Promise<void> {
+        const info = await page.evaluate(() => {
+            const candidates = Array.from(document.querySelectorAll('[contenteditable],[role="textbox"],[role="searchbox"],input[type="text"]'));
+            return candidates.map(el => ({
+                tag: el.tagName,
+                role: el.getAttribute('role'),
+                ariaLabel: el.getAttribute('aria-label'),
+                contenteditable: el.getAttribute('contenteditable'),
+                id: el.id,
+                className: el.className.substring(0, 80),
+            }));
+        });
+        this.logger.debug('=== Champs éditables trouvés ===\n' + JSON.stringify(info, null, 2));
+    }
+
     private async searchContact(page: Page, phoneNumber: string): Promise<SendMessageResponse> {
         try {
             const searchField = await findElementWithFallback(page, 'searchField', timeouts.normal);
 
-            // Vider le champ et saisir le numéro
-            await searchField.fill('');
-            await sleep(500);
             await searchField.fill(phoneNumber);
+            await sleep(500);
 
             // Attendre que les résultats de recherche apparaissent
-            await this.waitChangeInterface(page, selectors.searchField.primary, timeouts.normal);
+            await this.waitChangeInterface(page, selectors.zoneContacts.primary, timeouts.normal);
 
             this.logger.debug(`Recherche effectuée pour ${phoneNumber}`);
             return new SendMessageResponse(true, '');
@@ -402,13 +415,16 @@ export class WhatsappChannelService implements ChannelService {
 
     private async closeContactDetails(page: Page): Promise<void> {
         try {
-            // Essayer d'abord avec le sélecteur localisé
-            const closeButton = await findElementWithFallback(page, 'closeDetailsButton', timeouts.normal);
-
+            const closeButton = await findElementWithFallback(page, 'closeDetailsButton', timeouts.fast);
             await closeButton.click();
-            //await sleep(timeouts.normal);
-        } catch (error) {
-            throw new Error(`Impossible de fermer les détails: ${error.message}`);
+        } catch {
+            // Fallback : Escape ferme tous les panneaux overlay de WhatsApp
+            try {
+                await page.keyboard.press('Escape');
+                await sleep(300);
+            } catch (error) {
+                throw new Error(`Impossible de fermer les détails: ${error.message}`);
+            }
         }
     }
 
@@ -420,7 +436,10 @@ export class WhatsappChannelService implements ChannelService {
         try {
             // Saisir le message
             const messageZone = await findElementWithFallback(page, 'messageZone', timeouts.normal);
-            await messageZone.fill(message);
+            await messageZone.click();
+            await page.keyboard.press('Control+a');
+            await page.keyboard.press('Backspace');
+            await page.keyboard.type(message);
             await sleep(timeouts.fast);
 
             if (attachment) {

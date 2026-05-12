@@ -102,31 +102,37 @@ export class CsvService {
             const errors: Array<{ lineNumber: number; error: string; data?: any }> = [];
 
             try {
-                // Créer un stream à partir de la chaîne
+                // Collecter toutes les lignes d'abord, puis les traiter séquentiellement.
+                // Un callback async dans .on('data', ...) n'est pas attendu par le stream :
+                // 'end' se déclenche avant que les Promises ne résolvent, vidant createContactDtos.
+                const rows: any[] = [];
                 const stream = Readable.from(csvString);
 
                 stream
                     .pipe(csvParser({ separator: separator }))
-                    .on('data', async (data: any) => {
-                        lineNumber++;
-
-                        if (process) {
-                            try {
-                                await process(data, lineNumber);
-                                processedLines++;
-                            } catch (error) {
-                                errors.push({
-                                    lineNumber,
-                                    error: error.message || 'Erreur inconnue',
-                                    data: data
-                                });
-                                console.error(`Erreur ligne ${lineNumber}:`, error.message);
-                            }
-                        } else {
-                            processedLines++;
-                        }
+                    .on('data', (data: any) => {
+                        rows.push(data);
                     })
-                    .on('end', () => {
+                    .on('end', async () => {
+                        for (const data of rows) {
+                            lineNumber++;
+                            if (process) {
+                                try {
+                                    await process(data, lineNumber);
+                                    processedLines++;
+                                } catch (error) {
+                                    errors.push({
+                                        lineNumber,
+                                        error: error.message || 'Erreur inconnue',
+                                        data: data
+                                    });
+                                    console.error(`Erreur ligne ${lineNumber}:`, error.message);
+                                }
+                            } else {
+                                processedLines++;
+                            }
+                        }
+
                         const result: CsvProcessingResult = {
                             success: errors.length === 0,
                             totalLines: lineNumber,

@@ -77,7 +77,7 @@ export class ContactController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 10000000 }),
-          new FileTypeValidator({ fileType: 'text/csv' }),
+          new FileTypeValidator({ fileType: /text\/(csv|plain)/, skipMagicNumbersValidation: true }),
         ],
       }),
     )

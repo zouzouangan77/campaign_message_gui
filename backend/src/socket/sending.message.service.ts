@@ -6,6 +6,7 @@ import { CampaignService } from '../campaign/campaign.service';
 import { ContactService } from '../contact/contact.service';
 import { SocketService } from './socket.service';
 import { chromium, firefox } from 'playwright';
+import * as path from 'path';
 import { useVariable } from '../shared/channel.config';
 import { WhatsappChannelService } from './channel/whatsapp.channel.service';
 import { InstagramChannelService } from './channel/instagram.channel.service';
@@ -25,6 +26,7 @@ export class SendingMessageService {
   private readonly logger = new Logger(SendingMessageService.name);
   private mapContacts: Map<number, Contact> = new Map();
   private channelService: ChannelService;
+  private isStopped = false;
   private statut = {
     PROCESSING: 'PROCESSING',
     PENDING: 'PENDING',
@@ -78,12 +80,16 @@ export class SendingMessageService {
       campaign.statut = this.statut.NOT_SENT;
       await this.campaignService.create(campaign);
       this.socketService.emitClientEvent('errorSendCampaignMessage', 'OK');
+      return;
     }
 
     // Demande d'authentification à la page à l'utilisateur
+    this.isStopped = false;
     this.socketService.emitClientEvent('connectionPage', campaign);
     let responseOK = false;
-    let stopProcessing = false;
+
+    this.socketService.stoplistenEvent('cancelSendCampaignMessage', () => {});
+    this.socketService.stoplistenEvent('connectionPageOK_SendingMessage', () => {});
 
     //Attente de retour de confirmation du client
     this.socketService.listenEvent('connectionPageOK_SendingMessage', async (campaignId) => {
@@ -103,7 +109,7 @@ export class SendingMessageService {
         const startTime = Date.now();
         if (actionBeforeSendAllMessageResponse.statut) {
           for (const [key, contact] of this.mapContacts) {
-            if (stopProcessing) {
+            if (this.isStopped) {
               campaignRejects.push({
                 contact: { id: contact.id },
                 campaign: { id: campaign.id },
@@ -111,7 +117,6 @@ export class SendingMessageService {
               } as CreateCampaignRejectDto);
               continue;
             }
-            // console.log('contact = ', contact);
             await sleep(myTime.TIME_WAIT_ACTION);
             const messageTransformed = campaign.message.content.replace(
               new RegExp(balise_replace.FIRSTNAME, 'g'),
@@ -141,25 +146,31 @@ export class SendingMessageService {
           }
         }
         const totalTime = Date.now() - startTime;
-        this.logger.log(`Camapgne envoyée en ${totalTime}ms`);
+        this.logger.log(`Campagne traitée en ${totalTime}ms`);
 
-        //Tous les contacts on été traité, on sauvegarde maintenant les information d'envoi et de rejet
-        if (campaignSendings.length > 0) {
-          await this.campaignService.createSendings(campaignSendings);
-        }
-        if (campaignRejects.length > 0) {
-          await this.campaignService.createRejects(campaignRejects);
-        }
-        if (actionBeforeSendAllMessageResponse.statut) {
-          campaign.statut = this.statut.SENT;
+        // Si la campagne a été stoppée, on ne modifie pas le statut (déjà mis à NOT_SENT)
+        if (!this.isStopped) {
+          if (campaignSendings.length > 0) {
+            await this.campaignService.createSendings(campaignSendings);
+          }
+          if (campaignRejects.length > 0) {
+            await this.campaignService.createRejects(campaignRejects);
+          }
+          campaign.statut = actionBeforeSendAllMessageResponse.statut
+            ? this.statut.SENT
+            : this.statut.NOT_SENT;
+          await this.campaignService.create(campaign);
+          this.socketService.emitClientEvent('updateListCampaign', 'OK');
+          await this.closeBrowserPage();
         } else {
-          campaign.statut = this.statut.NOT_SENT;
+          // Sauvegarder quand même les envois/rejets déjà effectués avant le stop
+          if (campaignSendings.length > 0) {
+            await this.campaignService.createSendings(campaignSendings);
+          }
+          if (campaignRejects.length > 0) {
+            await this.campaignService.createRejects(campaignRejects);
+          }
         }
-
-        await this.campaignService.create(campaign);
-        this.socketService.emitClientEvent('updateListCampaign', 'OK');
-
-        await this.closeBrowserPage();
       }
     });
 
@@ -168,11 +179,12 @@ export class SendingMessageService {
       async (campaignId) => {
         if (campaign.id === campaignId) {
           this.logger.log("annulation de l'envoi ", campaignId);
+          // Flag immédiat pour stopper la boucle dès la prochaine itération
+          this.isStopped = true;
           campaign.statut = this.statut.NOT_SENT;
           await this.campaignService.create(campaign);
           this.socketService.emitClientEvent('updateListCampaign', 'OK');
           await this.closeBrowserPage();
-          stopProcessing = true;
         }
       },
     );
@@ -217,12 +229,16 @@ export class SendingMessageService {
       campaign.statut = this.statut.SENT;
       await this.campaignService.create(campaign);
       this.socketService.emitClientEvent('errorSendCampaignMessage', 'OK');
+      return;
     }
 
     // Demande d'authentification à la page à l'utilisateur
+    this.isStopped = false;
     this.socketService.emitClientEvent('connectionPage', campaign);
     let responseOK = false;
-    let stopProcessing = false;
+
+    this.socketService.stoplistenEvent('cancelSendCampaignMessage', () => {});
+    this.socketService.stoplistenEvent('connectionPageOK_SendingRejectMessage', () => {});
 
     //Attente de retour de confirmation du client
     this.socketService.listenEvent('connectionPageOK_SendingRejectMessage', async (campaignId) => {
@@ -242,7 +258,7 @@ export class SendingMessageService {
           for (const lastCampaignReject of lastCampaignRejects) {
             const contact = lastCampaignReject.contact;
 
-            if (stopProcessing) {
+            if (this.isStopped) {
               break;
             }
 
@@ -271,17 +287,21 @@ export class SendingMessageService {
           }
         }
 
-        //Tous les contacts on été traité, on sauvegarde maintenant les information d'envoi et de rejet
-        if (campaignSendings.length > 0) {
-          await this.campaignService.createSendings(campaignSendings);
-          await this.campaignService.removeManyReject(removeCampaignRejects);
+        if (!this.isStopped) {
+          if (campaignSendings.length > 0) {
+            await this.campaignService.createSendings(campaignSendings);
+            await this.campaignService.removeManyReject(removeCampaignRejects);
+          }
+          campaign.statut = this.statut.SENT;
+          await this.campaignService.create(campaign);
+          this.socketService.emitClientEvent('updateListCampaign', 'OK');
+          await this.closeBrowserPage();
+        } else {
+          if (campaignSendings.length > 0) {
+            await this.campaignService.createSendings(campaignSendings);
+            await this.campaignService.removeManyReject(removeCampaignRejects);
+          }
         }
-
-        campaign.statut = this.statut.SENT;
-        await this.campaignService.create(campaign);
-        this.socketService.emitClientEvent('updateListCampaign', 'OK');
-
-        await this.closeBrowserPage();
       }
     });
 
@@ -290,7 +310,8 @@ export class SendingMessageService {
       async (campaignId) => {
         if (campaign.id === campaignId) {
           this.logger.debug("annulation de l'envoi ", campaignId);
-          campaign.statut = this.statut.SENT;
+          this.isStopped = true;
+          campaign.statut = this.statut.NOT_SENT;
           await this.campaignService.create(campaign);
           this.socketService.emitClientEvent('updateListCampaign', 'OK');
           await this.closeBrowserPage();
@@ -311,14 +332,13 @@ export class SendingMessageService {
     }, myTime.TIME_WAIT_CONNECTION);
   }
 
+  private getProfileDir(channelParam: string): string {
+    const profileName = channelParam === this.channel.WHATS_APP ? '.whatsapp-profile' : '.instagram-profile';
+    return path.join(__dirname, '..', '..', '..', profileName);
+  }
+
   private async initBrowserPage(channelParam: string) {
     this.logger.log('initBrowserPage');
-    // this.browser = await this.BROWSER_SELECT.launch({ headless: false });
-    // this.browser = await firefox.launch({ headless: false });
-    this.browser = await chromium.launch({ headless: false });
-    this.logger.debug('lancement du navigateur');
-    this.context = await this.browser.newContext();
-    this.page = await this.context.newPage();
 
     let url = '';
     switch (channelParam) {
@@ -331,12 +351,22 @@ export class SendingMessageService {
         this.channelService = this.instagramChannelService;
         break;
     }
+
+    const profileDir = this.getProfileDir(channelParam);
+    this.logger.debug(`Profil persistant : ${profileDir}`);
+
+    this.context = await chromium.launchPersistentContext(profileDir, {
+      headless: false,
+    });
+    this.page = await this.context.newPage();
     await this.page.goto(url);
   }
 
   private async closeBrowserPage() {
     await sleep(myTime.TIME_WAIT_END_ACTION);
-    await this.context.close();
-    await this.browser.close();
+    if (this.context) await this.context.close();
+    this.context = undefined;
+    this.browser = undefined;
+    this.page = undefined;
   }
 }

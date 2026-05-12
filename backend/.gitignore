@@ -46,6 +46,10 @@ lerna-debug.log*
 .env.production.local
 .env.local
 
+# Playwright browser profiles (sessions WhatsApp/Instagram)
+.whatsapp-profile/
+.instagram-profile/
+
 # temp directory
 .temp
 .tmp

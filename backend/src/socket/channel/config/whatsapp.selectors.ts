@@ -6,21 +6,21 @@ export const selectors = {
     },
 
     cancelButton: {
-        primary: '#side button[aria-label="Annuler la recherche"]',
-        fallback: '#side button._ah_y',
+        primary: 'input[aria-label="Rechercher ou démarrer une discussion"]',
+        fallback: '#side input[role="textbox"]',
         alternatives: [
-            'button span[data-icon="close-refreshed"]',
-            'button:has-text(/cancel|annuler|cancelar/i)'
+            '#side input',
         ]
     },
 
     searchField: {
-        primary: '#side div[aria-label="Champ de recherche"]',
-        fallback: '#side p.selectable-text.copyable-text.x15bjb6t.x1n2onr6',
+        primary: 'input[aria-label="Rechercher ou démarrer une discussion"]',
+        fallback: 'input[placeholder*="écherch"]',
         alternatives: [
-            '#side div[contenteditable="true"]',
-            '#side div[contenteditable="true"][role="textbox"]',
-            '#side div.x1hx0egp.x6ikm8r.x1odjw0f.x6prxxf.x1k6rcq7.x1whj5v',
+            'input[placeholder*="earch"]',
+            'input[role="textbox"]',
+            '#side input',
+            'input.html-input',
         ]
     },
 
@@ -49,19 +49,32 @@ export const selectors = {
 
     contactHeaderByName: (name: string) => `header div[role="button"] span[dir="auto"]:has-text("${name}")`,
     headerInfo: {
-        primary: 'header div[title="Détails du profil"]',
-        fallback: '#main header.x1n2onr6',
+        primary: '#main header div[title="Détails du profil"]',
+        fallback: '#main header div[data-testid="conversation-info-header"]',
         alternatives: [
-            '#main header',
+            '#main header div[role="button"][title]',
             '#main header div[role="button"]',
-            '#main header div.x1c4vz4f',
-            '#main header div span[data-icon="default-contact-refreshed"]',
-            'header:has-text(/profile|profil|perfil/i)'
         ]
     },
 
     headerInfoContact: {
-        primary: 'header div[title="Infos du contact"]',
+        primary: 'div[data-testid="contact-info-drawer"]',
+        fallback: '#app div[title="Infos du contact"]',
+        alternatives: [
+            '#app aside header',
+            'div[data-animate-drawer-title]',
+        ]
+    },
+
+    closeDetailsButton: {
+        primary: 'button[aria-label="Fermer"]',
+        fallback: 'button[aria-label="Close"]',
+        alternatives: [
+            'button[aria-label="Retour"]',
+            'span[data-icon="back"]',
+            'span[data-icon="x-alt"]',
+            'div[data-testid="contact-info-drawer"] button',
+        ]
     },
 
     spanUserNumber: {
@@ -84,60 +97,47 @@ export const selectors = {
         ]
     },
 
-    closeDetailsButton: {
-        primary: 'header.x14bqcqg > div.x78zum5.x1okw0bk > div:nth-child(1) > div[role="button"]',
-        fallback: 'header.x14bqcqg div.x1okw0bk.x1fxk84t',
-        alternatives: [
-            'button:has-text(/close|fermer|cerrar/i)'
-        ]
-    },
-
     messageZone: {
-        primary: '#main footer div[contenteditable="true"][role="textbox"]',
-        fallback: '#main > footer p.selectable-text.copyable-text.x15bjb6t.x1n2onr6',
+        primary: 'div[data-testid="conversation-compose-box-input"]',
+        fallback: '#main footer div[contenteditable="true"][role="textbox"]',
         alternatives: [
             '#main footer div[contenteditable="true"]',
         ]
     },
 
     attachButton: {
-        primary: '#main > footer div._ak1q div._ak1r > div >div:nth-child(1)',
-        fallback: '#main > footer div._ak1q div.x100vrsf',
+        primary: 'button[aria-label="Joindre"]',
+        fallback: 'button[aria-label="Attach"]',
         alternatives: [
-            'button[title="Attach"]',
+            'span[data-testid="plus-rounded"]',
+            'span[data-icon="plus-rounded"]',
             'button[title="Joindre"]',
-            'span[data-icon="plus-rounded]',
-            'button:has-text(/attach|joindre|adjuntar/i)'
         ]
     },
 
     fileInput: {
-        primary: '#main > footer._ak1i.x1wiwyrm input[type="file"][accept="image/*"] ',
-        fallback: '#main > footer input[type="file"][accept="image/*"]',
-        alternatives: [
-            'input[type="file"][accept*="image/*"]',
-            '[accept*="image/*"]',
-        ]
+        primary: '#main footer input[type="file"]',
+        fallback: 'input[type="file"]',
+        alternatives: [],
     },
 
     sendButtonWithImage: {
-        primary: 'span[data-icon="wds-ic-send-filled"]',
-        fallback: 'div.x1247r65 > div',
+        primary: 'button[aria-label="Envoyer"]',
+        fallback: 'button[aria-label="Send"]',
         alternatives: [
-            'div[aria-label="Envoyer"]',
-            'div[aria-label="Send"]',
+            'div[data-testid="send"]',
+            'span[data-testid="wds-ic-send-filled"]',
             'span[data-icon="wds-ic-send-filled"]',
-            'button:has-text(/send|envoyer|enviar/i)'
         ]
     },
 
     sendButtonWithoutImage: {
-        primary: 'button span[data-icon="wds-ic-send-filled"]',
-        fallback: '#main > footer button.x1c4vz4f.x2lah0s',
+        primary: 'button[aria-label="Envoyer"]',
+        fallback: 'button[aria-label="Send"]',
         alternatives: [
-            'button[aria-label="Envoyer"]',
-            'button[aria-label="Send"]',
-            'button:has-text(/send|envoyer|enviar/i)'
+            'div[data-testid="send"]',
+            'span[data-testid="wds-ic-send-filled"]',
+            'span[data-icon="wds-ic-send-filled"]',
         ]
     },
 
