@@ -1,0 +1,4 @@
+allowBuilds:
+  '@nestjs/core': set this to true or false
+  sharp: set this to true or false
+  sqlite3: set this to true or false
